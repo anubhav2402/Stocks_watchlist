@@ -810,7 +810,7 @@
     </div>
 
     <div class="title-row">
-      <h1 class="masthead-title">The Conviction <em>List</em></h1>
+      <h1 class="masthead-title">The <em>Watchlist</em></h1>
       <p class="masthead-sub">A long-form watchlist for stocks worth holding through cycles — semis, space, sovereignty, and a few wildcards.</p>
     </div>
 
@@ -1189,11 +1189,15 @@ async function fetchChart(ticker) {
     .filter(x => x.c != null);
 
   const price = meta.regularMarketPrice;
-  // Use regularMarketPreviousClose first; fall back to the last close in chart history (never chartPreviousClose which is 5y ago)
-  const prevClose = meta.regularMarketPreviousClose
-    || meta.previousClose
-    || (closes.length >= 2 ? closes[closes.length - 2].c : null);
-  const dayChangePct = prevClose ? ((price - prevClose) / prevClose * 100) : null;
+  // regularMarketChange is the absolute $ change today — most reliable via proxy
+  const prevClose = meta.regularMarketPreviousClose || meta.previousClose || null;
+  let dayChangePct = null;
+  if (meta.regularMarketChange != null && price != null) {
+    const prev = price - meta.regularMarketChange;
+    dayChangePct = prev > 0 ? (meta.regularMarketChange / prev) * 100 : null;
+  } else if (prevClose) {
+    dayChangePct = ((price - prevClose) / prevClose) * 100;
+  }
 
   const now = Date.now() / 1000;
   const findClosestPrice = (secondsAgo) => {
