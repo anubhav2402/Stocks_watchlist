@@ -1226,9 +1226,25 @@ async function fetchChart(ticker) {
 }
 
 async function fetchFundamentals(ticker) {
-  const modules = 'defaultKeyStatistics,financialData,summaryDetail,price';
   const enc = encodeURIComponent(ticker);
-  // Try multiple endpoints — Yahoo Finance is inconsistent across query1/query2 and v10/v11
+  let pe = null, forwardPe = null, pb = null, grossMargin = null;
+
+  // ── Step 1: v7/finance/quote — no auth required, returns P/E, Fwd P/E, P/B ──
+  try {
+    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${enc}&fields=trailingPE,forwardPE,priceToBook,trailingAnnualDividendYield`;
+    const data = await fetchWithFallback(url, 9000);
+    const q = data?.quoteResponse?.result?.[0];
+    if (q) {
+      pe        = q.trailingPE  ?? null;
+      forwardPe = q.forwardPE   ?? null;
+      pb        = q.priceToBook ?? null;
+    }
+  } catch (e) {
+    console.warn('v7/quote failed for', ticker, e.message);
+  }
+
+  // ── Step 2: quoteSummary for gross margin (and fill any gaps) ──
+  const modules = 'defaultKeyStatistics,financialData,summaryDetail';
   const urls = [
     `https://query2.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
     `https://query1.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
@@ -1240,26 +1256,20 @@ async function fetchFundamentals(ticker) {
       const data = await fetchWithFallback(url, 9000);
       const result = data?.quoteSummary?.result?.[0];
       if (!result) continue;
-
       const ks = result.defaultKeyStatistics || {};
       const fd = result.financialData || {};
       const sd = result.summaryDetail || {};
-      const pr = result.price || {};
-
-      const pe          = sd.trailingPE?.raw       ?? pr.priceEpsTTM?.raw          ?? null;
-      const forwardPe   = sd.forwardPE?.raw         ?? ks.forwardPE?.raw            ?? null;
-      const pb          = ks.priceToBook?.raw        ?? pr.priceToBook?.raw          ?? null;
-      const grossMargin = fd.grossMargins?.raw       ?? null;
-
-      // Return even partial results — don't skip if only some fields populated
-      if (pe != null || forwardPe != null || pb != null || grossMargin != null) {
-        return { pe, forwardPe, pb, grossMargin };
-      }
+      pe          = pe          ?? sd.trailingPE?.raw  ?? null;
+      forwardPe   = forwardPe   ?? sd.forwardPE?.raw   ?? ks.forwardPE?.raw ?? null;
+      pb          = pb          ?? ks.priceToBook?.raw  ?? null;
+      grossMargin = fd.grossMargins?.raw ?? null;
+      if (grossMargin != null) break;
     } catch (e) {
-      console.warn('Fundamentals attempt failed for', ticker, ':', e.message);
+      console.warn('quoteSummary failed for', ticker, e.message);
     }
   }
-  return {};
+
+  return { pe, forwardPe, pb, grossMargin };
 }
 
 async function fetchTickerData(ticker) {
