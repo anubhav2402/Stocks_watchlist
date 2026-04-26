@@ -1712,6 +1712,9 @@ if (watchlist.length === 0) {
 } else {
   setTimeout(refreshAll, 600);
 }
+
+// Auto-refresh every 3 hours
+setInterval(refreshAll, 3 * 60 * 60 * 1000);
 </script>
 </body>
 </html>
