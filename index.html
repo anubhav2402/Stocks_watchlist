@@ -1189,7 +1189,10 @@ async function fetchChart(ticker) {
     .filter(x => x.c != null);
 
   const price = meta.regularMarketPrice;
-  const prevClose = meta.regularMarketPreviousClose || meta.previousClose || meta.chartPreviousClose;
+  // Use regularMarketPreviousClose first; fall back to the last close in chart history (never chartPreviousClose which is 5y ago)
+  const prevClose = meta.regularMarketPreviousClose
+    || meta.previousClose
+    || (closes.length >= 2 ? closes[closes.length - 2].c : null);
   const dayChangePct = prevClose ? ((price - prevClose) / prevClose * 100) : null;
 
   const now = Date.now() / 1000;
