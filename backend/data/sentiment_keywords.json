@@ -1,0 +1,26 @@
+{
+  "bullish": [
+    "buy", "buying", "bullish", "long", "upside", "breakout", "bounce", "accumulate",
+    "accumulating", "strong buy", "outperform", "upgrade", "beat", "beats", "beat estimates",
+    "raised guidance", "guidance raise", "positive", "uptrend", "momentum", "surge",
+    "rally", "rallying", "pumping", "moon", "to the moon", "add", "adding position",
+    "target raised", "price target up", "hold", "holding", "conviction", "high conviction",
+    "nifty up", "sensex up", "green", "all time high", "ath", "new high", "52-week high",
+    "strong", "strength", "recovery", "rebound", "oversold", "undervalued", "cheap",
+    "good entry", "opportunity", "dip buy", "buying the dip", "scale in", "overweight"
+  ],
+  "bearish": [
+    "sell", "selling", "bearish", "short", "downside", "breakdown", "crash", "avoid",
+    "weak sell", "underperform", "downgrade", "miss", "misses", "missed estimates",
+    "lowered guidance", "guidance cut", "negative", "downtrend", "fall", "falling",
+    "dump", "dumping", "drop", "dropping", "decline", "declining", "correction",
+    "red", "blood", "panic", "fear", "overbought", "overvalued", "expensive",
+    "exit", "exiting", "stop loss", "cut loss", "reduce", "reducing", "underweight",
+    "warning", "risk", "concern", "weak", "weakness", "nifty down", "sensex down",
+    "52-week low", "new low", "resistance", "target cut", "price target down"
+  ],
+  "neutral": [
+    "hold", "holding", "neutral", "wait", "watching", "monitor", "sideways",
+    "range-bound", "consolidation", "mixed", "uncertain", "flat"
+  ]
+}

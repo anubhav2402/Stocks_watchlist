@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: stockpulse-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:3000,https://anubhav2402.github.io
+      - key: BUZZ_THRESHOLD
+        value: "3"
+      - key: BUZZ_WINDOW_HOURS
+        value: "24"
+      - key: SCRAPE_INTERVAL_MINUTES
+        value: "30"
+      - key: NEWS_INTERVAL_MINUTES
+        value: "15"
+      # Set these in the Render dashboard — do NOT commit real values here
+      - key: TWITTER_USERNAME
+        sync: false
+      - key: TWITTER_EMAIL
+        sync: false
+      - key: TWITTER_PASSWORD
+        sync: false
+      - key: TWITTER_COOKIES_B64
+        sync: false

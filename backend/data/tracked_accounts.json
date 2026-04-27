@@ -1,0 +1,128 @@
+[
+  {
+    "username": "Nifty50_Trader",
+    "display_name": "Nifty50 Trader",
+    "category": "operator",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "marketsmojo",
+    "display_name": "MarketsMojo",
+    "category": "analyst",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "Deepak_Shenoy",
+    "display_name": "Deepak Shenoy",
+    "category": "fund",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "moneycontrolcom",
+    "display_name": "Moneycontrol",
+    "category": "news",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "ETMarkets",
+    "display_name": "ET Markets",
+    "category": "news",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "NSEIndia",
+    "display_name": "NSE India",
+    "category": "exchange",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "BSEIndia",
+    "display_name": "BSE India",
+    "category": "exchange",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "SEBI_India",
+    "display_name": "SEBI",
+    "category": "regulator",
+    "market": "IN",
+    "enabled": true
+  },
+  {
+    "username": "elonmusk",
+    "display_name": "Elon Musk",
+    "category": "operator",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "jimcramer",
+    "display_name": "Jim Cramer",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "elerianm",
+    "display_name": "Mohamed El-Erian",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "GaryBlack08",
+    "display_name": "Gary Black",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "TruthGundlach",
+    "display_name": "Jeff Gundlach",
+    "category": "fund",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "WSJ",
+    "display_name": "Wall Street Journal",
+    "category": "news",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "business",
+    "display_name": "Bloomberg",
+    "category": "news",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "Reuters",
+    "display_name": "Reuters Business",
+    "category": "news",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "markets",
+    "display_name": "Bloomberg Markets",
+    "category": "news",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "zerohedge",
+    "display_name": "ZeroHedge",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
+  }
+]
