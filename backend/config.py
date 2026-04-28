@@ -24,7 +24,7 @@ TWITTER_EMAIL: str = os.getenv("TWITTER_EMAIL", "")
 TWITTER_PASSWORD: str = os.getenv("TWITTER_PASSWORD", "")
 
 # Buzz engine settings
-BUZZ_THRESHOLD: int = int(os.getenv("BUZZ_THRESHOLD", "3"))      # min unique accounts
+BUZZ_THRESHOLD: int = int(os.getenv("BUZZ_THRESHOLD", "2"))      # min unique accounts
 BUZZ_WINDOW_HOURS: int = int(os.getenv("BUZZ_WINDOW_HOURS", "24"))
 
 # Scheduler intervals
