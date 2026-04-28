@@ -117,5 +117,19 @@
     "category": "analyst",
     "market": "US",
     "enabled": true
+  },
+  {
+    "username": "aleabitoreddit",
+    "display_name": "Aleabit",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
+  },
+  {
+    "username": "ParadisLabs",
+    "display_name": "Paradis Labs",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
   }
 ]
