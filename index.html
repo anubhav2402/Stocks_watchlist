@@ -1158,8 +1158,10 @@
 <script>
 // ════════════════════════════════════════════════════════════
 // BACKEND CONFIG
+// Set to your deployed backend URL (e.g. https://your-app.onrender.com)
+// Leave empty to use Yahoo Finance directly (GitHub Pages default)
 // ════════════════════════════════════════════════════════════
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = '';
 
 // ════════════════════════════════════════════════════════════
 // DEFAULT 30-STOCK LIST
@@ -1306,9 +1308,11 @@ function deleteList(id) {
 // ════════════════════════════════════════════════════════════
 // YAHOO FINANCE — CHART + FUNDAMENTALS
 // ════════════════════════════════════════════════════════════
+// Yahoo Finance v8/chart works directly from browsers (no proxy needed).
+// Proxies below are fallback only for other endpoints.
 const PROXIES = [
+  (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
   (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
 ];
 
 function timeoutSignal(ms) {
@@ -1318,12 +1322,15 @@ function timeoutSignal(ms) {
   return ctrl.signal;
 }
 
-async function fetchWithFallback(url, timeoutMs = 9000) {
+async function fetchWithFallback(url, timeoutMs = 7000) {
   let lastErr;
+  // Try direct first — works for Yahoo Finance chart endpoints
   try {
     const r = await fetch(url, { signal: timeoutSignal(timeoutMs) });
     if (r.ok) return await r.json();
+    lastErr = new Error(`HTTP ${r.status}`);
   } catch (e) { lastErr = e; }
+  // Proxy fallback (used when direct is blocked)
   for (const proxy of PROXIES) {
     try {
       const r = await fetch(proxy(url), { signal: timeoutSignal(timeoutMs) });
@@ -1385,49 +1392,33 @@ async function fetchChart(ticker) {
 }
 
 async function fetchFundamentals(ticker) {
+  // Non-blocking: if all requests fail we just show — for these columns
   const enc = encodeURIComponent(ticker);
   let pe = null, forwardPe = null, pb = null, grossMargin = null;
 
-  // ── Step 1: v7/finance/quote — no auth required, returns P/E, Fwd P/E, P/B ──
-  try {
-    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${enc}&fields=trailingPE,forwardPE,priceToBook,trailingAnnualDividendYield`;
-    const data = await fetchWithFallback(url, 9000);
-    const q = data?.quoteResponse?.result?.[0];
-    if (q) {
-      pe        = q.trailingPE  ?? null;
-      forwardPe = q.forwardPE   ?? null;
-      pb        = q.priceToBook ?? null;
-    }
-  } catch (e) {
-    console.warn('v7/quote failed for', ticker, e.message);
-  }
-
-  // ── Step 2: quoteSummary for gross margin (and fill any gaps) ──
+  // Try v11 quoteSummary directly — works without proxy on most networks
   const modules = 'defaultKeyStatistics,financialData,summaryDetail';
   const urls = [
-    `https://query2.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
     `https://query1.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
-    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
+    `https://query2.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=${encodeURIComponent(modules)}`,
   ];
-
   for (const url of urls) {
     try {
-      const data = await fetchWithFallback(url, 9000);
+      const data = await fetchWithFallback(url, 5000);
       const result = data?.quoteSummary?.result?.[0];
       if (!result) continue;
       const ks = result.defaultKeyStatistics || {};
       const fd = result.financialData || {};
       const sd = result.summaryDetail || {};
-      pe          = pe          ?? sd.trailingPE?.raw  ?? null;
-      forwardPe   = forwardPe   ?? sd.forwardPE?.raw   ?? ks.forwardPE?.raw ?? null;
-      pb          = pb          ?? ks.priceToBook?.raw  ?? null;
+      pe          = sd.trailingPE?.raw  ?? null;
+      forwardPe   = sd.forwardPE?.raw   ?? ks.forwardPE?.raw ?? null;
+      pb          = ks.priceToBook?.raw ?? null;
       grossMargin = fd.grossMargins?.raw ?? null;
-      if (grossMargin != null) break;
+      if (pe != null || grossMargin != null) break;
     } catch (e) {
-      console.warn('quoteSummary failed for', ticker, e.message);
+      // silent — fundamentals are nice-to-have
     }
   }
-
   return { pe, forwardPe, pb, grossMargin };
 }
 
