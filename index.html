@@ -1346,14 +1346,13 @@ async function fetchChart(ticker) {
     .filter(x => x.c != null);
 
   const price = meta.regularMarketPrice;
-  // regularMarketChange is the absolute $ change today — most reliable via proxy
-  const prevClose = meta.regularMarketPreviousClose || meta.previousClose || null;
+
+  // Yahoo stopped returning regularMarketChange/regularMarketPreviousClose via proxy.
+  // Most reliable source: second-to-last close in the chart data = yesterday's close.
+  const prevDayClose = closes.length >= 2 ? closes[closes.length - 2].c : null;
   let dayChangePct = null;
-  if (meta.regularMarketChange != null && price != null) {
-    const prev = price - meta.regularMarketChange;
-    dayChangePct = prev > 0 ? (meta.regularMarketChange / prev) * 100 : null;
-  } else if (prevClose) {
-    dayChangePct = ((price - prevClose) / prevClose) * 100;
+  if (price != null && prevDayClose != null && prevDayClose > 0) {
+    dayChangePct = ((price - prevDayClose) / prevDayClose) * 100;
   }
 
   const now = Date.now() / 1000;
