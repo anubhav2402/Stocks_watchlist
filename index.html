@@ -180,6 +180,326 @@
   .btn.spinning .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ════════════════ PAGE TABS (Watchlist / Alerts) ════════════════ */
+  .page-tabs-bar {
+    background: var(--paper);
+    border-bottom: 1px solid var(--ink);
+    padding: 0 40px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 49;
+  }
+
+  .page-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 22px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--ink-mute);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: -1px;
+    transition: color 0.15s;
+  }
+
+  .page-tab:hover { color: var(--ink); }
+  .page-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .page-tab .pill {
+    background: var(--gold);
+    color: var(--paper);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+    letter-spacing: 1px;
+  }
+
+  .page-tab .pill.zero { background: var(--rule); color: var(--ink-mute); }
+
+  /* ════════════════ ALERTS PAGE ════════════════ */
+  .alerts-page { padding: 28px 40px 80px; max-width: 1200px; margin: 0 auto; }
+
+  .alerts-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .alerts-head h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .alerts-head h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
+
+  .alerts-head .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .alerts-sub {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-mute);
+    font-size: 14px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px;
+  }
+
+  .alerts-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .alert-card {
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .alert-card.bullish { border-left: 4px solid var(--green); }
+  .alert-card.bearish { border-left: 4px solid var(--red); }
+  .alert-card.neutral { border-left: 4px solid var(--gold); }
+
+  .alert-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 10px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .alert-ticker-block { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+  .alert-ticker-mark {
+    width: 38px; height: 38px;
+    border: 1px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700; font-size: 13px;
+    flex-shrink: 0;
+    background: var(--paper-deep);
+    color: var(--ink);
+  }
+
+  .alert-ticker-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+  .alert-ticker-symbol {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .alert-ticker-name {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 320px;
+  }
+
+  .alert-sentiment {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  .alert-sentiment.bullish { background: var(--green-bg); color: var(--green); }
+  .alert-sentiment.bearish { background: var(--red-bg); color: var(--red); }
+  .alert-sentiment.neutral { background: var(--paper-deep); color: var(--ink-mute); }
+
+  .alert-stats {
+    display: flex;
+    gap: 18px;
+    padding: 8px 18px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    border-bottom: 1px solid var(--rule-soft);
+    flex-wrap: wrap;
+  }
+
+  .alert-stats strong {
+    color: var(--ink);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  .alert-accounts {
+    padding: 12px 18px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .alert-accounts-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-right: 4px;
+  }
+
+  .alert-account-tag {
+    display: inline-block;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    padding: 3px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    border-radius: 3px;
+  }
+
+  .alert-tweets {
+    padding: 6px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-tweet {
+    border-top: 1px dashed var(--rule-soft);
+    padding-top: 10px;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .alert-tweet:first-child { border-top: none; padding-top: 0; }
+
+  .alert-tweet-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    flex-wrap: wrap;
+  }
+
+  .alert-tweet-author { color: var(--ink); font-weight: 600; }
+  .alert-tweet-author a { color: var(--ink); text-decoration: none; }
+  .alert-tweet-author a:hover { color: var(--accent); }
+
+  .alert-tweet-sent {
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+  .alert-tweet-sent.bullish { background: var(--green-bg); color: var(--green); }
+  .alert-tweet-sent.bearish { background: var(--red-bg); color: var(--red); }
+  .alert-tweet-sent.neutral { background: var(--paper-deep); color: var(--ink-mute); }
+
+  .alert-tweet-text {
+    color: var(--ink-soft);
+    word-break: break-word;
+  }
+
+  .alert-tweet-text a { color: var(--accent); text-decoration: none; }
+  .alert-tweet-text a:hover { text-decoration: underline; }
+
+  .alert-card-foot {
+    background: var(--paper-deep);
+    padding: 8px 18px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    border-top: 1px solid var(--rule-soft);
+    flex-wrap: wrap;
+  }
+
+  .alert-jump {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .alert-jump:hover { background: var(--ink); color: var(--paper); }
+
+  .alerts-empty {
+    border: 1px dashed var(--rule);
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--ink-mute);
+  }
+
+  .alerts-empty .mark {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 56px;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+
+  .alerts-empty p {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .alerts-empty .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
   /* ════════════════ WATCHLIST TABS ════════════════ */
   .wl-tabs-bar {
     background: var(--paper);
@@ -974,6 +1294,18 @@
     </div>
   </header>
 
+  <!-- ═══════════════ PAGE TABS ═══════════════ -->
+  <div class="page-tabs-bar">
+    <button class="page-tab active" id="pageTabWatchlist" onclick="switchPage('watchlist')">Watchlist</button>
+    <button class="page-tab" id="pageTabAlerts" onclick="switchPage('alerts')">
+      <span>Alerts</span>
+      <span class="pill zero" id="pageAlertCount">0</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════ WATCHLIST PAGE ═══════════════ -->
+  <div id="watchlistPage">
+
   <!-- ═══════════════ WATCHLIST TABS ═══════════════ -->
   <div class="wl-tabs-bar" id="wlTabsBar"></div>
 
@@ -1081,6 +1413,18 @@
       <span id="footerStamp">—</span>
     </footer>
   </main>
+  </div><!-- /#watchlistPage -->
+
+  <!-- ═══════════════ ALERTS PAGE ═══════════════ -->
+  <div id="alertsPage" class="alerts-page" hidden>
+    <div class="alerts-head">
+      <h2>Buzz <em>Alerts</em></h2>
+      <span class="meta" id="alertsLastUpdated">—</span>
+    </div>
+    <p class="alerts-sub">Two or more tracked accounts mentioned the ticker within the last 24 hours. Bullish first, then bearish.</p>
+    <div id="alertsListWrap"></div>
+  </div>
+
 </div>
 
 <!-- ═══════════════ ADD MODAL ═══════════════ -->
@@ -1512,10 +1856,167 @@ async function fetchAlerts() {
       }
     }
     renderAlerts();
+    renderAlertsPage();
     render();
   } catch (e) {
     console.warn('fetchAlerts failed:', e.message);
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// PAGE TABS — Watchlist / Alerts
+// ════════════════════════════════════════════════════════════
+let _activePage = 'watchlist';
+
+function switchPage(name) {
+  _activePage = name;
+  document.getElementById('watchlistPage').hidden = (name !== 'watchlist');
+  document.getElementById('alertsPage').hidden = (name !== 'alerts');
+  document.getElementById('pageTabWatchlist').classList.toggle('active', name === 'watchlist');
+  document.getElementById('pageTabAlerts').classList.toggle('active', name === 'alerts');
+  if (name === 'alerts') renderAlertsPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function _sentimentRank(label) {
+  // bullish first, neutral middle, bearish last
+  if (label === 'bullish') return 0;
+  if (label === 'neutral') return 1;
+  return 2; // bearish
+}
+
+function renderAlertsPage() {
+  const alerts = Object.values(_buzzAlerts);
+
+  // Update tab pill count
+  const pill = document.getElementById('pageAlertCount');
+  pill.textContent = alerts.length;
+  pill.classList.toggle('zero', alerts.length === 0);
+
+  // Update last-updated stamp
+  const stampEl = document.getElementById('alertsLastUpdated');
+  if (stampEl) {
+    const t = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    stampEl.textContent = `Refreshed ${t}`;
+  }
+
+  const wrap = document.getElementById('alertsListWrap');
+  if (!wrap) return;
+
+  if (alerts.length === 0) {
+    wrap.innerHTML = `
+      <div class="alerts-empty">
+        <div class="mark">∅</div>
+        <p>No active buzz alerts on your watchlist.</p>
+        <div class="hint">Alerts fire when 2+ tracked accounts mention a ticker within 24h.</div>
+      </div>`;
+    return;
+  }
+
+  // Sort: bullish → neutral → bearish; within group, most recent last_seen first
+  const sorted = [...alerts].sort((a, b) => {
+    const sa = _sentimentRank(a.sentiment_label);
+    const sb = _sentimentRank(b.sentiment_label);
+    if (sa !== sb) return sa - sb;
+    return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
+  });
+
+  wrap.innerHTML = `<div class="alerts-list">${sorted.map(_alertCard).join('')}</div>`;
+}
+
+function _alertCard(alert) {
+  const ticker = alert.ticker.replace('.NS','').replace('.BO','');
+  const wlStock = watchlist.find(s => s.ticker.toUpperCase() === ticker || s.ticker.toUpperCase() === alert.ticker.toUpperCase());
+  const name = wlStock?.name || alert.name || ticker;
+  const sentClass = alert.sentiment_label || 'neutral';
+  const sentLabel = sentClass.charAt(0).toUpperCase() + sentClass.slice(1);
+  const score = (alert.avg_sentiment >= 0 ? '+' : '') + (alert.avg_sentiment * 100).toFixed(0);
+
+  // Unique accounts
+  const accounts = [...new Set((alert.mentions || []).map(m => m.account))];
+
+  // Latest 3 tweets (most recent first)
+  const tweets = [...(alert.mentions || [])]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 3);
+
+  const tweetsHtml = tweets.map(t => {
+    const tSent = t.sentiment_label || 'neutral';
+    const tSentLabel = tSent.charAt(0).toUpperCase() + tSent.slice(1);
+    const ago = _timeAgo(t.timestamp);
+    const author = '@' + t.account;
+    const authorLink = t.url
+      ? `<a href="${escAttr(t.url)}" target="_blank" rel="noopener">${escHtml(author)}</a>`
+      : escHtml(author);
+    return `
+      <div class="alert-tweet">
+        <div class="alert-tweet-meta">
+          <span class="alert-tweet-author">${authorLink}</span>
+          <span>
+            <span class="alert-tweet-sent ${tSent}">${tSentLabel}</span>
+            &nbsp;·&nbsp;${ago}
+          </span>
+        </div>
+        <div class="alert-tweet-text">${_linkify(t.text || '')}</div>
+      </div>`;
+  }).join('');
+
+  const firstSeen = new Date(alert.first_seen).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+  const lastSeen = new Date(alert.last_seen).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
+  return `
+    <div class="alert-card ${sentClass}">
+      <div class="alert-card-head">
+        <div class="alert-ticker-block">
+          <div class="alert-ticker-mark">${escHtml(ticker.slice(0, 4))}</div>
+          <div class="alert-ticker-info">
+            <div class="alert-ticker-symbol">${escHtml(ticker)} <span class="buzz-bell" style="font-size:13px">🔔</span></div>
+            <div class="alert-ticker-name">${escHtml(name)}</div>
+          </div>
+        </div>
+        <span class="alert-sentiment ${sentClass}">${sentLabel} ${score}</span>
+      </div>
+      <div class="alert-stats">
+        <span><strong>${alert.unique_accounts}</strong> accounts</span>
+        <span><strong>${alert.mention_count}</strong> mentions</span>
+        <span><strong>${_timeAgo(alert.last_seen)}</strong> last</span>
+      </div>
+      <div class="alert-accounts">
+        <span class="alert-accounts-label">Accounts:</span>
+        ${accounts.map(a => `<span class="alert-account-tag">@${escHtml(a)}</span>`).join('')}
+      </div>
+      <div class="alert-tweets">${tweetsHtml}</div>
+      <div class="alert-card-foot">
+        <span>First seen ${escHtml(firstSeen)}</span>
+        <span>Last seen ${escHtml(lastSeen)}</span>
+        <button class="alert-jump" onclick="jumpToTicker('${escAttr(ticker)}')">View in Watchlist →</button>
+      </div>
+    </div>`;
+}
+
+function jumpToTicker(ticker) {
+  switchPage('watchlist');
+  // Filter table to that ticker
+  const input = document.getElementById('searchInput');
+  if (input) {
+    input.value = ticker;
+    if (typeof searchQuery !== 'undefined') searchQuery = ticker;
+    if (typeof render === 'function') render();
+  }
+}
+
+function escAttr(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _linkify(text) {
+  // Escape first, then turn URLs into clickable links
+  const safe = escHtml(text);
+  return safe.replace(/(https?:\/\/[^\s<]+)/g, (m) => `<a href="${m}" target="_blank" rel="noopener">${m}</a>`);
 }
 
 function renderAlerts() {
