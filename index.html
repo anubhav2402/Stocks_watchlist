@@ -1334,39 +1334,42 @@ async function fetchWithFallback(url, timeoutMs = 9000) {
 }
 
 async function fetchChart(ticker) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=5y&interval=1d`;
-  const data = await fetchWithFallback(url);
-  const result = data?.chart?.result?.[0];
-  if (!result) throw new Error(`No chart data for ${ticker}`);
+  const enc = encodeURIComponent(ticker);
 
-  const meta = result.meta;
-  const timestamps = result.timestamp || [];
-  const closes = (result.indicators?.quote?.[0]?.close || [])
-    .map((v, i) => ({ t: timestamps[i], c: v }))
-    .filter(x => x.c != null);
+  // Two small requests instead of one huge 5y-daily (~1255 rows).
+  // Monthly: 60 rows — enough for 6m/1y/5y historical returns.
+  // 5-day daily: 5 rows — day change only.
+  const [moData, dayData] = await Promise.all([
+    fetchWithFallback(`https://query1.finance.yahoo.com/v8/finance/chart/${enc}?range=5y&interval=1mo`),
+    fetchWithFallback(`https://query1.finance.yahoo.com/v8/finance/chart/${enc}?range=5d&interval=1d`),
+  ]);
 
-  const price = meta.regularMarketPrice;
+  const moResult = moData?.chart?.result?.[0];
+  if (!moResult) throw new Error(`No chart data for ${ticker}`);
 
-  // Yahoo stopped returning regularMarketChange/regularMarketPreviousClose via proxy.
-  // Most reliable source: second-to-last close in the chart data = yesterday's close.
-  const prevClose = closes.length >= 2 ? closes[closes.length - 2].c : null;
+  const meta      = moResult.meta;
+  const price     = meta.regularMarketPrice;
+  const moCloses  = (moResult.indicators?.quote?.[0]?.close || []).filter(c => c != null);
+  const n         = moCloses.length;
+
+  // Historical returns — index directly into monthly closes
+  const pct = (old) => old != null && old > 0 ? ((price - old) / old * 100) : null;
+  const return6m = pct(n > 6  ? moCloses[n - 7]  : null);
+  const return1y = pct(n > 12 ? moCloses[n - 13] : null);
+  const return5y = pct(n > 60 ? moCloses[n - 61] : null);
+
+  // Day change — from 5-day daily closes (second-to-last = yesterday)
+  const dayResult = dayData?.chart?.result?.[0];
+  const dayCloses = (dayResult?.indicators?.quote?.[0]?.close || []).filter(c => c != null);
+  // Fallback: chartPreviousClose from 5d meta is yesterday's close
+  const prevClose = dayCloses.length >= 2
+    ? dayCloses[dayCloses.length - 2]
+    : (dayResult?.meta?.chartPreviousClose ?? null);
+
   let dayChangePct = null;
   if (price != null && prevClose != null && prevClose > 0) {
     dayChangePct = ((price - prevClose) / prevClose) * 100;
   }
-
-  const now = Date.now() / 1000;
-  const findClosestPrice = (secondsAgo) => {
-    const target = now - secondsAgo;
-    let best = null, bestDiff = Infinity;
-    for (const pt of closes) {
-      const diff = Math.abs(pt.t - target);
-      if (diff < bestDiff) { bestDiff = diff; best = pt; }
-    }
-    return best?.c ?? null;
-  };
-
-  const pct = (oldP) => oldP != null && oldP > 0 ? ((price - oldP) / oldP * 100) : null;
 
   return {
     price,
@@ -1374,9 +1377,9 @@ async function fetchChart(ticker) {
     dayChangePct,
     name: meta.shortName || meta.longName || ticker,
     currency: meta.currency || 'USD',
-    return6m: pct(findClosestPrice(180 * 86400)),
-    return1y: pct(findClosestPrice(365 * 86400)),
-    return5y: pct(findClosestPrice(5 * 365 * 86400)),
+    return6m,
+    return1y,
+    return5y,
     pe_chart: meta.trailingPE ?? null,
   };
 }
@@ -1429,6 +1432,34 @@ async function fetchFundamentals(ticker) {
 }
 
 async function fetchTickerData(ticker) {
+  // ── Try backend first (no CORS, most reliable) ───────────────────────────
+  if (BACKEND_URL) {
+    try {
+      const r = await fetch(`${BACKEND_URL}/api/quote/${encodeURIComponent(ticker)}`,
+                            { signal: timeoutSignal(8000) });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.price != null && !d.error) {
+          return {
+            price:       d.price,
+            prevClose:   d.prev_close,
+            dayChangePct: d.day_change_pct,
+            name:        d.name,
+            currency:    d.currency || 'USD',
+            return6m:    d.return_6m,
+            return1y:    d.return_1y,
+            return5y:    d.return_5y,
+            pe:          d.pe,
+            forwardPe:   d.forward_pe,
+            pb:          d.pb,
+            grossMargin: d.gross_margin,
+          };
+        }
+      }
+    } catch (e) { /* backend offline — fall through */ }
+  }
+
+  // ── Fall back to Yahoo Finance via CORS proxy ────────────────────────────
   const [chart, fund] = await Promise.all([fetchChart(ticker), fetchFundamentals(ticker)]);
   return {
     ...chart,
