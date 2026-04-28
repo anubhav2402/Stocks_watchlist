@@ -30,6 +30,39 @@ from models.alert import TweetMention, TrackedAccount
 
 logger = logging.getLogger(__name__)
 
+
+def _apply_twikit_patches():
+    """
+    Monkey-patch twikit 1.7.6 User class to handle optional/missing fields.
+    Fixes KeyErrors for: 'urls', 'pinned_tweet_ids_str', 'withheld_in_countries'.
+    More reliable than file-patching since it works regardless of .pyc cache.
+    """
+    try:
+        import twikit.user as _tu
+        _orig_init = _tu.User.__init__
+
+        def _safe_init(self, client, data):
+            # Defensively fill in optional legacy fields before twikit reads them
+            try:
+                legacy = data.get('legacy') if isinstance(data, dict) else None
+                if isinstance(legacy, dict):
+                    desc = legacy.get('entities', {}).get('description', {})
+                    if isinstance(desc, dict) and 'urls' not in desc:
+                        desc['urls'] = []
+                    legacy.setdefault('pinned_tweet_ids_str', [])
+                    legacy.setdefault('withheld_in_countries', [])
+            except Exception:
+                pass
+            _orig_init(self, client, data)
+
+        _tu.User.__init__ = _safe_init
+        logger.info("twikit User.__init__ patched successfully")
+    except Exception as e:
+        logger.warning("twikit monkey-patch failed (non-fatal): %s", e)
+
+
+_apply_twikit_patches()
+
 # ── twikit client singleton ─────────────────────────────────────────────────────
 _client: Optional[object] = None   # twikit.Client
 _twitter_enabled: bool = True
