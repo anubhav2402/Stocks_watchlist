@@ -2,7 +2,7 @@ services:
   - type: web
     name: stockpulse-api
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python patch_twikit.py
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     plan: free
     envVars:
