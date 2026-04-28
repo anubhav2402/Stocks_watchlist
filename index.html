@@ -1493,8 +1493,9 @@ function setupAutoFetch() {
 let _buzzAlerts = {};   // { TICKER: BuzzAlert }
 
 async function fetchAlerts() {
+  if (!BACKEND_URL) return;
   try {
-    const res = await fetch(`${BACKEND_URL}/api/alerts`, { signal: timeoutSignal(5000) });
+    const res = await fetch(`${BACKEND_URL}/api/alerts`, { signal: timeoutSignal(12000) });
     if (!res.ok) return;
     const data = await res.json();
 
@@ -1511,9 +1512,9 @@ async function fetchAlerts() {
       }
     }
     renderAlerts();
-    render(); // re-render table rows to show/hide badges
+    render();
   } catch (e) {
-    // Backend offline — silently skip, don't break the page
+    console.warn('fetchAlerts failed:', e.message);
   }
 }
 
