@@ -9,7 +9,7 @@ services:
       - key: ALLOWED_ORIGINS
         value: http://localhost:3000,https://anubhav2402.github.io
       - key: BUZZ_THRESHOLD
-        value: "3"
+        value: "2"
       - key: BUZZ_WINDOW_HOURS
         value: "24"
       - key: SCRAPE_INTERVAL_MINUTES
