@@ -1349,10 +1349,10 @@ async function fetchChart(ticker) {
 
   // Yahoo stopped returning regularMarketChange/regularMarketPreviousClose via proxy.
   // Most reliable source: second-to-last close in the chart data = yesterday's close.
-  const prevDayClose = closes.length >= 2 ? closes[closes.length - 2].c : null;
+  const prevClose = closes.length >= 2 ? closes[closes.length - 2].c : null;
   let dayChangePct = null;
-  if (price != null && prevDayClose != null && prevDayClose > 0) {
-    dayChangePct = ((price - prevDayClose) / prevDayClose) * 100;
+  if (price != null && prevClose != null && prevClose > 0) {
+    dayChangePct = ((price - prevClose) / prevClose) * 100;
   }
 
   const now = Date.now() / 1000;
