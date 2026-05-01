@@ -2468,7 +2468,8 @@ renderTabs();
 render();
 renderMovers();
 
-if (watchlist.length === 0) {
+const _isFirstTime = !localStorage.getItem('cl_wlists_v1') && !localStorage.getItem('cl_watchlist_v2');
+if (_isFirstTime) {
   DEFAULT_LIST.forEach(meta => {
     watchlist.push({ ticker: meta.ticker, name: meta.ticker, thesis: meta.thesis, addedAt: Date.now(), priceOnAdd: null });
   });
