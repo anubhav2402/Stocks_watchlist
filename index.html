@@ -1296,6 +1296,32 @@
     .sum-cell:last-child { border-bottom: none; }
     .search-input { width: 100%; margin-left: 0; margin-top: 6px; }
   }
+
+  /* ── Valuation modal ── */
+  .modal-wide { max-width: 540px; width: 100%; }
+  .val-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .val-header-left { display: flex; flex-direction: column; gap: 6px; }
+  .val-ticker-name { font-size: 20px; font-weight: 700; letter-spacing: .03em; color: var(--ink); }
+  .val-verdict-pill { display: inline-block; border-radius: 4px; padding: 3px 10px; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+  .val-verdict-pill.undervalued  { background: var(--green-bg); color: var(--green); }
+  .val-verdict-pill.fair-value   { background: var(--paper-deep); color: var(--gold); }
+  .val-verdict-pill.overvalued   { background: var(--red-bg); color: var(--red); }
+  .val-score-badge { font-size: 36px; font-weight: 800; line-height: 1; }
+  .val-score-badge.attractive { color: var(--green); }
+  .val-score-badge.fair        { color: var(--gold); }
+  .val-score-badge.stretched   { color: var(--red); }
+  .val-score-sub { font-size: 11px; color: var(--ink-mute); text-align: right; margin-top: 2px; }
+  .val-table { width: 100%; border-collapse: collapse; margin: 4px 0 14px; }
+  .val-table td { padding: 6px 8px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+  .val-table td:first-child { color: var(--ink-mute); width: 44%; }
+  .val-table td:nth-child(2) { font-weight: 600; color: var(--ink); }
+  .val-table td:nth-child(3) { font-size: 11px; color: var(--ink-mute); text-align: right; }
+  .val-table tr:last-child td { border-bottom: none; }
+  .val-summary { font-size: 13px; color: var(--ink-mute); line-height: 1.65; margin: 0 0 16px; }
+  .val-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-mute); }
+  .val-loading { text-align: center; padding: 40px 0; color: var(--ink-mute); font-size: 14px; }
+  .val-error { color: var(--red); font-size: 13px; padding: 20px 0; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -1540,6 +1566,27 @@
         <button class="btn btn-primary" onclick="confirmNewList()">Create</button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="valuationModal">
+  <div class="modal modal-wide">
+    <div class="modal-content">
+      <div class="val-header">
+        <div class="val-header-left">
+          <span id="valTicker" class="val-ticker-name"></span>
+          <span id="valVerdict" class="val-verdict-pill"></span>
+        </div>
+        <div>
+          <div id="valScore" class="val-score-badge"></div>
+          <div class="val-score-sub">/ 10</div>
+        </div>
+      </div>
+      <div id="valBody">
+        <div class="val-loading">Loading valuation…</div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeModal('valuation')">✕</button>
   </div>
 </div>
 
@@ -2302,6 +2349,8 @@ function closeModal(type) {
     document.getElementById('addFetchStatus').textContent = '';
   } else if (type === 'bulk') {
     document.getElementById('bulkInput').value = '';
+  } else if (type === 'valuation') {
+    _valTicker = null;
   }
 }
 
@@ -2380,6 +2429,71 @@ function importBulk() {
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
 });
+
+// ════════════════════════════════════════════════════════════
+// VALUATION ANALYSIS
+// ════════════════════════════════════════════════════════════
+let _valTicker = null;
+
+async function openValuation(ticker, refresh = false) {
+  if (!BACKEND_URL) { toast('Backend not configured', 'error'); return; }
+  _valTicker = ticker;
+
+  const modal = document.getElementById('valuationModal');
+  document.getElementById('valTicker').textContent = ticker;
+  document.getElementById('valVerdict').textContent = '';
+  document.getElementById('valVerdict').className = 'val-verdict-pill';
+  document.getElementById('valScore').textContent = '';
+  document.getElementById('valScore').className = 'val-score-badge';
+  document.getElementById('valBody').innerHTML = '<div class="val-loading">Generating valuation…</div>';
+  modal.classList.add('active');
+
+  try {
+    const url = `${BACKEND_URL}/api/valuation/${ticker}${refresh ? '?refresh=true' : ''}`;
+    const res = await fetch(url, { signal: timeoutSignal(30000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+
+    // Score badge
+    const scoreEl = document.getElementById('valScore');
+    scoreEl.textContent = d.score.toFixed(1);
+    scoreEl.className = 'val-score-badge ' + (d.score >= 7 ? 'attractive' : d.score >= 4 ? 'fair' : 'stretched');
+
+    // Verdict pill
+    const verdictEl = document.getElementById('valVerdict');
+    verdictEl.textContent = d.verdict;
+    const vClass = d.verdict === 'Undervalued' ? 'undervalued' : d.verdict === 'Overvalued' ? 'overvalued' : 'fair-value';
+    verdictEl.className = 'val-verdict-pill ' + vClass;
+
+    // Metrics table
+    const rows = (d.metrics || []).map(m =>
+      `<tr><td>${m.name}</td><td>${m.value}</td><td>${m.note || ''}</td></tr>`
+    ).join('');
+
+    // Age
+    const age = d.cached
+      ? (() => {
+          const mins = Math.round((Date.now() - new Date(d.generated_at).getTime()) / 60000);
+          return mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
+        })()
+      : 'just now';
+
+    const transcriptNote = d.transcript_date
+      ? `Based on ${d.transcript_date} earnings call`
+      : 'No earnings transcript — metrics only';
+
+    document.getElementById('valBody').innerHTML = `
+      <table class="val-table">${rows}</table>
+      <p class="val-summary">${d.summary}</p>
+      <div class="val-footer">
+        <span>${transcriptNote} · ${age}</span>
+        <button class="btn btn-sm" onclick="openValuation('${ticker}', true)">↻ Refresh</button>
+      </div>`;
+  } catch (e) {
+    document.getElementById('valBody').innerHTML =
+      `<p class="val-error">Could not load valuation: ${e.message}</p>`;
+  }
+}
 
 // ════════════════════════════════════════════════════════════
 // SORTING + SEARCH
@@ -2557,6 +2671,7 @@ function render() {
       <td>
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>
+          <button class="icon-btn" onclick="openValuation('${s.ticker}')" title="Valuation Analysis">≡</button>
           <button class="icon-btn danger" onclick="removeTicker('${s.ticker}')" title="Remove">✕</button>
         </div>
       </td>

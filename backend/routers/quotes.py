@@ -1,6 +1,9 @@
+import asyncio
+
 from fastapi import APIRouter, HTTPException, Query
 from services.yahoo_service import fetch_quote, fetch_quotes_batch, fetch_catalyst
-from models.stock import QuoteResponse, BatchQuoteResponse, CatalystResponse
+from services import valuation_service
+from models.stock import QuoteResponse, BatchQuoteResponse, CatalystResponse, ValuationResponse
 
 router = APIRouter(tags=["quotes"])
 
@@ -16,6 +19,16 @@ async def get_quote(symbol: str):
 @router.get("/catalysts/{symbol}", response_model=CatalystResponse)
 async def get_catalyst(symbol: str):
     return await fetch_catalyst(symbol)
+
+
+@router.get("/valuation/{symbol}", response_model=ValuationResponse)
+async def get_valuation(symbol: str, refresh: bool = False):
+    result = await asyncio.to_thread(
+        valuation_service.fetch_valuation, symbol.upper(), refresh
+    )
+    if result is None:
+        raise HTTPException(status_code=503, detail="Valuation unavailable")
+    return result
 
 
 @router.get("/quotes", response_model=BatchQuoteResponse)

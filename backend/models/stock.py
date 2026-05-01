@@ -35,3 +35,20 @@ class CatalystResponse(BaseModel):
     days_to_ex_div: Optional[int] = None
     next_event_label: Optional[str] = None
     next_event_days: Optional[int] = None
+
+
+class ValuationMetric(BaseModel):
+    name: str
+    value: str
+    note: Optional[str] = None
+
+
+class ValuationResponse(BaseModel):
+    ticker: str
+    score: float
+    verdict: str
+    metrics: list[ValuationMetric]
+    summary: str
+    transcript_date: Optional[str] = None
+    generated_at: str
+    cached: bool = False
