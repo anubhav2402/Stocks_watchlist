@@ -21,6 +21,34 @@ async def get_catalyst(symbol: str):
     return await fetch_catalyst(symbol)
 
 
+@router.get("/valuation/{symbol}/debug")
+async def get_valuation_debug(symbol: str):
+    """Temporary debug endpoint — returns raw error details."""
+    import os, yfinance as yf, httpx
+    out = {}
+    try:
+        info = yf.Ticker(symbol.upper()).info
+        out["yfinance_ok"] = True
+        out["trailing_pe"] = info.get("trailingPE")
+        out["forward_pe"] = info.get("forwardPE")
+    except Exception as e:
+        out["yfinance_error"] = str(e)
+    try:
+        from config import FMP_API_KEY
+        out["fmp_key_set"] = bool(FMP_API_KEY)
+        if FMP_API_KEY:
+            r = httpx.get(
+                f"https://financialmodelingprep.com/api/v3/earning_call_transcript/{symbol.upper()}?limit=1&apikey={FMP_API_KEY}",
+                timeout=10,
+            )
+            out["fmp_status"] = r.status_code
+            out["fmp_has_data"] = bool(r.json())
+    except Exception as e:
+        out["fmp_error"] = str(e)
+    out["anthropic_key_set"] = bool(os.getenv("ANTHROPIC_API_KEY"))
+    return out
+
+
 @router.get("/valuation/{symbol}", response_model=ValuationResponse)
 async def get_valuation(symbol: str, refresh: bool = False):
     result = await asyncio.to_thread(
