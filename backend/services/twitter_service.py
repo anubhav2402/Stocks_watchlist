@@ -145,19 +145,21 @@ def _scrape_account_sync(client, account: TrackedAccount) -> int:
             return 0
 
         for tweet in tweets:
-            tickers = extract_tickers(tweet.text)
+            # full_text has the complete note-tweet text; text may be truncated
+            full = getattr(tweet, 'full_text', None) or tweet.text
+            tickers = extract_tickers(full)
             if not tickers:
                 continue
 
             ts = _tweet_timestamp(tweet)
-            s_score, s_label = sentiment_score(tweet.text)
+            s_score, s_label = sentiment_score(full)
             tweet_url = f"https://x.com/{account.username}/status/{tweet.id}"
 
             for ticker in tickers:
                 mention = TweetMention(
                     tweet_id=str(tweet.id),
                     account=account.username,
-                    text=tweet.text,
+                    text=full,
                     timestamp=ts,
                     sentiment_score=s_score,
                     sentiment_label=s_label,
