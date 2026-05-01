@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
-from services.yahoo_service import fetch_quote, fetch_quotes_batch
-from models.stock import QuoteResponse, BatchQuoteResponse
+from services.yahoo_service import fetch_quote, fetch_quotes_batch, fetch_catalyst
+from models.stock import QuoteResponse, BatchQuoteResponse, CatalystResponse
 
 router = APIRouter(tags=["quotes"])
 
@@ -11,6 +11,11 @@ async def get_quote(symbol: str):
     if result.error and result.price is None:
         raise HTTPException(status_code=404, detail=result.error)
     return result
+
+
+@router.get("/catalysts/{symbol}", response_model=CatalystResponse)
+async def get_catalyst(symbol: str):
+    return await fetch_catalyst(symbol)
 
 
 @router.get("/quotes", response_model=BatchQuoteResponse)

@@ -25,3 +25,13 @@ class QuoteResponse(BaseModel):
 class BatchQuoteResponse(BaseModel):
     results: list[QuoteResponse]
     total: int
+
+
+class CatalystResponse(BaseModel):
+    ticker: str
+    earnings_date: Optional[str] = None
+    days_to_earnings: Optional[int] = None
+    ex_div_date: Optional[str] = None
+    days_to_ex_div: Optional[int] = None
+    next_event_label: Optional[str] = None
+    next_event_days: Optional[int] = None

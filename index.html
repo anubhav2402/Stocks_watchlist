@@ -839,6 +839,43 @@
     vertical-align: middle;
     margin-left: 5px;
   }
+  .catalyst-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(220,50,50,0.1);
+    border: 1px solid rgba(220,50,50,0.35);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--red);
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    margin-left: 5px;
+  }
+  .conviction-dots {
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 1px;
+    user-select: none;
+    color: var(--ink);
+    opacity: 0.85;
+  }
+  .conviction-dots:hover { opacity: 1; }
+  .alloc-input {
+    width: 44px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    padding: 0 2px;
+    outline: none;
+  }
+  .alloc-input:focus { border-bottom-color: var(--ink); }
 
   /* Section headers */
   .section-title {
@@ -1330,6 +1367,11 @@
         <div class="sum-meta">trailing twelve</div>
       </div>
       <div class="sum-cell">
+        <div class="sum-label">Wtd 1Y</div>
+        <div class="sum-value" id="sumWtdYear">—</div>
+        <div class="sum-meta">by allocation</div>
+      </div>
+      <div class="sum-cell">
         <div class="sum-label">Best Performer</div>
         <div class="sum-value" id="sumBest" style="font-size:22px">—</div>
         <div class="sum-meta" id="sumBestMeta">since added</div>
@@ -1377,6 +1419,8 @@
       <button class="filter-chip" data-sort="return5y" data-dir="desc">5Y Return</button>
       <button class="filter-chip" data-sort="pe" data-dir="asc">P/E</button>
       <button class="filter-chip" data-sort="forwardPe" data-dir="asc">Fwd P/E</button>
+      <button class="filter-chip" data-sort="conviction" data-dir="desc">Conviction</button>
+      <button class="filter-chip" data-sort="allocation" data-dir="desc">Allocation</button>
       <input type="text" class="search-input" id="searchInput" placeholder="Filter ticker…">
     </div>
 
@@ -1396,6 +1440,8 @@
             <th data-col="forwardPe">Fwd P/E <span class="sort-arrow">▲▼</span></th>
             <th data-col="pb">P/B <span class="sort-arrow">▲▼</span></th>
             <th data-col="grossMargin">Gross Margin <span class="sort-arrow">▲▼</span></th>
+            <th data-col="conviction">Conv <span class="sort-arrow">▲▼</span></th>
+            <th data-col="allocation">Alloc% <span class="sort-arrow">▲▼</span></th>
             <th></th>
           </tr>
         </thead>
@@ -1835,6 +1881,44 @@ function setupAutoFetch() {
 // BUZZ ALERTS — fetch from backend, match to watchlist
 // ════════════════════════════════════════════════════════════
 let _buzzAlerts = {};   // { TICKER: BuzzAlert }
+let _catalysts = {};   // { TICKER: CatalystResponse }
+
+// ════════════════════════════════════════════════════════════
+// CONVICTION & ALLOCATION HELPERS
+// ════════════════════════════════════════════════════════════
+function renderDots(n) {
+  const v = Math.max(0, Math.min(5, n || 0));
+  return '<span style="color:var(--ink)">●</span>'.repeat(v) + '<span style="opacity:0.2">●</span>'.repeat(5 - v);
+}
+
+function cycleConviction(ticker) {
+  const idx = watchlist.findIndex(s => s.ticker === ticker);
+  if (idx < 0) return;
+  watchlist[idx].conviction = ((watchlist[idx].conviction || 0) % 5) + 1;
+  save();
+  render();
+}
+
+function updateAllocation(ticker, value) {
+  const idx = watchlist.findIndex(s => s.ticker === ticker);
+  if (idx < 0) return;
+  watchlist[idx].allocation = parseFloat(value) || null;
+  save();
+}
+
+// ════════════════════════════════════════════════════════════
+// CATALYST — fetch from backend
+// ════════════════════════════════════════════════════════════
+async function fetchCatalysts(ticker) {
+  if (!BACKEND_URL) return;
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/catalysts/${encodeURIComponent(ticker)}`, { signal: timeoutSignal(6000) });
+    if (r.ok) {
+      const d = await r.json();
+      _catalysts[ticker.toUpperCase()] = d;
+    }
+  } catch (e) { /* silent — catalyst is supplementary data */ }
+}
 
 async function fetchAlerts() {
   if (!BACKEND_URL) return;
@@ -2089,7 +2173,7 @@ async function refreshAll() {
     setStatus('fetching', `Fetching ${i + 1}–${Math.min(i + BATCH, watchlist.length)} of ${watchlist.length}…`);
     await Promise.all(watchlist.slice(i, i + BATCH).map(async (s) => {
       try {
-        const d = await fetchTickerData(s.ticker);
+        const [d] = await Promise.all([fetchTickerData(s.ticker), fetchCatalysts(s.ticker)]);
         if (state.active !== activeListId) return;
         const idx = watchlist.findIndex(x => x.ticker === s.ticker);
         if (idx < 0) return;
@@ -2239,7 +2323,7 @@ async function refreshSingle(ticker) {
   const idx = watchlist.findIndex(s => s.ticker === ticker);
   if (idx < 0) return;
   try {
-    const d = await fetchTickerData(ticker);
+    const [d] = await Promise.all([fetchTickerData(ticker), fetchCatalysts(ticker)]);
     watchlist[idx] = {
       ...watchlist[idx],
       name: d.name || watchlist[idx].name,
@@ -2415,6 +2499,14 @@ function render() {
   if (avgYr == null) { sumYearEl.textContent = '—'; sumYearEl.style.color = ''; }
   else { sumYearEl.textContent = (avgYr >= 0 ? '+' : '') + avgYr.toFixed(1) + '%'; sumYearEl.style.color = avgYr >= 0 ? 'var(--green)' : 'var(--red)'; }
 
+  // Weighted avg 1Y by allocation
+  const allocated = watchlist.filter(s => s.allocation != null && s.return1y != null && !isNaN(s.return1y));
+  const totalAlloc = allocated.reduce((a, s) => a + s.allocation, 0);
+  const wtdAvgYr = totalAlloc > 0 ? allocated.reduce((a, s) => a + s.return1y * s.allocation, 0) / totalAlloc : null;
+  const sumWtdEl = document.getElementById('sumWtdYear');
+  if (wtdAvgYr == null) { sumWtdEl.textContent = '—'; sumWtdEl.style.color = ''; }
+  else { sumWtdEl.textContent = (wtdAvgYr >= 0 ? '+' : '') + wtdAvgYr.toFixed(1) + '%'; sumWtdEl.style.color = wtdAvgYr >= 0 ? 'var(--green)' : 'var(--red)'; }
+
   const ranked = watchlist.map(s => ({ s, r: returnSinceAdded(s) })).filter(x => x.r != null).sort((a, b) => b.r - a.r);
   if (ranked.length) {
     const best = ranked[0], worst = ranked[ranked.length - 1];
@@ -2432,15 +2524,19 @@ function render() {
     const sinceAdded = returnSinceAdded(s);
     const initials   = s.ticker.replace(/\W/g, '').slice(0, 2);
     const buzz = _buzzAlerts[s.ticker.toUpperCase()];
+    const catalyst = _catalysts[s.ticker.toUpperCase()];
     const buzzBadge = buzz
       ? `<span class="buzz-badge">🔔 ${buzz.mention_count} mentions</span>`
+      : '';
+    const catalystBadge = catalyst && catalyst.days_to_earnings != null && catalyst.days_to_earnings <= 14
+      ? `<span class="catalyst-badge">EPS IN ${catalyst.days_to_earnings}D</span>`
       : '';
     return `<tr${buzz ? ' style="background:rgba(168,122,31,0.04)"' : ''}>
       <td>
         <div class="ticker-cell">
           <div class="ticker-mark">${initials}</div>
           <div class="ticker-info">
-            <div class="ticker-symbol">${s.ticker}${buzzBadge}</div>
+            <div class="ticker-symbol">${s.ticker}${buzzBadge}${catalystBadge}</div>
             <div class="ticker-name" title="${escHtml(s.name || '')}">${escHtml(s.name || '')}</div>
           </div>
         </div>
@@ -2455,6 +2551,8 @@ function render() {
       <td>${fmtRatio(s.forwardPe, { peLike: true })}</td>
       <td>${fmtRatio(s.pb, { pbLike: true })}</td>
       <td>${fmtMargin(s.grossMargin)}</td>
+      <td><span class="conviction-dots" onclick="cycleConviction('${s.ticker}')" title="Click to set conviction (1–5)">${renderDots(s.conviction)}</span></td>
+      <td><input class="alloc-input" type="number" min="0" max="100" step="0.5" value="${s.allocation != null ? s.allocation : ''}" placeholder="—" onchange="updateAllocation('${s.ticker}', this.value)" onclick="event.stopPropagation()" title="Target allocation %"></td>
       <td>
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>

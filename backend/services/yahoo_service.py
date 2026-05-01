@@ -1,10 +1,11 @@
 import asyncio
 import logging
 import requests
+from datetime import datetime, timezone
 from typing import Optional
 import yfinance as yf
-from services.cache_service import quote_cache
-from models.stock import QuoteResponse
+from services.cache_service import quote_cache, catalyst_cache
+from models.stock import QuoteResponse, CatalystResponse
 
 logger = logging.getLogger(__name__)
 
@@ -150,3 +151,70 @@ async def fetch_quotes_batch(symbols: list[str]) -> list[QuoteResponse]:
         else:
             out.append(r)
     return out
+
+
+def _fetch_catalyst_sync(symbol: str) -> CatalystResponse:
+    today = datetime.now(timezone.utc).date()
+    try:
+        t = yf.Ticker(symbol, session=_session)
+        cal = t.calendar
+
+        earnings_date = None
+        days_to_earnings = None
+        ex_div_date = None
+        days_to_ex_div = None
+
+        if isinstance(cal, dict):
+            # Earnings Date — may be a list of Timestamps or a single value
+            ed = cal.get("Earnings Date")
+            if ed is not None:
+                if isinstance(ed, list):
+                    ed = ed[0] if ed else None
+                try:
+                    import pandas as pd
+                    ed_date = pd.Timestamp(ed).date()
+                    if ed_date >= today:
+                        earnings_date = ed_date.isoformat()
+                        days_to_earnings = (ed_date - today).days
+                except Exception:
+                    pass
+
+            xd = cal.get("Ex-Dividend Date")
+            if xd is not None:
+                try:
+                    import pandas as pd
+                    xd_date = pd.Timestamp(xd).date()
+                    if xd_date >= today:
+                        ex_div_date = xd_date.isoformat()
+                        days_to_ex_div = (xd_date - today).days
+                except Exception:
+                    pass
+
+        events = []
+        if days_to_earnings is not None:
+            events.append(("Earnings", days_to_earnings))
+        if days_to_ex_div is not None:
+            events.append(("Ex-Div", days_to_ex_div))
+        events.sort(key=lambda x: x[1])
+
+        return CatalystResponse(
+            ticker=symbol,
+            earnings_date=earnings_date,
+            days_to_earnings=days_to_earnings,
+            ex_div_date=ex_div_date,
+            days_to_ex_div=days_to_ex_div,
+            next_event_label=events[0][0] if events else None,
+            next_event_days=events[0][1] if events else None,
+        )
+    except Exception as e:
+        logger.warning("Failed to fetch catalyst for %s: %s", symbol, e)
+        return CatalystResponse(ticker=symbol)
+
+
+async def fetch_catalyst(symbol: str) -> CatalystResponse:
+    symbol = symbol.upper().strip()
+    if symbol in catalyst_cache:
+        return catalyst_cache[symbol]
+    result = await asyncio.to_thread(_fetch_catalyst_sync, symbol)
+    catalyst_cache[symbol] = result
+    return result
