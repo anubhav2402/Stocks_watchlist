@@ -129,7 +129,15 @@ def _call_llm(symbol: str, metrics: dict, transcript: str, quarter: str | None) 
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_msg}],
         )
-        return json.loads(response.content[0].text.strip())
+        raw = response.content[0].text.strip()
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
+        logger.info("LLM valuation raw response for %s: %s", symbol, raw[:200])
+        return json.loads(raw)
     except Exception as e:
         logger.warning("LLM valuation call failed for %s: %s", symbol, e)
         return None

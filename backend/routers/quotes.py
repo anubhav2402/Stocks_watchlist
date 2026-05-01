@@ -44,13 +44,20 @@ async def get_valuation_debug(symbol: str):
         out["news_error"] = str(e)
     try:
         out["anthropic_key_set"] = bool(os.getenv("ANTHROPIC_API_KEY"))
-        llm_data = await asyncio.to_thread(_call_llm, symbol.upper(), metrics, transcript, quarter)
-        out["llm_ok"] = llm_data is not None
-        if llm_data:
-            out["llm_score"] = llm_data.get("score")
-            out["llm_verdict"] = llm_data.get("verdict")
-        else:
-            out["llm_error"] = "returned None — check server logs"
+        # Call LLM directly with exception capture (bypasses the try/except in _call_llm)
+        import os as _os
+        import anthropic as _anthropic
+        from services.valuation_service import _format_metrics_text, _SYSTEM_PROMPT
+        _client = _anthropic.Anthropic(api_key=_os.getenv("ANTHROPIC_API_KEY"))
+        _user_msg = f"Ticker: {symbol.upper()}\n\nFinancial Metrics:\n{_format_metrics_text(metrics)}"
+        _resp = _client.messages.create(
+            model="claude-haiku-4-5-20251001", max_tokens=512,
+            system=_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": _user_msg}],
+        )
+        _raw = _resp.content[0].text.strip()
+        out["llm_raw"] = _raw[:500]
+        out["llm_ok"] = True
     except Exception as e:
         out["llm_error"] = traceback.format_exc()
     return out
