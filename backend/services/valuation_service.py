@@ -11,10 +11,7 @@ import logging
 import os
 from datetime import datetime, timezone
 
-import httpx
 import yfinance as yf
-
-from config import FMP_API_KEY
 from models.stock import ValuationMetric, ValuationResponse
 from services.cache_service import valuation_cache
 
@@ -73,26 +70,21 @@ def _fetch_metrics_sync(symbol: str) -> dict:
     }
 
 
-def _fetch_transcript_sync(symbol: str) -> tuple[str, str | None]:
-    """Returns (transcript_excerpt, quarter_label). Excerpt is first 2500 chars."""
-    if not FMP_API_KEY:
-        return "", None
+def _fetch_news_commentary_sync(symbol: str) -> tuple[str, str | None]:
+    """Returns recent news headlines as commentary text + label."""
     try:
-        url = (
-            f"https://financialmodelingprep.com/api/v3/earning_call_transcript/{symbol}"
-            f"?limit=1&apikey={FMP_API_KEY}"
-        )
-        resp = httpx.get(url, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        if not data or not isinstance(data, list):
+        ticker = yf.Ticker(symbol)
+        news = ticker.news or []
+        headlines = []
+        for item in news[:8]:
+            title = item.get("title", "")
+            if title:
+                headlines.append(f"- {title}")
+        if not headlines:
             return "", None
-        entry = data[0]
-        content = entry.get("content", "")
-        quarter = f"Q{entry.get('quarter', '?')} {entry.get('year', '')}"
-        return content[:2500], quarter
+        return "\n".join(headlines), "recent news"
     except Exception as e:
-        logger.warning("FMP transcript fetch failed for %s: %s", symbol, e)
+        logger.warning("yfinance news fetch failed for %s: %s", symbol, e)
         return "", None
 
 
@@ -122,9 +114,9 @@ def _call_llm(symbol: str, metrics: dict, transcript: str, quarter: str | None) 
         import anthropic
         client = anthropic.Anthropic(api_key=api_key)
         transcript_section = (
-            f"\nMost recent earnings call excerpt ({quarter}):\n{transcript}"
+            f"\nRecent news headlines:\n{transcript}"
             if transcript
-            else "\n(No earnings transcript available — base analysis on metrics only.)"
+            else "\n(No recent news available — base analysis on metrics only.)"
         )
         user_msg = (
             f"Ticker: {symbol}\n\nFinancial Metrics:\n"
@@ -151,7 +143,7 @@ def fetch_valuation(symbol: str, force_refresh: bool = False) -> ValuationRespon
 
     try:
         metrics = _fetch_metrics_sync(symbol)
-        transcript, quarter = _fetch_transcript_sync(symbol)
+        transcript, quarter = _fetch_news_commentary_sync(symbol)
         llm_data = _call_llm(symbol, metrics, transcript, quarter)
 
         if llm_data is None:

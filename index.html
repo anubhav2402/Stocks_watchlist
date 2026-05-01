@@ -2479,8 +2479,8 @@ async function openValuation(ticker, refresh = false) {
       : 'just now';
 
     const transcriptNote = d.transcript_date
-      ? `Based on ${d.transcript_date} earnings call`
-      : 'No earnings transcript — metrics only';
+      ? `Based on recent news · ${d.transcript_date}`
+      : 'Metrics only';
 
     document.getElementById('valBody').innerHTML = `
       <table class="val-table">${rows}</table>
