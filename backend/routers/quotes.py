@@ -34,6 +34,7 @@ async def get_valuation_debug(symbol: str):
         out["forward_pe"] = metrics.get("forward_pe")
     except Exception as e:
         out["metrics_error"] = str(e)
+        out["metrics_traceback"] = traceback.format_exc()
         return out
     try:
         transcript, quarter = await asyncio.to_thread(_fetch_news_commentary_sync, symbol.upper())

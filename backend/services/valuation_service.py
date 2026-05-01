@@ -43,7 +43,7 @@ def _fmt(val, fmt=".1f", suffix="", scale=1.0, na="N/A"):
 
 
 def _fetch_metrics_sync(symbol: str) -> dict:
-    info = yf.Ticker(symbol).info
+    info = yf.Ticker(symbol).info or {}
     ev = info.get("enterpriseValue")
     rev = info.get("totalRevenue")
     ev_rev = (ev / rev) if ev and rev and rev > 0 else None
