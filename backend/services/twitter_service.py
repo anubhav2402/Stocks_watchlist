@@ -218,6 +218,7 @@ async def scrape_all_accounts() -> dict:
         "Twitter scrape done: %d accounts, %d mentions, %d errors",
         len(enabled), total_mentions, errors,
     )
+    buzz_engine.persist_state()
     return {
         "status": "ok",
         "accounts_scraped": len(enabled),

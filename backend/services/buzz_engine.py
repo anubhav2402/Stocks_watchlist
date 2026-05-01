@@ -1,22 +1,25 @@
 """
 Buzz Engine — detects when multiple tracked accounts mention the same stock
 within the configured time window (default: 24 h) and minimum account count
-(default: 3).
+(default: 2).
 
-State is kept in memory.  On restart, the in-flight window is lost — that's
-acceptable for v1.
+State is persisted to data/buzz_state.json and reloaded on startup so alerts
+survive service restarts and redeployments.
 """
 
+import json
 import uuid
 import logging
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 from typing import Optional
 
-from config import BUZZ_THRESHOLD, BUZZ_WINDOW_HOURS
+from config import BUZZ_THRESHOLD, BUZZ_WINDOW_HOURS, DATA_DIR
 from models.alert import TweetMention, BuzzAlert
 
 logger = logging.getLogger(__name__)
+
+_STATE_FILE = DATA_DIR / "buzz_state.json"
 
 # ── In-memory store ─────────────────────────────────────────────────────────────
 # { ticker: [TweetMention, ...] }  — raw mention log (rolled by window)
@@ -27,6 +30,40 @@ _active_alerts: dict[str, BuzzAlert] = {}
 
 # Set of (account, tweet_id) to avoid duplicate ingestion
 _seen_tweets: set[tuple[str, str]] = set()
+
+
+def _load_state() -> None:
+    """Load persisted mention log from disk and rebuild alerts."""
+    if not _STATE_FILE.exists():
+        return
+    try:
+        raw = json.loads(_STATE_FILE.read_text())
+        for ticker, mentions_data in raw.items():
+            mentions = [TweetMention(**m) for m in mentions_data]
+            _mention_log[ticker] = mentions
+            for m in mentions:
+                _seen_tweets.add((m.account, m.tweet_id))
+        # Prune expired entries and rebuild alerts
+        for ticker in list(_mention_log.keys()):
+            _prune_window(ticker)
+            _evaluate(ticker)
+        total = sum(len(v) for v in _mention_log.values())
+        logger.info("Buzz state loaded: %d tickers, %d mentions", len(_mention_log), total)
+    except Exception as e:
+        logger.warning("Could not load buzz state: %s", e)
+
+
+def persist_state() -> None:
+    """Persist current mention log to disk. Called after each scrape cycle."""
+    try:
+        data = {
+            ticker: [m.model_dump(mode="json") for m in mentions]
+            for ticker, mentions in _mention_log.items()
+            if mentions
+        }
+        _STATE_FILE.write_text(json.dumps(data, default=str))
+    except Exception as e:
+        logger.warning("Could not persist buzz state: %s", e)
 
 
 # ── Public API ──────────────────────────────────────────────────────────────────
@@ -68,6 +105,10 @@ def mention_log_snapshot() -> dict[str, list[dict]]:
     """Debug endpoint: raw mention log."""
     return {t: [m.model_dump() for m in mentions]
             for t, mentions in _mention_log.items()}
+
+
+# Load persisted state on module import
+_load_state()
 
 
 # ── Internal helpers ────────────────────────────────────────────────────────────
