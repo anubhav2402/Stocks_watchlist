@@ -58,8 +58,9 @@ async def startup() -> None:
     logger.info("APScheduler started")
 
     # Run initial data loads immediately (don't wait for first interval)
-    from services import news_service
+    from services import news_service, twitter_service
     asyncio.create_task(news_service.refresh_news())
+    asyncio.create_task(twitter_service.scrape_all_accounts())
 
 
 async def shutdown() -> None:
