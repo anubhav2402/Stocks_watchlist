@@ -40,6 +40,13 @@ async def trigger_scrape(background_tasks: BackgroundTasks):
     return {"status": "scrape queued"}
 
 
+@router.post("/alerts/reset")
+async def reset_alerts():
+    """Clear all buzz state so next scrape re-scores everything fresh."""
+    buzz_engine.reset_state()
+    return {"status": "reset"}
+
+
 @router.get("/alerts/debug/mentions")
 async def debug_mentions():
     """Raw mention log — for debugging only."""

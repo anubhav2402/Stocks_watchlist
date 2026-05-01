@@ -66,6 +66,19 @@ def persist_state() -> None:
         logger.warning("Could not persist buzz state: %s", e)
 
 
+def reset_state() -> None:
+    """Clear all in-memory and persisted state so next scrape starts fresh."""
+    _mention_log.clear()
+    _active_alerts.clear()
+    _seen_tweets.clear()
+    try:
+        if _STATE_FILE.exists():
+            _STATE_FILE.unlink()
+    except Exception as e:
+        logger.warning("Could not delete buzz state file: %s", e)
+    logger.info("Buzz state reset")
+
+
 # ── Public API ──────────────────────────────────────────────────────────────────
 
 def ingest_mention(ticker: str, mention: TweetMention) -> Optional[BuzzAlert]:
