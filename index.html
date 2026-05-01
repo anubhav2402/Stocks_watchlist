@@ -2077,6 +2077,7 @@ async function refreshAll() {
   if (watchlist.length === 0) { toast('Nothing to refresh — add tickers first.', 'info'); return; }
 
   isFetching = true;
+  const activeListId = state.active;
   const btn = document.getElementById('refreshBtn');
   btn.classList.add('spinning');
   setStatus('fetching', `Fetching ${watchlist.length} tickers…`);
@@ -2084,11 +2085,14 @@ async function refreshAll() {
   let success = 0, failed = 0;
   const BATCH = 4;
   for (let i = 0; i < watchlist.length; i += BATCH) {
+    if (state.active !== activeListId) break;
     setStatus('fetching', `Fetching ${i + 1}–${Math.min(i + BATCH, watchlist.length)} of ${watchlist.length}…`);
-    await Promise.all(watchlist.slice(i, i + BATCH).map(async (s, j) => {
+    await Promise.all(watchlist.slice(i, i + BATCH).map(async (s) => {
       try {
         const d = await fetchTickerData(s.ticker);
-        const idx = i + j;
+        if (state.active !== activeListId) return;
+        const idx = watchlist.findIndex(x => x.ticker === s.ticker);
+        if (idx < 0) return;
         watchlist[idx] = {
           ...watchlist[idx],
           name: d.name || watchlist[idx].name || watchlist[idx].ticker,
@@ -2114,6 +2118,7 @@ async function refreshAll() {
         failed++;
       }
     }));
+    if (state.active !== activeListId) break;
     save();
     render();
     renderMovers();
