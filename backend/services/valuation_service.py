@@ -11,7 +11,7 @@ import logging
 import os
 from datetime import datetime, timezone
 
-import requests
+import httpx
 import yfinance as yf
 
 from config import FMP_API_KEY
@@ -82,7 +82,7 @@ def _fetch_transcript_sync(symbol: str) -> tuple[str, str | None]:
             f"https://financialmodelingprep.com/api/v3/earning_call_transcript/{symbol}"
             f"?limit=1&apikey={FMP_API_KEY}"
         )
-        resp = requests.get(url, timeout=10)
+        resp = httpx.get(url, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         if not data or not isinstance(data, list):
