@@ -23,29 +23,36 @@ async def get_catalyst(symbol: str):
 
 @router.get("/valuation/{symbol}/debug")
 async def get_valuation_debug(symbol: str):
-    """Temporary debug endpoint — returns raw error details."""
-    import os, yfinance as yf, httpx
-    out = {}
+    """Debug endpoint — traces each step of valuation."""
+    import os, traceback
+    out = {"symbol": symbol.upper()}
     try:
-        info = yf.Ticker(symbol.upper()).info
-        out["yfinance_ok"] = True
-        out["trailing_pe"] = info.get("trailingPE")
-        out["forward_pe"] = info.get("forwardPE")
+        from services.valuation_service import _fetch_metrics_sync, _fetch_news_commentary_sync, _call_llm
+        metrics = await asyncio.to_thread(_fetch_metrics_sync, symbol.upper())
+        out["metrics_ok"] = True
+        out["trailing_pe"] = metrics.get("trailing_pe")
+        out["forward_pe"] = metrics.get("forward_pe")
     except Exception as e:
-        out["yfinance_error"] = str(e)
+        out["metrics_error"] = str(e)
+        return out
     try:
-        from config import FMP_API_KEY
-        out["fmp_key_set"] = bool(FMP_API_KEY)
-        if FMP_API_KEY:
-            r = httpx.get(
-                f"https://financialmodelingprep.com/api/v3/earning_call_transcript/{symbol.upper()}?limit=1&apikey={FMP_API_KEY}",
-                timeout=10,
-            )
-            out["fmp_status"] = r.status_code
-            out["fmp_has_data"] = bool(r.json())
+        transcript, quarter = await asyncio.to_thread(_fetch_news_commentary_sync, symbol.upper())
+        out["news_ok"] = True
+        out["news_lines"] = len(transcript.splitlines()) if transcript else 0
+        out["quarter"] = quarter
     except Exception as e:
-        out["fmp_error"] = str(e)
-    out["anthropic_key_set"] = bool(os.getenv("ANTHROPIC_API_KEY"))
+        out["news_error"] = str(e)
+    try:
+        out["anthropic_key_set"] = bool(os.getenv("ANTHROPIC_API_KEY"))
+        llm_data = await asyncio.to_thread(_call_llm, symbol.upper(), metrics, transcript, quarter)
+        out["llm_ok"] = llm_data is not None
+        if llm_data:
+            out["llm_score"] = llm_data.get("score")
+            out["llm_verdict"] = llm_data.get("verdict")
+        else:
+            out["llm_error"] = "returned None — check server logs"
+    except Exception as e:
+        out["llm_error"] = traceback.format_exc()
     return out
 
 
