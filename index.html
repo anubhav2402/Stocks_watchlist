@@ -2197,6 +2197,7 @@ function _alertCard(alert) {
     const authorLink = t.url
       ? `<a href="${escAttr(t.url)}" target="_blank" rel="noopener">${escHtml(author)}</a>`
       : escHtml(author);
+    const tweetLink = t.url ? `<a href="${escAttr(t.url)}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : '';
     return `
       <div class="alert-tweet">
         <div class="alert-tweet-meta">
@@ -2204,6 +2205,7 @@ function _alertCard(alert) {
           <span>
             <span class="alert-tweet-sent ${tSent}">${tSentLabel}</span>
             &nbsp;·&nbsp;${ago}
+            &nbsp;${tweetLink}
           </span>
         </div>
         <div class="alert-tweet-text">${_linkify(t.text || '')}</div>
@@ -2748,7 +2750,7 @@ function _discCard(t, wlTickers) {
   ).join('');
   const tweetsHtml = (t.recent_mentions || [])
     .slice().reverse()
-    .map(m => `<div class="disc-tweet"><span class="disc-account">@${m.account}</span> <span class="disc-tweet-text">${m.text.replace(/</g,'&lt;')}</span></div>`)
+    .map(m => `<div class="disc-tweet"><span class="disc-account">@${m.account}</span>${m.url ? ` <a href="${m.url}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : ''} <span class="disc-tweet-text">${m.text.replace(/</g,'&lt;')}</span></div>`)
     .join('');
   return `
   <div class="disc-card ${isNew ? 'disc-new' : ''}">
