@@ -114,7 +114,9 @@ def _build_prompt(symbol: str, d: dict, investment_profile: str) -> str:
         rows = []
         for r in rev_ests:
             g = f' ({r["growth"] * 100:+.0f}% YoY)' if r.get('growth') is not None else ''
-            rows.append(f'  {r["period"]} Revenue: {_fmt_m(r["avg"])} consensus{g}')
+            # avg is raw dollars — convert to $M for _fmt_m
+            avg_m = float(r['avg']) / 1e6 if r.get('avg') is not None else None
+            rows.append(f'  {r["period"]} Revenue: {_fmt_m(avg_m)} consensus{g}')
         for e in eps_ests:
             g = f' ({e["growth"] * 100:+.0f}% YoY)' if e.get('growth') is not None else ''
             rows.append(f'  {e["period"]} EPS: ${_fmt(e["avg"], 2)} consensus{g}')

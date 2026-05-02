@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import feedparser
 import pandas as pd
 import yfinance as yf
 
@@ -8,23 +7,27 @@ logger = logging.getLogger(__name__)
 
 
 def _fetch_google_news(symbol: str) -> list[dict]:
+    """Fetch RSS from Google News with a hard 6s timeout via httpx."""
     url = f'https://news.google.com/rss/search?q={symbol}+stock&hl=en-US&gl=US&ceid=US:en'
     try:
-        feed = feedparser.parse(url)
+        import httpx
+        import feedparser
+        resp = httpx.get(url, timeout=6.0, follow_redirects=True)
+        resp.raise_for_status()
+        feed = feedparser.parse(resp.text)
         items = []
         for entry in (feed.entries or [])[:10]:
             title = getattr(entry, 'title', '').strip()
             link  = getattr(entry, 'link', '')
             date_str = ''
-            if hasattr(entry, 'published_parsed') and entry.published_parsed:
+            if getattr(entry, 'published_parsed', None):
                 from datetime import datetime as _dt
                 try:
                     date_str = _dt(*entry.published_parsed[:3]).strftime('%Y-%m-%d')
                 except Exception:
                     pass
-            source = ''
-            if hasattr(entry, 'source') and isinstance(entry.source, dict):
-                source = entry.source.get('title', '')
+            # entry.source is a FeedParserDict, not a plain dict
+            source = getattr(getattr(entry, 'source', None), 'title', '') or ''
             if title and link:
                 items.append({'title': title, 'url': link, 'publisher': source, 'date': date_str})
         return items
