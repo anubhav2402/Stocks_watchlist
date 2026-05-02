@@ -1447,6 +1447,170 @@
   .prof-website a { color: var(--accent); text-decoration: none; }
   .prof-website a:hover { text-decoration: underline; }
   .prof-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); }
+
+  /* ══════════ EQUITY RESEARCH WORKBENCH ══════════ */
+  .rw-page { padding: 0; max-width: 1100px; margin: 0 auto; }
+
+  /* Home */
+  .rw-home { padding: 40px 40px 80px; }
+  .rw-home-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 400; margin-bottom: 24px; }
+  .rw-home-title em { font-style: italic; color: var(--accent); }
+  .rw-search-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .rw-ticker-input { flex: 1; max-width: 300px; font-size: 18px; font-weight: 700; letter-spacing: .06em; background: var(--paper-deep); border: 2px solid var(--rule); border-radius: 8px; padding: 10px 16px; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+  .rw-ticker-input:focus { outline: none; border-color: var(--accent); }
+  .rw-fetch-status { font-size: 12px; color: var(--ink-mute); min-height: 18px; margin-bottom: 28px; }
+  .rw-saved-head { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .rw-saved-list { display: flex; flex-direction: column; gap: 8px; }
+  .rw-saved-card { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color .15s; }
+  .rw-saved-card:hover { border-color: var(--accent); }
+  .rw-saved-ticker { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--accent); min-width: 70px; }
+  .rw-saved-name { font-size: 13px; color: var(--ink); flex: 1; }
+  .rw-saved-meta { font-size: 11px; color: var(--ink-mute); white-space: nowrap; }
+  .rw-saved-del { background: none; border: none; color: var(--ink-mute); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; }
+  .rw-saved-del:hover { color: var(--red); background: var(--red-bg); }
+  .rw-saved-rec { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+  .rw-saved-rec.buy { background: var(--green-bg); color: var(--green); }
+  .rw-saved-rec.sell,.rw-saved-rec.short { background: var(--red-bg); color: var(--red); }
+  .rw-saved-rec.hold,.rw-saved-rec.pass { background: var(--paper-deep); color: var(--ink-mute); border: 1px solid var(--rule); }
+  .rw-empty { text-align: center; color: var(--ink-mute); padding: 40px 0; font-size: 13px; }
+
+  /* Workbench chrome */
+  .rw-workbench { display: flex; flex-direction: column; }
+  .rw-wb-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 40px; border-bottom: 1px solid var(--rule); background: var(--paper); position: sticky; top: 72px; z-index: 40; gap: 16px; flex-wrap: wrap; }
+  .rw-wb-id { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .rw-wb-ticker { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .rw-wb-name { font-size: 14px; color: var(--ink); }
+  .rw-wb-sector { font-size: 11px; color: var(--ink-mute); }
+  .rw-wb-price { font-family: 'JetBrains Mono', monospace; font-size: 15px; color: var(--ink); }
+  .rw-wb-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .rw-saved-ts { font-size: 11px; color: var(--ink-mute); }
+
+  /* Section nav */
+  .rw-sec-nav { display: flex; gap: 4px; padding: 10px 40px; border-bottom: 1px solid var(--rule-soft); overflow-x: auto; background: var(--paper); position: sticky; top: 120px; z-index: 38; scrollbar-width: none; }
+  .rw-sec-nav::-webkit-scrollbar { display: none; }
+  .rw-sec-pill { background: none; border: 1px solid transparent; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; color: var(--ink-mute); cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .rw-sec-pill:hover, .rw-sec-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(181,52,26,.06); }
+
+  /* Section panels */
+  .rw-sections { padding: 24px 40px 80px; display: flex; flex-direction: column; gap: 14px; }
+  .rw-section { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .rw-sec-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; user-select: none; }
+  .rw-sec-head:hover { background: rgba(0,0,0,.02); }
+  .rw-sec-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--ink-faint); letter-spacing: .1em; min-width: 22px; }
+  .rw-sec-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; color: var(--ink); flex: 1; }
+  .rw-sec-title em { font-style: italic; color: var(--accent); }
+  .rw-sec-chevron { font-size: 11px; color: var(--ink-mute); transition: transform .2s; }
+  .rw-sec-chevron.open { transform: rotate(90deg); }
+  .rw-sec-body { padding: 0 18px 18px; display: none; }
+  .rw-sec-body.open { display: block; }
+
+  /* Auto vs manual field styles */
+  .rw-auto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .rw-auto-cell { background: var(--paper); border: 1px solid var(--rule-soft); border-radius: 6px; padding: 8px 12px; }
+  .rw-auto-label { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+  .rw-auto-badge { font-size: 9px; font-weight: 700; background: var(--rule-soft); color: var(--ink-faint); border-radius: 2px; padding: 1px 4px; letter-spacing: .04em; }
+  .rw-auto-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .rw-auto-val.positive { color: var(--green); }
+  .rw-auto-val.negative { color: var(--red); }
+  .rw-auto-val.warn { color: var(--gold); }
+
+  /* Form fields */
+  .rw-field { margin-bottom: 14px; }
+  .rw-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 5px; }
+  .rw-input, .rw-select, .rw-textarea { width: 100%; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 12px; font-size: 13px; color: var(--ink); font-family: inherit; transition: border-color .15s; }
+  .rw-input:focus, .rw-select:focus, .rw-textarea:focus { outline: none; border-color: var(--accent); }
+  .rw-textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
+  .rw-textarea.tall { min-height: 160px; }
+  .rw-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rw-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Divider within section */
+  .rw-divider { border: none; border-top: 1px solid var(--rule-soft); margin: 16px 0; }
+  .rw-sub-head { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mute); margin: 16px 0 10px; }
+
+  /* Conviction pills */
+  .rw-conv-row { display: flex; gap: 6px; }
+  .rw-conv-pill { background: var(--paper); border: 2px solid var(--rule); border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: var(--ink-mute); cursor: pointer; transition: all .15s; }
+  .rw-conv-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(181,52,26,.08); }
+
+  /* Scenario cards */
+  .rw-scenarios { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .rw-scenario { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+  .rw-scenario-label { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+  .rw-scenario.bull .rw-scenario-label { color: var(--green); }
+  .rw-scenario.base .rw-scenario-label { color: var(--gold); }
+  .rw-scenario.bear .rw-scenario-label { color: var(--red); }
+
+  /* Fundamentals table */
+  .rw-fin-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .rw-fin-table th { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-mute); padding: 6px 10px; border-bottom: 2px solid var(--rule); text-align: right; }
+  .rw-fin-table th:first-child { text-align: left; }
+  .rw-fin-table td { padding: 5px 10px; border-bottom: 1px solid var(--rule-soft); text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .rw-fin-table td:first-child { text-align: left; font-family: inherit; color: var(--ink-mute); font-size: 11px; }
+  .rw-fin-table tr.sub td { color: var(--ink-faint); font-size: 11px; }
+  .rw-fin-table tr.sub td:first-child { padding-left: 20px; }
+  .rw-fin-table .flag-red { color: var(--red); }
+  .rw-fin-table .flag-green { color: var(--green); }
+
+  /* Scorecard */
+  .rw-score-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .rw-score-row { display: grid; grid-template-columns: 180px 1fr 60px; align-items: center; gap: 12px; }
+  .rw-score-name { font-size: 12px; color: var(--ink); }
+  .rw-score-wt { font-size: 10px; color: var(--ink-mute); font-family: 'JetBrains Mono', monospace; }
+  .rw-score-pills { display: flex; gap: 4px; }
+  .rw-score-pill { width: 32px; height: 28px; border-radius: 4px; border: 1px solid var(--rule); background: var(--paper); font-size: 12px; font-weight: 700; color: var(--ink-mute); cursor: pointer; transition: all .12s; }
+  .rw-score-pill.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .rw-score-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink-mute); text-align: right; }
+
+  /* Final score display */
+  .rw-final-score { display: flex; align-items: center; gap: 20px; padding: 16px 18px; border-radius: 8px; margin-bottom: 16px; border: 2px solid var(--rule); }
+  .rw-final-score.strong-buy { border-color: var(--green); background: var(--green-bg); }
+  .rw-final-score.buy { border-color: var(--green); background: rgba(45,106,63,.08); }
+  .rw-final-score.hold { border-color: var(--gold); background: rgba(168,122,31,.08); }
+  .rw-final-score.pass { border-color: var(--rule); }
+  .rw-final-score-num { font-size: 42px; font-weight: 800; font-family: 'Fraunces', serif; line-height: 1; }
+  .rw-final-score.strong-buy .rw-final-score-num { color: var(--green); }
+  .rw-final-score.buy .rw-final-score-num { color: var(--green); }
+  .rw-final-score.hold .rw-final-score-num { color: var(--gold); }
+  .rw-final-score.pass .rw-final-score-num { color: var(--ink-mute); }
+  .rw-final-score-text { flex: 1; }
+  .rw-final-rec { font-size: 16px; font-weight: 700; }
+  .rw-final-sub { font-size: 12px; color: var(--ink-mute); margin-top: 3px; }
+
+  /* Multiples comparison table */
+  .rw-multiples-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
+
+  /* Valuation methods mini-table */
+  .rw-val-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .rw-val-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-mute); padding: 5px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
+  .rw-val-table th:first-child { text-align: left; }
+  .rw-val-table td { padding: 5px 8px; border-bottom: 1px solid var(--rule-soft); }
+  .rw-val-table input { background: none; border: none; font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--ink); width: 100%; text-align: right; padding: 2px 0; }
+  .rw-val-table input:focus { outline: none; background: var(--paper); border-radius: 3px; padding: 2px 4px; }
+  .rw-blended-target { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); }
+
+  /* Governance checklist */
+  .rw-checklist { display: flex; flex-direction: column; gap: 6px; }
+  .rw-check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink); }
+  .rw-check-item input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--accent); flex-shrink: 0; }
+
+  /* Monitoring rows */
+  .rw-monitor-rows { display: flex; flex-direction: column; gap: 8px; }
+  .rw-monitor-row { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
+
+  /* PWR live display */
+  .rw-pwr { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+  .rw-pwr.positive { color: var(--green); }
+  .rw-pwr.negative { color: var(--red); }
+
+  @media (max-width: 700px) {
+    .rw-home, .rw-sections { padding: 20px 18px 60px; }
+    .rw-wb-bar, .rw-sec-nav { padding: 10px 18px; }
+    .rw-scenarios, .rw-row-3 { grid-template-columns: 1fr; }
+    .rw-row { grid-template-columns: 1fr; }
+    .rw-score-row { grid-template-columns: 1fr; }
+    .rw-auto-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
@@ -1697,15 +1861,46 @@
     </div>
   </div>
 
-  <!-- ═══════════════ RESEARCH PAGE ═══════════════ -->
-  <div id="researchPage" class="research-page" hidden>
-    <div class="research-head">
-      <h2>Research <em>Notes</em></h2>
-      <button class="btn btn-primary" onclick="openResearchEditor(null, null)">+ New Note</button>
+  <!-- ═══════════════ RESEARCH WORKBENCH PAGE ═══════════════ -->
+  <div id="researchPage" class="rw-page" hidden>
+
+    <!-- Home: search + saved list -->
+    <div id="rwHome" class="rw-home">
+      <h2 class="rw-home-title">Equity <em>Research</em></h2>
+      <div class="rw-search-row">
+        <input id="rwTickerInput" class="rw-ticker-input" placeholder="AAPL · RELIANCE.NS · INFY.BO" maxlength="12" autocomplete="off" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')rwFetch()">
+        <button class="btn btn-primary" onclick="rwFetch()">Analyze →</button>
+      </div>
+      <div id="rwFetchStatus" class="rw-fetch-status"></div>
+      <div class="rw-saved-head">
+        Saved Analyses
+        <span class="pill zero" id="pageResearchCount">0</span>
+      </div>
+      <div id="rwSavedList" class="rw-saved-list">
+        <div class="rw-empty">No saved analyses yet. Enter a ticker above to start.</div>
+      </div>
     </div>
-    <div class="research-sub" id="researchSub">Your private research docs, stored locally.</div>
-    <div class="research-filter-bar" id="researchFilterBar"></div>
-    <div id="researchList" class="research-list"></div>
+
+    <!-- Workbench: active analysis -->
+    <div id="rwMain" class="rw-workbench" hidden>
+      <div class="rw-wb-bar">
+        <div class="rw-wb-id">
+          <span id="rwWbTicker" class="rw-wb-ticker"></span>
+          <span id="rwWbName" class="rw-wb-name"></span>
+          <span id="rwWbSector" class="rw-wb-sector"></span>
+          <span id="rwWbPrice" class="rw-wb-price"></span>
+        </div>
+        <div class="rw-wb-actions">
+          <span id="rwSavedTs" class="rw-saved-ts"></span>
+          <button class="btn btn-sm" onclick="rwExportJSON()">⤓ JSON</button>
+          <button class="btn btn-sm btn-primary" onclick="rwSaveNow()">Save</button>
+          <button class="btn btn-sm" onclick="rwGoHome()">← All</button>
+        </div>
+      </div>
+      <div class="rw-sec-nav" id="rwSecNav"></div>
+      <div id="rwSections" class="rw-sections"></div>
+    </div>
+
   </div>
 
   <!-- ═══════════════ RESEARCH EDITOR PAGE ═══════════════ -->
@@ -2232,7 +2427,7 @@ function switchPage(name) {
   document.getElementById('pageTabResearch').classList.toggle('active', name === 'research' || name === 'researchEditor');
   if (name === 'alerts') renderAlertsPage();
   if (name === 'discovery') fetchDiscovery();
-  if (name === 'research') renderResearchPage();
+  if (name === 'research') rwRenderHome();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3169,14 +3364,8 @@ function _uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-// ── Research tab pill update ─────────────────────────────────
-function updateResearchPill() {
-  const n = _researchCount();
-  const el = document.getElementById('pageResearchCount');
-  if (!el) return;
-  el.textContent = n;
-  el.classList.toggle('zero', n === 0);
-}
+// ── Research tab pill update (legacy notes — delegates to workbench counter) ──
+function updateResearchPill() { rwUpdatePill(); }
 
 // ── Research list page ───────────────────────────────────────
 let _researchFilterTicker = null;
@@ -3217,7 +3406,7 @@ function renderResearchPage() {
       <div class="research-card-title">${escHtml(doc.title || 'Untitled')}</div>
       <div class="research-card-preview">${escHtml((doc.content || '').replace(/\n/g, ' ').trim())}</div>
     </div>`).join('');
-  updateResearchPill();
+  rwUpdatePill();
 }
 
 function _setResearchFilter(ticker) {
@@ -3318,7 +3507,7 @@ function saveResearchDoc() {
   }
 
   _saveResearchData(data);
-  updateResearchPill();
+  rwUpdatePill();
   toast(`Note saved for ${ticker}`, 'success');
   _backFromEditorTo(_editorFrom, ticker);
 }
@@ -3332,7 +3521,7 @@ function deleteResearchDoc() {
     if (!data[_editorTicker].length) delete data[_editorTicker];
   }
   _saveResearchData(data);
-  updateResearchPill();
+  rwUpdatePill();
   toast('Note deleted', 'info');
   _backFromEditorTo(_editorFrom, _editorTicker);
 }
@@ -3349,13 +3538,840 @@ function _backFromEditorTo(from, ticker) {
 }
 
 // ════════════════════════════════════════════════════════════
+// EQUITY RESEARCH WORKBENCH
+// ════════════════════════════════════════════════════════════
+const RW_PREFIX = 'sp_rw2_';
+let _rwTicker = null;
+let _rwData = {};        // auto-fetched fundamentals
+let _rwFields = {};      // manual field values
+let _rwSaveTimer = null;
+
+// ── Storage helpers ──────────────────────────────────────────
+function rwListSaved() {
+  return Object.keys(localStorage)
+    .filter(k => k.startsWith(RW_PREFIX))
+    .map(k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } })
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.lastSaved) - new Date(a.lastSaved));
+}
+function rwLoad(ticker) {
+  try { return JSON.parse(localStorage.getItem(RW_PREFIX + ticker)) || null; } catch { return null; }
+}
+function rwSaveToStorage() {
+  if (!_rwTicker) return;
+  const payload = {
+    ticker: _rwTicker,
+    name: _rwData.name || _rwTicker,
+    lastSaved: new Date().toISOString(),
+    fundamentals: _rwData,
+    fields: _rwFields,
+  };
+  try { localStorage.setItem(RW_PREFIX + _rwTicker, JSON.stringify(payload)); } catch {}
+  document.getElementById('rwSavedTs').textContent = 'Saved ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  rwUpdatePill();
+}
+function rwSaveNow() { rwCollectFields(); rwSaveToStorage(); toast('Analysis saved', 'success'); }
+function rwAutoSave() {
+  clearTimeout(_rwSaveTimer);
+  _rwSaveTimer = setTimeout(() => { rwCollectFields(); rwSaveToStorage(); }, 2000);
+}
+function rwUpdatePill() {
+  const saved = rwListSaved();
+  const el = document.getElementById('pageResearchCount');
+  if (!el) return;
+  el.textContent = saved.length;
+  el.classList.toggle('zero', saved.length === 0);
+}
+
+// ── Home page ─────────────────────────────────────────────────
+function rwRenderHome() {
+  document.getElementById('rwHome').hidden = false;
+  document.getElementById('rwMain').hidden = true;
+  const saved = rwListSaved();
+  rwUpdatePill();
+  const listEl = document.getElementById('rwSavedList');
+  if (!saved.length) {
+    listEl.innerHTML = '<div class="rw-empty">No saved analyses yet. Enter a ticker above to start.</div>';
+    return;
+  }
+  listEl.innerHTML = saved.map(s => {
+    const rec = (s.fields?.recommendation || '').toLowerCase();
+    const recLabel = rec ? `<span class="rw-saved-rec ${rec}">${rec.toUpperCase()}</span>` : '';
+    return `<div class="rw-saved-card" onclick="rwOpenSaved('${escAttr(s.ticker)}')">
+      <span class="rw-saved-ticker">${escHtml(s.ticker)}</span>
+      ${recLabel}
+      <span class="rw-saved-name">${escHtml(s.name || s.ticker)}</span>
+      <span class="rw-saved-meta">${_fmtResearchDate(s.lastSaved)}</span>
+      <button class="rw-saved-del" onclick="event.stopPropagation();rwDelete('${escAttr(s.ticker)}')" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+function rwGoHome() { _rwTicker = null; _rwData = {}; _rwFields = {}; rwRenderHome(); }
+function rwDelete(ticker) {
+  if (!confirm(`Delete analysis for ${ticker}?`)) return;
+  localStorage.removeItem(RW_PREFIX + ticker);
+  rwRenderHome();
+  toast(`${ticker} analysis deleted`, 'info');
+}
+
+// ── Fetch fundamentals ────────────────────────────────────────
+async function rwFetch() {
+  const input = document.getElementById('rwTickerInput');
+  const ticker = input.value.trim().toUpperCase();
+  if (!ticker) { input.focus(); return; }
+  if (!BACKEND_URL) { toast('Backend not configured', 'error'); return; }
+
+  const statusEl = document.getElementById('rwFetchStatus');
+  statusEl.textContent = `Fetching ${ticker}…`;
+  document.querySelector('#rwHome .btn-primary').disabled = true;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/research/fundamentals/${ticker}`, { signal: timeoutSignal(25000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    _rwTicker = ticker;
+    _rwData = data;
+    // Restore saved fields if any
+    const saved = rwLoad(ticker);
+    _rwFields = saved ? { ...saved.fields } : {};
+
+    statusEl.textContent = '';
+    input.value = '';
+    rwShowWorkbench();
+    toast(`Loaded ${data.name || ticker}`, 'success');
+  } catch (e) {
+    statusEl.textContent = `Error: ${e.message}`;
+    toast('Fetch failed — you can still fill in manually', 'error');
+    // Still open workbench in manual mode
+    _rwTicker = ticker;
+    _rwData = { ticker, name: ticker };
+    _rwFields = {};
+    const saved = rwLoad(ticker);
+    if (saved) _rwFields = { ...saved.fields };
+    statusEl.textContent = '';
+    input.value = '';
+    rwShowWorkbench();
+  } finally {
+    document.querySelector('#rwHome .btn-primary').disabled = false;
+  }
+}
+function rwOpenSaved(ticker) {
+  const saved = rwLoad(ticker);
+  if (!saved) return;
+  _rwTicker = ticker;
+  _rwData = saved.fundamentals || { ticker, name: ticker };
+  _rwFields = saved.fields || {};
+  rwShowWorkbench();
+}
+
+// ── Workbench render ──────────────────────────────────────────
+function rwShowWorkbench() {
+  document.getElementById('rwHome').hidden = true;
+  document.getElementById('rwMain').hidden = false;
+  const d = _rwData;
+  document.getElementById('rwWbTicker').textContent = _rwTicker;
+  document.getElementById('rwWbName').textContent = d.name || '';
+  document.getElementById('rwWbSector').textContent = d.sector ? `${d.sector} · ${d.industry || ''}` : '';
+  document.getElementById('rwWbPrice').textContent = d.price ? `${d.currency || '$'} ${d.price.toLocaleString()}` : '';
+  const saved = rwLoad(_rwTicker);
+  document.getElementById('rwSavedTs').textContent = saved ? 'Last saved ' + _fmtResearchDate(saved.lastSaved) : '';
+  rwBuildSections();
+  rwPopulateAuto();
+  rwRestoreFields();
+  rwUpdateScorecard();
+  rwUpdatePWR();
+  rwUpdateBlended();
+  rwBuildSecNav();
+  // Auto-save on any input change
+  document.getElementById('rwSections').addEventListener('input', rwAutoSave, { once: false });
+  document.getElementById('rwSections').addEventListener('change', rwAutoSave, { once: false });
+  // Ctrl/Cmd+S
+  document.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); rwSaveNow(); } };
+}
+
+// ── Build section nav ─────────────────────────────────────────
+const RW_SECTIONS = [
+  ['01','Executive Summary'], ['02','Pre-Work'],
+  ['03','Business & Industry'], ['04','Fundamentals'],
+  ['05','Forward View'], ['06','Valuation'],
+  ['07','Technical'], ['08','Catalysts & Risk'],
+  ['09','Position Sizing'], ['10','Scorecard'],
+  ['11','Monitoring']
+];
+function rwBuildSecNav() {
+  document.getElementById('rwSecNav').innerHTML = RW_SECTIONS.map(([n, t]) =>
+    `<button class="rw-sec-pill" onclick="rwScrollTo('${n}')">${n} ${t}</button>`
+  ).join('');
+}
+function rwScrollTo(n) {
+  const el = document.getElementById('rwS' + n);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function rwToggle(n) {
+  const body = document.getElementById('rwB' + n);
+  const chev = document.getElementById('rwC' + n);
+  const open = body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', open);
+}
+
+// ── Build sections HTML ───────────────────────────────────────
+function rwBuildSections() {
+  document.getElementById('rwSections').innerHTML = RW_SECTIONS.map(([n]) => rwSectionHtml(n)).join('');
+}
+
+function _rwSec(n, titleHtml, bodyHtml, openByDefault = false) {
+  return `<section class="rw-section" id="rwS${n}">
+    <div class="rw-sec-head" onclick="rwToggle('${n}')">
+      <span class="rw-sec-num">${n}</span>
+      <h3 class="rw-sec-title">${titleHtml}</h3>
+      <span class="rw-sec-chevron ${openByDefault ? 'open' : ''}" id="rwC${n}">▸</span>
+    </div>
+    <div class="rw-sec-body ${openByDefault ? 'open' : ''}" id="rwB${n}">${bodyHtml}</div>
+  </section>`;
+}
+function _rwAutoCell(id, label) {
+  return `<div class="rw-auto-cell"><div class="rw-auto-label"><span class="rw-auto-badge">AUTO</span>${label}</div><div class="rw-auto-val" id="${id}">—</div></div>`;
+}
+function _rwField(label, inputHtml) {
+  return `<div class="rw-field"><label class="rw-label">${label}</label>${inputHtml}</div>`;
+}
+function _rwInput(field, placeholder='', type='text') {
+  return `<input type="${type}" class="rw-input" data-rw="${field}" placeholder="${placeholder}">`;
+}
+function _rwTextarea(field, placeholder='', tall=false) {
+  return `<textarea class="rw-textarea${tall?' tall':''}" data-rw="${field}" placeholder="${placeholder}"></textarea>`;
+}
+function _rwSelect(field, options) {
+  return `<select class="rw-select" data-rw="${field}">${options.map(o => `<option value="${o.v||o}">${o.l||o}</option>`).join('')}</select>`;
+}
+
+function rwSectionHtml(n) {
+  switch(n) {
+    case '01': return _rwSec('01', 'Executive <em>Summary</em>', `
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_name','Company')}${_rwAutoCell('rwA_sector','Sector')}
+        ${_rwAutoCell('rwA_price','Price')}${_rwAutoCell('rwA_mktcap','Mkt Cap')}
+        ${_rwAutoCell('rwA_target_mean','Consensus Target')}${_rwAutoCell('rwA_num_analysts','Analysts')}
+        ${_rwAutoCell('rwA_recommendation','Sell-side Rec')}${_rwAutoCell('rwA_upside','Implied Upside')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-row">
+        ${_rwField('Your Recommendation', _rwSelect('recommendation', [{v:'',l:'— Select —'},{v:'BUY',l:'BUY'},{v:'HOLD',l:'HOLD'},{v:'SELL',l:'SELL'},{v:'SHORT',l:'SHORT'},{v:'PASS',l:'PASS'}]))}
+        ${_rwField('Your Price Target', _rwInput('your_target','e.g. 220.00','number'))}
+      </div>
+      <div class="rw-row">
+        ${_rwField('Time Horizon', _rwInput('time_horizon','e.g. 12–18 months'))}
+        ${_rwField('Conviction (1–5)', `<div class="rw-conv-row">${[1,2,3,4,5].map(i=>`<button type="button" class="rw-conv-pill" data-conv="${i}" onclick="rwSetConv(${i})">${i}</button>`).join('')}</div>`)}
+      </div>
+      ${_rwField('One-line Thesis', _rwTextarea('thesis','Why do you own this? One sentence.'))}
+      ${_rwField('Variant View — What does the market have wrong?', _rwTextarea('variant_view','The consensus is wrong because…'))}
+      <div class="rw-sub-head">Three Pillars That Must Be True</div>
+      <div class="rw-row-3">
+        ${_rwField('Pillar 1', _rwInput('pillar_1','e.g. Margin expansion sustains'))}
+        ${_rwField('Pillar 2', _rwInput('pillar_2','e.g. TAM growth accelerates'))}
+        ${_rwField('Pillar 3', _rwInput('pillar_3','e.g. Management executes buybacks'))}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Scenario Analysis</div>
+      <div class="rw-scenarios">
+        <div class="rw-scenario bull">
+          <div class="rw-scenario-label">Bull</div>
+          ${_rwField('Probability %', _rwInput('bull_prob','35','number'))}
+          ${_rwField('Price Target', _rwInput('bull_target','','number'))}
+          ${_rwField('Return %', _rwInput('bull_return','','number'))}
+        </div>
+        <div class="rw-scenario base">
+          <div class="rw-scenario-label">Base</div>
+          ${_rwField('Probability %', _rwInput('base_prob','45','number'))}
+          ${_rwField('Price Target', _rwInput('base_target','','number'))}
+          ${_rwField('Return %', _rwInput('base_return','','number'))}
+        </div>
+        <div class="rw-scenario bear">
+          <div class="rw-scenario-label">Bear</div>
+          ${_rwField('Probability %', _rwInput('bear_prob','20','number'))}
+          ${_rwField('Price Target', _rwInput('bear_target','','number'))}
+          ${_rwField('Return %', _rwInput('bear_return','','number'))}
+        </div>
+      </div>
+      <div class="rw-sub-head">Probability-Weighted Return</div>
+      <div class="rw-pwr" id="rwPWR">—</div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-top:4px" id="rwPWRNote"></div>
+    `, true);
+
+    case '02': return _rwSec('02', 'Pre-Work / <em>Screen</em>', `
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_beta','Beta')}${_rwAutoCell('rwA_avg_vol','Avg Daily Volume')}
+        ${_rwAutoCell('rwA_float','Float (M)')}${_rwAutoCell('rwA_short_pct','Short Interest %')}
+        ${_rwAutoCell('rwA_short_ratio','Short Ratio')}${_rwAutoCell('rwA_insider','Insider Own %')}
+        ${_rwAutoCell('rwA_institution','Institution Own %')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Governance Red Flags</div>
+      <div class="rw-checklist">
+        ${['Founder/CEO controls >50% voting','Related-party transactions flagged','Auditor changed in last 2 years','Restatements or PCAOB issues','Executive compensation misaligned','Aggressive revenue recognition history','ESG / legal overhang'].map((t,i)=>
+          `<label class="rw-check-item"><input type="checkbox" data-rw="gov_flag_${i}"> ${t}</label>`
+        ).join('')}
+      </div>
+      <hr class="rw-divider">
+      ${_rwField('Accounting Quality Notes', _rwTextarea('accounting_quality','Cash conversion trend, receivables growth vs revenue, any aggressive accruals?'))}
+      ${_rwField('Why Now? — Timing catalyst', _rwTextarea('why_now','What has changed or is about to change that makes this the right time?'))}
+    `);
+
+    case '03': return _rwSec('03', 'Business & <em>Industry</em>', `
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_gm','Gross Margin')}${_rwAutoCell('rwA_om','Op Margin')}
+        ${_rwAutoCell('rwA_nm','Net Margin')}${_rwAutoCell('rwA_employees','Employees')}
+      </div>
+      <div id="rwAutoDesc" style="font-size:12px;color:var(--ink-mute);line-height:1.6;background:var(--paper);border:1px solid var(--rule-soft);border-radius:6px;padding:10px 12px;margin-bottom:14px;max-height:120px;overflow-y:auto"></div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Moat Assessment</div>
+      ${_rwField('Network Effects', _rwTextarea('moat_network','Does the product get more valuable as more people use it?'))}
+      ${_rwField('Switching Costs', _rwTextarea('moat_switching','How expensive/painful is it for customers to leave?'))}
+      ${_rwField('Cost Advantage / Scale', _rwTextarea('moat_cost','Does scale give a structural cost advantage vs competitors?'))}
+      ${_rwField('Intangibles (Brand, IP, Licenses)', _rwTextarea('moat_intangibles','What intangible assets create pricing power?'))}
+      <div class="rw-row">
+        ${_rwField('Moat Score (1–5)', _rwSelect('moat_score',[{v:'',l:'— Select —'},{v:'1',l:'1 – None'},{v:'2',l:'2 – Narrow'},{v:'3',l:'3 – Moderate'},{v:'4',l:'4 – Wide'},{v:'5',l:'5 – Exceptional'}]))}
+        ${_rwField('Moat Trajectory', _rwSelect('moat_trajectory',[{v:'',l:'— Select —'},{v:'widening',l:'↑ Widening'},{v:'stable',l:'→ Stable'},{v:'narrowing',l:'↓ Narrowing'}]))}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-row-3">
+        ${_rwField('TAM ($B)', _rwInput('tam','Total addressable market','number'))}
+        ${_rwField('SAM ($B)', _rwInput('sam','Serviceable addressable market','number'))}
+        ${_rwField('Market Share %', _rwInput('market_share','Current market share','number'))}
+      </div>
+      ${_rwField('Management Quality Assessment', _rwTextarea('mgmt_quality','Track record, capital allocation, skin in the game, communication quality?', true))}
+    `);
+
+    case '04': return _rwSec('04', '<em>Fundamentals</em>', `
+      <div class="rw-sub-head">Income Statement <span style="font-weight:400;color:var(--ink-faint)">(Values in $M · most recent first)</span></div>
+      <div style="overflow-x:auto"><table class="rw-fin-table" id="rwFinTable"><tr><td colspan="5" style="color:var(--ink-mute);font-size:12px;padding:20px 0">Loading…</td></tr></table></div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Balance Sheet</div>
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_debt','Total Debt ($M)')}${_rwAutoCell('rwA_cash','Cash ($M)')}
+        ${_rwAutoCell('rwA_equity','Equity ($M)')}${_rwAutoCell('rwA_net_debt','Net Debt ($M)')}
+        ${_rwAutoCell('rwA_nd_ebitda','Net Debt / EBITDA')}${_rwAutoCell('rwA_goodwill','Goodwill+Intangibles ($M)')}
+        ${_rwAutoCell('rwA_roe','ROE %')}${_rwAutoCell('rwA_roa','ROA %')}
+        ${_rwAutoCell('rwA_roic','ROIC % (est)')}${_rwAutoCell('rwA_d2e','Debt/Equity')}
+        ${_rwAutoCell('rwA_current_ratio','Current Ratio')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Cash Flow <span style="font-weight:400;color:var(--ink-faint)">($M)</span></div>
+      <div style="overflow-x:auto"><table class="rw-fin-table" id="rwCfTable"><tr><td colspan="5" style="color:var(--ink-mute);font-size:12px">—</td></tr></table></div>
+      ${_rwField('Analyst Commentary / Override Notes', _rwTextarea('fundamentals_notes','Any overrides, non-recurring items, or commentary on quality of earnings?'))}
+    `);
+
+    case '05': return _rwSec('05', 'Forward <em>View</em>', `
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_fwd_eps','Consensus Fwd EPS')}${_rwAutoCell('rwA_trailing_eps','Trailing EPS')}
+        ${_rwAutoCell('rwA_num_analysts_2','No. of Analysts')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Your Estimates vs Consensus</div>
+      <div class="rw-row-3">
+        ${_rwField('Your Revenue Est ($M)', _rwInput('your_rev_est','','number'))}
+        ${_rwField('Your EBITDA Est ($M)', _rwInput('your_ebitda_est','','number'))}
+        ${_rwField('Your EPS Est', _rwInput('your_eps_est','','number'))}
+      </div>
+      ${_rwField('Bull Case for Forward Estimates', _rwTextarea('forward_bull','What drives upside to consensus?'))}
+      ${_rwField('Key Channel Check Insight', _rwTextarea('channel_check','What has your primary research revealed that consensus is missing?'))}
+      ${_rwField('Margin Path Commentary', _rwTextarea('margin_path','Operating leverage, pricing power, input cost trajectory, SG&A leverage?'))}
+    `);
+
+    case '06': return _rwSec('06', '<em>Valuation</em>', `
+      <div class="rw-sub-head">Current Multiples</div>
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_pe','P/E (TTM)')}${_rwAutoCell('rwA_fwd_pe','Fwd P/E')}
+        ${_rwAutoCell('rwA_ev_ebitda','EV/EBITDA')}${_rwAutoCell('rwA_ev_rev','EV/Revenue')}
+        ${_rwAutoCell('rwA_pb','P/Book')}${_rwAutoCell('rwA_ps','P/Sales')}
+        ${_rwAutoCell('rwA_div_yield','Div Yield')}${_rwAutoCell('rwA_payout','Payout Ratio')}
+      </div>
+      <div class="rw-auto-grid" style="margin-bottom:16px">
+        ${_rwAutoCell('rwA_tgt_low','Analyst Target Low')}${_rwAutoCell('rwA_tgt_mean','Analyst Target Mean')}
+        ${_rwAutoCell('rwA_tgt_high','Analyst Target High')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Valuation Methods</div>
+      <table class="rw-val-table">
+        <thead><tr><th>Method</th><th>Implied Price</th><th>Weight %</th><th>Note</th></tr></thead>
+        <tbody>
+          ${['DCF','EV/EBITDA','P/E','EV/Revenue','SOTP / Other'].map((m,i)=>`<tr>
+            <td style="font-size:12px;color:var(--ink-mute)">${m}</td>
+            <td><input data-rw="val_price_${i}" placeholder="—" type="number" style="background:none;border:none;width:80px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)"></td>
+            <td><input data-rw="val_wt_${i}" placeholder="—" type="number" style="background:none;border:none;width:60px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)" oninput="rwUpdateBlended()"></td>
+            <td><input data-rw="val_note_${i}" placeholder="key assumption" style="background:none;border:none;width:100%;font-size:11px;color:var(--ink-mute)"></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="rw-sub-head">Blended Price Target</div>
+      <div class="rw-blended-target" id="rwBlended">—</div>
+      <hr class="rw-divider">
+      <div class="rw-row">
+        ${_rwField('DCF: WACC %', _rwInput('dcf_wacc','e.g. 9.5','number'))}
+        ${_rwField('DCF: Terminal Growth %', _rwInput('dcf_tgr','e.g. 3.0','number'))}
+      </div>
+      <div class="rw-row">
+        ${_rwField('DCF: Revenue CAGR (5yr) %', _rwInput('dcf_cagr','e.g. 12','number'))}
+        ${_rwField('DCF: Terminal Margin %', _rwInput('dcf_margin','e.g. 18','number'))}
+      </div>
+      ${_rwField('Reverse DCF — What is the market pricing in?', _rwTextarea('reverse_dcf','At the current price, what revenue growth / margin expansion must occur to justify the valuation? Is that reasonable?'))}
+    `);
+
+    case '07': return _rwSec('07', 'Technical & <em>Positioning</em>', `
+      <div class="rw-auto-grid">
+        ${_rwAutoCell('rwA_vs50','vs 50-DMA')}${_rwAutoCell('rwA_vs200','vs 200-DMA')}
+        ${_rwAutoCell('rwA_rsi','RSI (14)')}${_rwAutoCell('rwA_range','52w Range Position')}
+        ${_rwAutoCell('rwA_52h','52w High')}${_rwAutoCell('rwA_52l','52w Low')}
+        ${_rwAutoCell('rwA_short_pct_2','Short Interest %')}${_rwAutoCell('rwA_short_ratio_2','Days to Cover')}
+        ${_rwAutoCell('rwA_insider_2','Insider Own %')}${_rwAutoCell('rwA_inst_2','Institutional Own %')}
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-row">
+        ${_rwField('Key Support Level', _rwInput('support','e.g. 185.00'))}
+        ${_rwField('Key Resistance Level', _rwInput('resistance','e.g. 220.00'))}
+      </div>
+      ${_rwField('Relative Strength vs Sector', _rwTextarea('rel_strength','Is it outperforming/underperforming its sector? Any divergences?'))}
+      ${_rwField('Options / Positioning Signals', _rwTextarea('options_signals','IV, put/call ratio, skew, crowdedness. Any unusual options activity?'))}
+    `);
+
+    case '08': return _rwSec('08', 'Catalysts & <em>Risk</em>', `
+      <div class="rw-auto-grid">${_rwAutoCell('rwA_earn_date','Next Earnings Date')}</div>
+      ${_rwField('Near-term Catalyst Calendar', _rwTextarea('catalysts','List upcoming catalysts with dates: earnings, product launches, regulatory decisions, analyst days, capital allocation events…'))}
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Risk Register</div>
+      ${['Thesis-break risk','Macro / rates sensitivity','Regulatory / antitrust','Technology disruption','Key-person / management','Geopolitical / FX','Balance sheet / liquidity','Execution / delivery'].map((r,i)=>`
+        <div style="margin-bottom:12px">
+          <div class="rw-label" style="margin-bottom:4px">${r}</div>
+          <div class="rw-row-3">
+            <div class="rw-field" style="margin-bottom:0">${_rwSelect(`risk_prob_${i}`,[{v:'',l:'Probability'},{v:'low',l:'Low'},{v:'med',l:'Medium'},{v:'high',l:'High'}])}</div>
+            <div class="rw-field" style="margin-bottom:0">${_rwSelect(`risk_sev_${i}`,[{v:'',l:'Severity'},{v:'low',l:'Low'},{v:'med',l:'Medium'},{v:'high',l:'High'},{v:'critical',l:'Critical'}])}</div>
+            <div class="rw-field" style="margin-bottom:0"><input type="text" class="rw-input" data-rw="risk_mit_${i}" placeholder="Mitigant…" style="font-size:12px"></div>
+          </div>
+        </div>`).join('')}
+    `);
+
+    case '09': return _rwSec('09', 'Position <em>Sizing</em>', `
+      <div class="rw-row-3">
+        ${_rwField('Upside to Target %', _rwInput('pos_upside','e.g. 35','number'))}
+        ${_rwField('Downside to Stop %', _rwInput('pos_downside','e.g. 15','number'))}
+        ${_rwField('Upside / Downside Ratio', `<div class="rw-auto-val" id="rwUDRatio" style="padding:8px 12px;background:var(--paper);border:1px solid var(--rule);border-radius:6px">—</div>`)}
+      </div>
+      <div class="rw-row-3">
+        ${_rwField('Recommended Position %', _rwInput('pos_size','e.g. 3.0','number'))}
+        ${_rwField('Initial Entry %', _rwInput('pos_entry','e.g. 1.5','number'))}
+        ${_rwField('Stop Loss Price', _rwInput('pos_stop','e.g. 180.00','number'))}
+      </div>
+      ${_rwField('Portfolio Fit / Factor Exposures', _rwTextarea('pos_factors','Sector concentration, factor tilts (growth/value/momentum), correlation to existing positions?'))}
+      ${_rwField('Hedge / Pair Trade Candidate', _rwInput('pos_hedge','e.g. Short XYZ as sector hedge'))}
+    `);
+
+    case '10': return _rwSec('10', '<em>Scorecard</em> & Decision', `
+      <div id="rwFinalScoreCard" class="rw-final-score pass" style="margin-bottom:20px">
+        <div class="rw-final-score-num" id="rwFinalNum">—</div>
+        <div class="rw-final-score-text">
+          <div class="rw-final-rec" id="rwFinalRec">Complete the scorecard below</div>
+          <div class="rw-final-sub" id="rwFinalSub">Score 7 dimensions · weighted average</div>
+        </div>
+      </div>
+      <div class="rw-score-rows" id="rwScoreRows"></div>
+      <hr class="rw-divider">
+      <div class="rw-row">
+        ${_rwField('Final Decision', _rwSelect('final_decision',[{v:'',l:'— Decide —'},{v:'BUY',l:'BUY'},{v:'HOLD',l:'HOLD'},{v:'SELL',l:'SELL'},{v:'SHORT',l:'SHORT'},{v:'PASS',l:'PASS'}]))}
+        ${_rwField('Stop Loss Price', _rwInput('final_stop','e.g. 185.00'))}
+      </div>
+      ${_rwField('PM Memo', _rwTextarea('pm_memo','Your full investment memo. Thesis, variant view, key risks, catalysts, exit criteria. Write it like you need to defend it in an IC meeting.', true))}
+    `);
+
+    case '11': return _rwSec('11', '<em>Monitoring</em> Plan', `
+      <div class="rw-sub-head">Thesis Tracker</div>
+      ${[0,1,2].map(i=>`<div class="rw-monitor-row" style="margin-bottom:8px">
+        ${_rwInput(`thesis_assum_${i}`,'Assumption to track…')}
+        ${_rwSelect(`thesis_status_${i}`,[{v:'',l:'Status'},{v:'on_track',l:'✓ On Track'},{v:'concern',l:'⚠ Concern'},{v:'broken',l:'✗ Broken'}])}
+      </div>`).join('')}
+      <hr class="rw-divider">
+      <div class="rw-sub-head">KPI Dashboard</div>
+      ${[0,1,2].map(i=>`<div class="rw-row" style="margin-bottom:8px">
+        ${_rwInput(`kpi_name_${i}`,'KPI name')}
+        ${_rwInput(`kpi_threshold_${i}`,'Threshold to watch')}
+      </div>`).join('')}
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Sell Discipline</div>
+      ${_rwField('Thesis Break Trigger', _rwTextarea('sell_thesis_break','What single event would force you to immediately exit?'))}
+      <div class="rw-row">
+        ${_rwField('Time Stop', _rwInput('sell_time_stop','e.g. Exit if no re-rate by Dec 2026'))}
+        ${_rwField('Max Drawdown Before Exit %', _rwInput('sell_max_dd','e.g. 20','number'))}
+      </div>
+    `);
+
+    default: return '';
+  }
+}
+
+// ── Populate auto-filled fields ────────────────────────────────
+function _setAuto(id, val, suffix = '', cls = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val === null || val === undefined || val === '') { el.textContent = '—'; return; }
+  el.textContent = val + suffix;
+  if (cls) el.className = 'rw-auto-val ' + cls;
+}
+function _fmtM(v) { // format $M with B/M suffix
+  if (v === null || v === undefined) return '—';
+  if (Math.abs(v) >= 1000) return '$' + (v / 1000).toFixed(1) + 'B';
+  return '$' + v.toFixed(0) + 'M';
+}
+function _fmtPct(v) { return v !== null && v !== undefined ? v.toFixed(1) + '%' : '—'; }
+function _fmtNum(v, d=2) { return v !== null && v !== undefined ? v.toFixed(d) : '—'; }
+
+function rwPopulateAuto() {
+  const d = _rwData;
+  if (!d || !d.price) return;
+
+  const upside = d.target_mean && d.price ? ((d.target_mean - d.price) / d.price * 100).toFixed(1) + '%' : '—';
+  const upsideCls = d.target_mean > d.price ? 'positive' : 'negative';
+
+  _setAuto('rwA_name', d.name);
+  _setAuto('rwA_sector', d.sector + (d.industry ? ' · ' + d.industry : ''));
+  _setAuto('rwA_price', d.currency + ' ' + (d.price || '—'));
+  _setAuto('rwA_mktcap', _fmtM(d.market_cap_m));
+  _setAuto('rwA_target_mean', d.target_mean ? d.currency + ' ' + d.target_mean : '—');
+  _setAuto('rwA_num_analysts', d.num_analysts || '—');
+  _setAuto('rwA_recommendation', (d.recommendation || '—').toUpperCase());
+  _setAuto('rwA_upside', upside, '', upsideCls);
+
+  // Pre-work
+  _setAuto('rwA_beta', _fmtNum(d.beta));
+  _setAuto('rwA_avg_vol', d.avg_volume ? (d.avg_volume / 1e6).toFixed(2) + 'M' : '—');
+  _setAuto('rwA_float', d.float_shares_m ? _fmtM(d.float_shares_m) : '—');
+  _setAuto('rwA_short_pct', d.short_percent ? d.short_percent + '%' : '—');
+  _setAuto('rwA_short_ratio', _fmtNum(d.short_ratio, 1));
+  _setAuto('rwA_insider', d.insider_pct ? d.insider_pct + '%' : '—');
+  _setAuto('rwA_institution', d.institution_pct ? d.institution_pct + '%' : '—');
+
+  // Business
+  _setAuto('rwA_gm', d.gross_margin_pct ? d.gross_margin_pct + '%' : '—');
+  _setAuto('rwA_om', d.op_margin_pct ? d.op_margin_pct + '%' : '—');
+  _setAuto('rwA_nm', d.net_margin_pct ? d.net_margin_pct + '%' : '—');
+  _setAuto('rwA_employees', d.employees ? d.employees.toLocaleString() : '—');
+  const descEl = document.getElementById('rwAutoDesc');
+  if (descEl) descEl.textContent = d.description || '—';
+
+  // Balance sheet
+  _setAuto('rwA_debt', _fmtM(d.total_debt));
+  _setAuto('rwA_cash', _fmtM(d.total_cash));
+  _setAuto('rwA_equity', _fmtM(d.total_equity));
+  _setAuto('rwA_net_debt', _fmtM(d.net_debt));
+  const ndEbitdaCls = d.nd_ebitda > 3 ? 'warn' : d.nd_ebitda < 0 ? 'positive' : '';
+  _setAuto('rwA_nd_ebitda', _fmtNum(d.nd_ebitda), 'x', ndEbitdaCls);
+  _setAuto('rwA_goodwill', _fmtM(d.goodwill));
+  _setAuto('rwA_roe', d.roe ? d.roe + '%' : '—');
+  _setAuto('rwA_roa', d.roa ? d.roa + '%' : '—');
+  _setAuto('rwA_roic', d.roic ? d.roic + '%' : '—', '', d.roic > 10 ? 'positive' : d.roic > 0 ? '' : 'negative');
+  _setAuto('rwA_d2e', _fmtNum(d.debt_to_equity, 1));
+  _setAuto('rwA_current_ratio', _fmtNum(d.current_ratio, 2));
+
+  // Forward view
+  _setAuto('rwA_fwd_eps', _fmtNum(d.fwd_eps));
+  _setAuto('rwA_trailing_eps', _fmtNum(d.trailing_eps));
+  _setAuto('rwA_num_analysts_2', d.num_analysts || '—');
+
+  // Valuation multiples
+  _setAuto('rwA_pe', _fmtNum(d.pe, 1));
+  _setAuto('rwA_fwd_pe', _fmtNum(d.fwd_pe, 1));
+  _setAuto('rwA_ev_ebitda', _fmtNum(d.ev_ebitda, 1));
+  _setAuto('rwA_ev_rev', _fmtNum(d.ev_revenue, 2));
+  _setAuto('rwA_pb', _fmtNum(d.pb, 2));
+  _setAuto('rwA_ps', _fmtNum(d.ps, 2));
+  _setAuto('rwA_div_yield', d.dividend_yield ? (d.dividend_yield * 100).toFixed(2) + '%' : '—');
+  _setAuto('rwA_payout', d.payout_ratio ? (d.payout_ratio * 100).toFixed(1) + '%' : '—');
+  _setAuto('rwA_tgt_low', d.target_low || '—');
+  _setAuto('rwA_tgt_mean', d.target_mean || '—');
+  _setAuto('rwA_tgt_high', d.target_high || '—');
+
+  // Technicals
+  const vs50Cls = d.price_vs_50 > 0 ? 'positive' : 'negative';
+  const vs200Cls = d.price_vs_200 > 0 ? 'positive' : 'negative';
+  const rsiCls = d.rsi14 > 70 ? 'warn' : d.rsi14 < 30 ? 'positive' : '';
+  _setAuto('rwA_vs50', d.price_vs_50 !== null ? (d.price_vs_50 > 0 ? '+' : '') + d.price_vs_50 + '%' : '—', '', vs50Cls);
+  _setAuto('rwA_vs200', d.price_vs_200 !== null ? (d.price_vs_200 > 0 ? '+' : '') + d.price_vs_200 + '%' : '—', '', vs200Cls);
+  _setAuto('rwA_rsi', d.rsi14 || '—', '', rsiCls);
+  _setAuto('rwA_range', d.range_pos_52w ? d.range_pos_52w + '%' : '—');
+  _setAuto('rwA_52h', d.high_52w || '—');
+  _setAuto('rwA_52l', d.low_52w || '—');
+  _setAuto('rwA_short_pct_2', d.short_percent ? d.short_percent + '%' : '—');
+  _setAuto('rwA_short_ratio_2', _fmtNum(d.short_ratio, 1));
+  _setAuto('rwA_insider_2', d.insider_pct ? d.insider_pct + '%' : '—');
+  _setAuto('rwA_inst_2', d.institution_pct ? d.institution_pct + '%' : '—');
+
+  // Calendar
+  _setAuto('rwA_earn_date', d.earnings_date || '—');
+
+  // Income & CF tables
+  rwBuildFinTable();
+  rwBuildCfTable();
+}
+
+// ── Fundamentals tables ───────────────────────────────────────
+function rwBuildFinTable() {
+  const d = _rwData;
+  const yrs = d.fiscal_years || [];
+  const el = document.getElementById('rwFinTable');
+  if (!el) return;
+  if (!yrs.length) { el.innerHTML = '<tr><td colspan="5" style="color:var(--ink-mute);font-size:12px;padding:12px 0">No data available.</td></tr>'; return; }
+
+  const cols = yrs.slice(0, 4);
+  const ncols = cols.length;
+  const header = `<thead><tr><th></th>${cols.map(y=>`<th>FY${y}</th>`).join('')}</tr></thead>`;
+
+  function row(label, vals, fmt, cls='', sub=false) {
+    if (!vals || !vals.length) return '';
+    const cells = Array.from({length: ncols}, (_,i) => {
+      const v = vals[i];
+      const str = v !== null && v !== undefined ? fmt(v) : '—';
+      return `<td class="${cls}">${str}</td>`;
+    }).join('');
+    return `<tr${sub?' class="sub"':''}><td>${label}</td>${cells}</tr>`;
+  }
+  function pctRow(label, vals) {
+    return row(label, vals, v => v !== null ? v.toFixed(1) + '%' : '—', '', true);
+  }
+  function mRow(label, vals, flagFn) {
+    return row(label, vals, v => v ? (Math.abs(v) >= 1000 ? '$' + (v/1000).toFixed(1) + 'B' : '$' + v.toFixed(0) + 'M') : '—', flagFn ? flagFn(vals[0]) : '');
+  }
+  function growthRow(label, vals) {
+    return row(label, vals, v => v !== null && v !== undefined ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '—', '', true);
+  }
+
+  const body = `<tbody>
+    ${mRow('Revenue', d.revenue)}
+    ${growthRow('  YoY Growth', d.rev_growth)}
+    ${mRow('Gross Profit', d.gross_profit)}
+    ${pctRow('  Gross Margin', d.gross_margins)}
+    ${mRow('EBITDA', d.ebitda)}
+    ${mRow('EBIT', d.ebit)}
+    ${pctRow('  EBIT Margin', d.ebit_margins)}
+    ${mRow('Net Income', d.net_income)}
+    ${pctRow('  Net Margin', d.net_margins)}
+    ${row('EPS (Diluted)', d.eps_diluted, v => v !== null ? '$' + v.toFixed(2) : '—', '', false)}
+  </tbody>`;
+
+  el.innerHTML = header + body;
+}
+
+function rwBuildCfTable() {
+  const d = _rwData;
+  const yrs = d.fiscal_years || [];
+  const el = document.getElementById('rwCfTable');
+  if (!el) return;
+  if (!yrs.length) { el.innerHTML = '<tr><td colspan="5" style="color:var(--ink-mute);font-size:12px">—</td></tr>'; return; }
+
+  const cols = yrs.slice(0, 4);
+  const ncols = cols.length;
+  const header = `<thead><tr><th></th>${cols.map(y=>`<th>FY${y}</th>`).join('')}</tr></thead>`;
+
+  function mRow(label, vals, sub=false) {
+    if (!vals || !vals.length) return '';
+    const cells = Array.from({length: ncols}, (_,i) => {
+      const v = vals[i]; const str = v !== null && v !== undefined ? (Math.abs(v) >= 1000 ? '$' + (v/1000).toFixed(1) + 'B' : '$' + v.toFixed(0) + 'M') : '—';
+      return `<td>${str}</td>`;
+    }).join('');
+    return `<tr${sub?' class="sub"':''}><td>${label}</td>${cells}</tr>`;
+  }
+  function pctRow(label, vals) {
+    if (!vals || !vals.length) return '';
+    const cells = Array.from({length: ncols}, (_,i) => {
+      const v = vals[i];
+      const cls = v !== null && v > 80 ? 'flag-green' : v !== null && v < 60 ? 'flag-red' : '';
+      return `<td class="${cls}">${v !== null && v !== undefined ? v.toFixed(1) + '%' : '—'}</td>`;
+    }).join('');
+    return `<tr class="sub"><td>${label}</td>${cells}</tr>`;
+  }
+
+  el.innerHTML = header + `<tbody>
+    ${mRow('Operating CF', d.op_cf)}
+    ${mRow('Capex', d.capex)}
+    ${mRow('Free Cash Flow', d.fcf)}
+    ${pctRow('  FCF Conversion', d.fcf_conv)}
+  </tbody>`;
+}
+
+// ── Scorecard ─────────────────────────────────────────────────
+const RW_SCORE_DIMS = [
+  { key: 'sc_biz', label: 'Business Quality', wt: 20 },
+  { key: 'sc_ind', label: 'Industry Tailwind', wt: 10 },
+  { key: 'sc_mgmt', label: 'Management', wt: 15 },
+  { key: 'sc_bs', label: 'Balance Sheet', wt: 10 },
+  { key: 'sc_earn', label: 'Earnings Visibility', wt: 15 },
+  { key: 'sc_val', label: 'Valuation', wt: 20 },
+  { key: 'sc_cat', label: 'Catalyst Clarity', wt: 10 },
+];
+
+function rwBuildScoreRows() {
+  const el = document.getElementById('rwScoreRows');
+  if (!el) return;
+  el.innerHTML = RW_SCORE_DIMS.map(d => `
+    <div class="rw-score-row">
+      <div class="rw-score-name">${d.label} <span class="rw-score-wt">${d.wt}%</span></div>
+      <div class="rw-score-pills">
+        ${[1,2,3,4,5].map(v => `<button type="button" class="rw-score-pill" data-dim="${d.key}" data-val="${v}" onclick="rwSetScore('${d.key}',${v})">${v}</button>`).join('')}
+      </div>
+      <div class="rw-score-val" id="rwSV_${d.key}">—</div>
+    </div>`).join('');
+}
+
+function rwSetScore(dim, val) {
+  _rwFields[dim] = val;
+  document.querySelectorAll(`[data-dim="${dim}"]`).forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val) === val);
+  });
+  document.getElementById('rwSV_' + dim).textContent = val + '.0';
+  rwUpdateScorecard();
+  rwAutoSave();
+}
+function rwSetConv(val) {
+  _rwFields.conviction = val;
+  document.querySelectorAll('[data-conv]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.conv) === val));
+  rwAutoSave();
+}
+
+function rwUpdateScorecard() {
+  let weightedSum = 0, totalWt = 0;
+  let allSet = true;
+  RW_SCORE_DIMS.forEach(d => {
+    const v = _rwFields[d.key];
+    if (v) { weightedSum += v * d.wt; totalWt += d.wt; }
+    else allSet = false;
+  });
+  const card = document.getElementById('rwFinalScoreCard');
+  const numEl = document.getElementById('rwFinalNum');
+  const recEl = document.getElementById('rwFinalRec');
+  const subEl = document.getElementById('rwFinalSub');
+  if (!card || !numEl) return;
+  if (totalWt === 0) return;
+  const score = weightedSum / totalWt;
+  numEl.textContent = score.toFixed(1);
+  let cls, rec;
+  if (score >= 4.2) { cls = 'strong-buy'; rec = 'STRONG BUY'; }
+  else if (score >= 3.5) { cls = 'buy'; rec = 'BUY'; }
+  else if (score >= 2.5) { cls = 'hold'; rec = 'HOLD'; }
+  else { cls = 'pass'; rec = 'PASS'; }
+  card.className = 'rw-final-score ' + cls;
+  recEl.textContent = rec;
+  subEl.textContent = allSet ? `Weighted score across all 7 dimensions` : `${RW_SCORE_DIMS.filter(d => _rwFields[d.key]).length}/7 dimensions scored`;
+}
+
+// ── PWR & Blended calculations ────────────────────────────────
+function rwUpdatePWR() {
+  const f = _rwFields;
+  const scenarios = [
+    { p: parseFloat(f.bull_prob || 0), r: parseFloat(f.bull_return || 0) },
+    { p: parseFloat(f.base_prob || 0), r: parseFloat(f.base_return || 0) },
+    { p: parseFloat(f.bear_prob || 0), r: parseFloat(f.bear_return || 0) },
+  ];
+  const totalP = scenarios.reduce((s, x) => s + x.p, 0);
+  const pwr = scenarios.reduce((s, x) => s + x.p * x.r, 0) / 100;
+  const el = document.getElementById('rwPWR');
+  const note = document.getElementById('rwPWRNote');
+  if (!el) return;
+  const hasData = scenarios.some(s => s.p > 0 || s.r !== 0);
+  if (!hasData) { el.textContent = '—'; if (note) note.textContent = ''; return; }
+  el.textContent = (pwr >= 0 ? '+' : '') + pwr.toFixed(1) + '%';
+  el.className = 'rw-pwr ' + (pwr >= 0 ? 'positive' : 'negative');
+  if (note) note.textContent = `Probabilities sum to ${totalP}%${Math.abs(totalP - 100) > 1 ? ' ⚠ should be 100%' : ''}`;
+}
+function rwUpdateBlended() {
+  let sumWtPrice = 0, sumWt = 0;
+  for (let i = 0; i < 5; i++) {
+    const p = parseFloat(document.querySelector(`[data-rw="val_price_${i}"]`)?.value || 0);
+    const w = parseFloat(document.querySelector(`[data-rw="val_wt_${i}"]`)?.value || 0);
+    if (p && w) { sumWtPrice += p * w; sumWt += w; }
+  }
+  const el = document.getElementById('rwBlended');
+  if (!el) return;
+  el.textContent = sumWt > 0 ? '$' + (sumWtPrice / sumWt).toFixed(2) : '—';
+}
+
+// ── U/D ratio ─────────────────────────────────────────────────
+function rwUpdateUDRatio() {
+  const up = parseFloat(_rwFields.pos_upside || 0);
+  const dn = parseFloat(_rwFields.pos_downside || 0);
+  const el = document.getElementById('rwUDRatio');
+  if (!el) return;
+  if (!up || !dn) { el.textContent = '—'; return; }
+  const ratio = (up / dn).toFixed(2);
+  el.textContent = ratio + 'x';
+  el.className = 'rw-auto-val ' + (ratio >= 2 ? 'positive' : ratio >= 1 ? '' : 'negative');
+}
+
+// ── Field save/restore ────────────────────────────────────────
+function rwCollectFields() {
+  document.querySelectorAll('#rwSections [data-rw]').forEach(el => {
+    if (el.type === 'checkbox') _rwFields[el.dataset.rw] = el.checked;
+    else _rwFields[el.dataset.rw] = el.value;
+  });
+  // Valuation table inputs (inside <input> tags without data-rw)
+  for (let i = 0; i < 5; i++) {
+    ['val_price_', 'val_wt_', 'val_note_'].forEach(p => {
+      const el = document.querySelector(`[data-rw="${p}${i}"]`);
+      if (el) _rwFields[p + i] = el.value;
+    });
+  }
+}
+function rwRestoreFields() {
+  if (!_rwFields) return;
+  // Scores
+  RW_SCORE_DIMS.forEach(d => { if (_rwFields[d.key]) rwSetScore(d.key, _rwFields[d.key]); });
+  // Conviction
+  if (_rwFields.conviction) rwSetConv(_rwFields.conviction);
+  // All input/select/textarea
+  document.querySelectorAll('#rwSections [data-rw]').forEach(el => {
+    const val = _rwFields[el.dataset.rw];
+    if (val === undefined) return;
+    if (el.type === 'checkbox') el.checked = !!val;
+    else el.value = val;
+  });
+  rwUpdatePWR();
+  rwUpdateBlended();
+  rwUpdateUDRatio();
+}
+
+// Wire up PWR / U-D ratio updates to the specific inputs
+document.addEventListener('input', e => {
+  if (!e.target.dataset) return;
+  const rw = e.target.dataset.rw;
+  if (rw && ['bull_prob','bull_return','base_prob','base_return','bear_prob','bear_return'].includes(rw)) {
+    _rwFields[rw] = e.target.value; rwUpdatePWR();
+  }
+  if (rw && ['pos_upside','pos_downside'].includes(rw)) {
+    _rwFields[rw] = e.target.value; rwUpdateUDRatio();
+  }
+});
+
+// ── Export JSON ───────────────────────────────────────────────
+function rwExportJSON() {
+  rwCollectFields();
+  const payload = { ticker: _rwTicker, name: _rwData.name, exportedAt: new Date().toISOString(), fundamentals: _rwData, fields: _rwFields };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${_rwTicker}_research_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+// Build score rows HTML on load (called after sections HTML is injected)
+const _origRwBuildSections = rwBuildSections;
+rwBuildSections = function() { _origRwBuildSections(); rwBuildScoreRows(); };
+
+// ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 setupAutoFetch();
 renderTabs();
 render();
 renderMovers();
-updateResearchPill();
+rwUpdatePill();
 
 const _isFirstTime = !localStorage.getItem('cl_wlists_v1') && !localStorage.getItem('cl_watchlist_v2');
 if (_isFirstTime) {
