@@ -1322,6 +1322,50 @@
   .val-loading { text-align: center; padding: 40px 0; color: var(--ink-mute); font-size: 14px; }
   .val-error { color: var(--red); font-size: 13px; padding: 20px 0; }
   .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── Discovery page ── */
+  .disc-page { padding: 28px 40px 80px; max-width: 1200px; margin: 0 auto; }
+  .disc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .disc-head h2 { font-size: 22px; font-weight: 700; margin: 0; }
+  .disc-head h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .disc-sub { font-size: 13px; color: var(--ink-mute); margin-bottom: 20px; }
+  .disc-filter-bar { display: flex; gap: 8px; margin-bottom: 18px; }
+  .disc-filter { background: none; border: 1px solid var(--rule); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: var(--ink-mute); cursor: pointer; transition: all .15s; }
+  .disc-filter.active, .disc-filter:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg, rgba(255,255,255,.04)); }
+  .disc-list { display: flex; flex-direction: column; gap: 12px; }
+  .disc-card { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; transition: border-color .15s; }
+  .disc-card:hover { border-color: var(--ink-mute); }
+  .disc-card.disc-new { border-left: 3px solid var(--accent); }
+  .disc-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .disc-ticker-block { display: flex; align-items: center; gap: 8px; }
+  .disc-ticker { font-size: 18px; font-weight: 800; letter-spacing: .04em; color: var(--ink); }
+  .disc-new-badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: .05em; }
+  .disc-tracked-badge { background: var(--paper-deep); color: var(--ink-mute); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--rule); }
+  .disc-meta { font-size: 12px; color: var(--ink-mute); }
+  .disc-accounts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .disc-account { font-size: 12px; color: var(--ink-mute); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 7px; }
+  .disc-snippet { font-size: 12px; color: var(--ink-mute); font-style: italic; margin-bottom: 12px; line-height: 1.5; border-left: 2px solid var(--rule); padding-left: 10px; }
+  .disc-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .disc-add-wrap { position: relative; }
+  .disc-add-menu { display: none; position: absolute; bottom: calc(100% + 4px); left: 0; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; min-width: 160px; z-index: 200; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+  .disc-add-menu.open { display: block; }
+  .disc-list-opt { display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 14px; font-size: 13px; color: var(--ink); cursor: pointer; transition: background .1s; }
+  .disc-list-opt:hover { background: var(--paper); }
+  .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
+
+  /* ── Company profile modal ── */
+  .prof-header { margin-bottom: 12px; }
+  .prof-name { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .prof-meta { font-size: 12px; color: var(--ink-mute); margin-top: 3px; }
+  .prof-desc { font-size: 13px; color: var(--ink-mute); line-height: 1.65; margin: 12px 0; max-height: 120px; overflow-y: auto; }
+  .prof-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+  .prof-metric { background: var(--paper-deep); border-radius: 6px; padding: 10px 12px; }
+  .prof-metric-label { font-size: 11px; color: var(--ink-mute); margin-bottom: 4px; }
+  .prof-metric-value { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .prof-website { font-size: 12px; margin-top: 10px; }
+  .prof-website a { color: var(--accent); text-decoration: none; }
+  .prof-website a:hover { text-decoration: underline; }
+  .prof-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); }
 </style>
 </head>
 <body>
@@ -1363,6 +1407,10 @@
     <button class="page-tab" id="pageTabAlerts" onclick="switchPage('alerts')">
       <span>Alerts</span>
       <span class="pill zero" id="pageAlertCount">0</span>
+    </button>
+    <button class="page-tab" id="pageTabDiscovery" onclick="switchPage('discovery')">
+      <span>Discovery</span>
+      <span class="pill zero" id="pageDiscoveryCount">0</span>
     </button>
   </div>
 
@@ -1493,8 +1541,21 @@
       <h2>Buzz <em>Alerts</em></h2>
       <span class="meta" id="alertsLastUpdated">—</span>
     </div>
-    <p class="alerts-sub">Two or more tracked accounts mentioned the ticker within the last 24 hours. Bullish first, then bearish.</p>
+    <p class="alerts-sub">Two or more tracked accounts mentioned the ticker within the last 48 hours. Bullish first, then bearish.</p>
     <div id="alertsListWrap"></div>
+  </div>
+
+  <div id="discoveryPage" class="disc-page" hidden>
+    <div class="disc-head">
+      <h2>Stock <em>Discovery</em></h2>
+      <button class="btn btn-sm" onclick="fetchDiscovery(true)">↻ Refresh</button>
+    </div>
+    <p class="disc-sub" id="discSub">All tickers mentioned by tracked accounts in the last 48h — new picks highlighted first.</p>
+    <div class="disc-filter-bar">
+      <button class="disc-filter active" id="discFilterAll" onclick="setDiscFilter('all')">All</button>
+      <button class="disc-filter" id="discFilterNew" onclick="setDiscFilter('new')">New only</button>
+    </div>
+    <div id="discoveryWrap"><div class="disc-empty">Loading…</div></div>
   </div>
 
 </div>
@@ -1587,6 +1648,15 @@
       </div>
     </div>
     <button class="modal-close" onclick="closeModal('valuation')">✕</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profileModal">
+  <div class="modal modal-wide">
+    <div class="modal-content">
+      <div id="profileBody"><div class="val-loading">Loading profile…</div></div>
+    </div>
+    <button class="modal-close" onclick="closeModal('profile')">✕</button>
   </div>
 </div>
 
@@ -2004,9 +2074,12 @@ function switchPage(name) {
   _activePage = name;
   document.getElementById('watchlistPage').hidden = (name !== 'watchlist');
   document.getElementById('alertsPage').hidden = (name !== 'alerts');
+  document.getElementById('discoveryPage').hidden = (name !== 'discovery');
   document.getElementById('pageTabWatchlist').classList.toggle('active', name === 'watchlist');
   document.getElementById('pageTabAlerts').classList.toggle('active', name === 'alerts');
+  document.getElementById('pageTabDiscovery').classList.toggle('active', name === 'discovery');
   if (name === 'alerts') renderAlertsPage();
+  if (name === 'discovery') fetchDiscovery();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2492,6 +2565,170 @@ async function openValuation(ticker, refresh = false) {
   } catch (e) {
     document.getElementById('valBody').innerHTML =
       `<p class="val-error">Could not load valuation: ${e.message}</p>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// DISCOVERY
+// ════════════════════════════════════════════════════════════
+let _discoveryData = [];
+let _discFilter = 'all';
+
+async function fetchDiscovery(force = false) {
+  if (!BACKEND_URL) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/discovery`, { signal: timeoutSignal(12000) });
+    if (!res.ok) return;
+    const data = await res.json();
+    _discoveryData = data.tickers || [];
+    const pill = document.getElementById('pageDiscoveryCount');
+    pill.textContent = _discoveryData.length;
+    pill.classList.toggle('zero', _discoveryData.length === 0);
+    renderDiscovery();
+  } catch (e) {
+    console.warn('fetchDiscovery failed:', e.message);
+  }
+}
+
+function setDiscFilter(f) {
+  _discFilter = f;
+  document.getElementById('discFilterAll').classList.toggle('active', f === 'all');
+  document.getElementById('discFilterNew').classList.toggle('active', f === 'new');
+  renderDiscovery();
+}
+
+function renderDiscovery() {
+  const allWlTickers = new Set(
+    state.lists.flatMap(l => l.stocks || []).map(s => s.ticker.toUpperCase())
+  );
+  const newTickers = _discoveryData.filter(t => !allWlTickers.has(t.ticker.toUpperCase()));
+  const knownTickers = _discoveryData.filter(t => allWlTickers.has(t.ticker.toUpperCase()));
+
+  const newCount = newTickers.length;
+  document.getElementById('discSub').textContent =
+    `All tickers mentioned by tracked accounts in the last 48h · ${newCount} new pick${newCount !== 1 ? 's' : ''} not in your watchlists.`;
+
+  let toShow = _discFilter === 'new' ? newTickers : [...newTickers, ...knownTickers];
+  const wrap = document.getElementById('discoveryWrap');
+  if (toShow.length === 0) {
+    wrap.innerHTML = `<div class="disc-empty">${_discoveryData.length === 0 ? 'No tickers discovered yet — scrape runs every 30 min.' : 'No new tickers outside your watchlists.'}</div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="disc-list">${toShow.map(t => _discCard(t, allWlTickers)).join('')}</div>`;
+}
+
+function _discCard(t, wlTickers) {
+  const isNew = !wlTickers.has(t.ticker.toUpperCase());
+  const ago = _relTime(t.last_seen);
+  const tweet = t.recent_mentions?.[t.recent_mentions.length - 1];
+  const snippet = tweet ? tweet.text.replace(/</g, '&lt;').slice(0, 130) : '';
+  const listsHtml = state.lists.map(l =>
+    `<button class="disc-list-opt" onclick="addDiscoveryToList('${t.ticker}','${l.id}',this)">${l.name}</button>`
+  ).join('');
+  return `
+  <div class="disc-card ${isNew ? 'disc-new' : ''}">
+    <div class="disc-card-head">
+      <div class="disc-ticker-block">
+        <span class="disc-ticker">${t.ticker}</span>
+        ${isNew ? '<span class="disc-new-badge">NEW</span>' : '<span class="disc-tracked-badge">Tracked</span>'}
+      </div>
+      <div class="disc-meta">${t.mention_count} mention${t.mention_count !== 1 ? 's' : ''} · ${ago}</div>
+    </div>
+    <div class="disc-accounts">${t.unique_accounts.map(a => `<span class="disc-account">@${a}</span>`).join('')}</div>
+    ${snippet ? `<div class="disc-snippet">&ldquo;${snippet}${snippet.length >= 130 ? '…' : ''}&rdquo;</div>` : ''}
+    <div class="disc-actions">
+      <button class="btn btn-sm" onclick="openValuation('${t.ticker}')">≡ Valuation</button>
+      <button class="btn btn-sm" onclick="openProfile('${t.ticker}')">🏢 Profile</button>
+      <div class="disc-add-wrap">
+        <button class="btn btn-sm btn-primary" onclick="toggleDiscMenu(this)">+ Add to List ▾</button>
+        <div class="disc-add-menu">${listsHtml}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleDiscMenu(btn) {
+  document.querySelectorAll('.disc-add-menu.open').forEach(m => {
+    if (m !== btn.nextElementSibling) m.classList.remove('open');
+  });
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.disc-add-wrap')) {
+    document.querySelectorAll('.disc-add-menu.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+function addDiscoveryToList(ticker, listId, btnEl) {
+  const list = state.lists.find(l => l.id === listId);
+  if (!list) return;
+  if (list.stocks.find(s => s.ticker === ticker.toUpperCase())) {
+    toast(`${ticker} already in "${list.name}"`, 'error');
+    return;
+  }
+  list.stocks.push({ ticker: ticker.toUpperCase(), name: ticker, thesis: '', addedAt: Date.now(), priceOnAdd: null });
+  save();
+  btnEl.closest('.disc-add-menu').classList.remove('open');
+  toast(`${ticker} added to "${list.name}"`, 'success');
+  renderDiscovery();
+  setTimeout(() => refreshSingle(ticker.toUpperCase()), 400);
+}
+
+function _relTime(isoStr) {
+  if (!isoStr) return '';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return `${Math.floor(diff / 60000)}m ago`;
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// ── Company Profile Modal ──────────────────────────────────
+let _profTicker = null;
+
+async function openProfile(ticker) {
+  if (!BACKEND_URL) return;
+  _profTicker = ticker;
+  const modal = document.getElementById('profileModal');
+  document.getElementById('profileBody').innerHTML = '<div class="val-loading">Loading profile…</div>';
+  modal.classList.add('active');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/company/${ticker}`, { signal: timeoutSignal(15000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+
+    const fmt = (v, digits = 1, suffix = '') =>
+      v == null ? 'N/A' : `${(parseFloat(v) * 1).toFixed(digits)}${suffix}`;
+    const fmtB = v => v == null ? 'N/A' : `$${(v / 1e9).toFixed(2)}B`;
+    const fmtPct = v => v == null ? 'N/A' : `${(v * 100).toFixed(1)}%`;
+    const fmtPE = v => v == null ? 'N/A' : `${parseFloat(v).toFixed(1)}x`;
+
+    const metrics = [
+      { label: 'Market Cap',    value: fmtB(d.market_cap) },
+      { label: 'Revenue',       value: fmtB(d.revenue) },
+      { label: 'Trailing P/E',  value: fmtPE(d.pe) },
+      { label: 'Forward P/E',   value: fmtPE(d.forward_pe) },
+      { label: 'Gross Margin',  value: fmtPct(d.gross_margin) },
+      { label: 'Rev Growth',    value: fmtPct(d.revenue_growth) },
+    ];
+
+    document.getElementById('profileBody').innerHTML = `
+      <div class="prof-header">
+        <div class="prof-name">${d.ticker} — ${d.name}</div>
+        <div class="prof-meta">${[d.sector, d.industry, d.country].filter(Boolean).join(' · ')}</div>
+      </div>
+      ${d.description ? `<div class="prof-desc">${d.description}</div>` : ''}
+      <div class="prof-metrics">
+        ${metrics.map(m => `<div class="prof-metric"><div class="prof-metric-label">${m.label}</div><div class="prof-metric-value">${m.value}</div></div>`).join('')}
+      </div>
+      ${d.employees ? `<div class="disc-meta">Employees: ${d.employees.toLocaleString()}</div>` : ''}
+      ${d.website ? `<div class="prof-website"><a href="${d.website}" target="_blank" rel="noopener">${d.website}</a></div>` : ''}
+      <div class="prof-actions">
+        <button class="btn btn-sm btn-primary" onclick="closeModal('profile');openValuation('${d.ticker}')">≡ Valuation</button>
+      </div>`;
+  } catch (e) {
+    document.getElementById('profileBody').innerHTML = `<p class="val-error">Could not load profile: ${e.message}</p>`;
   }
 }
 

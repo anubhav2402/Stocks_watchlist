@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 from typing import Optional
 
-from config import BUZZ_THRESHOLD, BUZZ_WINDOW_HOURS, DATA_DIR
+from config import BUZZ_THRESHOLD, BUZZ_WINDOW_HOURS, DISCOVERY_WINDOW_HOURS, DATA_DIR
 from models.alert import TweetMention, BuzzAlert
 
 logger = logging.getLogger(__name__)
@@ -112,6 +112,30 @@ def dismiss_alert(ticker: str) -> bool:
         _active_alerts[ticker].is_active = False
         return True
     return False
+
+
+def get_discovery_tickers() -> list[dict]:
+    """Return ALL tickers mentioned within DISCOVERY_WINDOW_HOURS, sorted by mention count.
+    Unlike get_active_alerts(), no threshold filter — every ticker is included."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=DISCOVERY_WINDOW_HOURS)
+    result = []
+    for ticker, mentions in _mention_log.items():
+        recent = [m for m in mentions if _parse_ts(m.timestamp) >= cutoff]
+        if not recent:
+            continue
+        seen_accounts: dict[str, bool] = {}
+        for m in recent:
+            seen_accounts[m.account] = True
+        accounts = list(seen_accounts.keys())
+        result.append({
+            "ticker": ticker,
+            "mention_count": len(recent),
+            "unique_accounts": accounts,
+            "last_seen": max(m.timestamp for m in recent),
+            "first_seen": min(m.timestamp for m in recent),
+            "recent_mentions": [m.model_dump(mode="json") for m in recent[-3:]],
+        })
+    return sorted(result, key=lambda x: x["mention_count"], reverse=True)
 
 
 def mention_log_snapshot() -> dict[str, list[dict]]:

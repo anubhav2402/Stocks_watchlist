@@ -4,8 +4,8 @@ import requests
 from datetime import datetime, timezone
 from typing import Optional
 import yfinance as yf
-from services.cache_service import quote_cache, catalyst_cache
-from models.stock import QuoteResponse, CatalystResponse
+from services.cache_service import quote_cache, catalyst_cache, profile_cache
+from models.stock import QuoteResponse, CatalystResponse, CompanyProfile
 
 logger = logging.getLogger(__name__)
 
@@ -217,4 +217,33 @@ async def fetch_catalyst(symbol: str) -> CatalystResponse:
         return catalyst_cache[symbol]
     result = await asyncio.to_thread(_fetch_catalyst_sync, symbol)
     catalyst_cache[symbol] = result
+    return result
+
+
+def _fetch_company_profile_sync(symbol: str) -> CompanyProfile:
+    info = yf.Ticker(symbol).info or {}
+    return CompanyProfile(
+        ticker=symbol,
+        name=info.get("longName") or info.get("shortName") or symbol,
+        description=info.get("longBusinessSummary"),
+        sector=info.get("sector"),
+        industry=info.get("industry"),
+        country=info.get("country"),
+        website=info.get("website"),
+        employees=info.get("fullTimeEmployees"),
+        market_cap=info.get("marketCap"),
+        revenue=info.get("totalRevenue"),
+        pe=info.get("trailingPE"),
+        forward_pe=info.get("forwardPE"),
+        gross_margin=info.get("grossMargins"),
+        revenue_growth=info.get("revenueGrowth"),
+    )
+
+
+async def fetch_company_profile(symbol: str) -> CompanyProfile:
+    symbol = symbol.upper().strip()
+    if symbol in profile_cache:
+        return profile_cache[symbol]
+    result = await asyncio.to_thread(_fetch_company_profile_sync, symbol)
+    profile_cache[symbol] = result
     return result

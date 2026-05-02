@@ -37,6 +37,23 @@ class CatalystResponse(BaseModel):
     next_event_days: Optional[int] = None
 
 
+class CompanyProfile(BaseModel):
+    ticker: str
+    name: str
+    description: Optional[str] = None
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    country: Optional[str] = None
+    website: Optional[str] = None
+    employees: Optional[int] = None
+    market_cap: Optional[float] = None
+    revenue: Optional[float] = None
+    pe: Optional[float] = None
+    forward_pe: Optional[float] = None
+    gross_margin: Optional[float] = None
+    revenue_growth: Optional[float] = None
+
+
 class ValuationMetric(BaseModel):
     name: str
     value: str
