@@ -1379,6 +1379,53 @@
   .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; }
   .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
 
+  /* ── Research page ── */
+  .research-page { padding: 28px 40px 80px; max-width: 860px; margin: 0 auto; }
+  .research-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .research-head h2 { font-size: 22px; font-weight: 700; margin: 0; }
+  .research-sub { font-size: 13px; color: var(--ink-mute); margin-bottom: 20px; }
+  .research-filter-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .research-filter { background: none; border: 1px solid var(--rule); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: var(--ink-mute); cursor: pointer; transition: all .15s; }
+  .research-filter.active, .research-filter:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg, rgba(255,255,255,.04)); }
+  .research-list { display: flex; flex-direction: column; gap: 10px; }
+  .research-card { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; cursor: pointer; transition: border-color .15s; }
+  .research-card:hover { border-color: var(--ink-mute); }
+  .research-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .research-card-ticker { font-size: 13px; font-weight: 800; letter-spacing: .06em; color: var(--accent); }
+  .research-card-date { font-size: 11px; color: var(--ink-mute); white-space: nowrap; margin-left: 10px; }
+  .research-card-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 5px; line-height: 1.3; }
+  .research-card-preview { font-size: 12px; color: var(--ink-mute); line-height: 1.55; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .research-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
+
+  /* ── Research editor page ── */
+  .editor-page { padding: 28px 40px 80px; max-width: 800px; margin: 0 auto; }
+  .editor-back { margin-bottom: 22px; display: flex; align-items: center; gap: 12px; }
+  .editor-back-title { font-size: 13px; color: var(--ink-mute); }
+  .editor-form { display: flex; flex-direction: column; gap: 14px; }
+  .editor-ticker-row { display: flex; align-items: center; gap: 10px; }
+  .editor-ticker-badge { font-size: 18px; font-weight: 800; letter-spacing: .06em; color: var(--accent); background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 14px; }
+  .editor-ticker-input { font-size: 18px; font-weight: 700; letter-spacing: .06em; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 14px; color: var(--ink); width: 120px; text-transform: uppercase; }
+  .editor-ticker-input:focus { outline: none; border-color: var(--accent); }
+  .editor-title-input { font-size: 20px; font-weight: 700; background: none; border: none; border-bottom: 2px solid var(--rule); border-radius: 0; padding: 8px 2px; color: var(--ink); width: 100%; transition: border-color .15s; }
+  .editor-title-input:focus { outline: none; border-bottom-color: var(--accent); }
+  .editor-title-input::placeholder { color: var(--ink-mute); font-weight: 400; }
+  .editor-body { font-size: 14px; line-height: 1.7; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; color: var(--ink); min-height: 420px; resize: vertical; width: 100%; font-family: inherit; transition: border-color .15s; }
+  .editor-body:focus { outline: none; border-color: var(--accent); }
+  .editor-body::placeholder { color: var(--ink-mute); }
+  .editor-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
+  .editor-actions-right { display: flex; gap: 10px; }
+  .editor-meta { font-size: 12px; color: var(--ink-mute); }
+
+  /* ── Detail page research section ── */
+  .detail-research-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .detail-research-item { background: var(--paper); border: 1px solid var(--rule); border-radius: 7px; padding: 10px 14px; cursor: pointer; transition: border-color .15s; display: flex; justify-content: space-between; align-items: flex-start; }
+  .detail-research-item:hover { border-color: var(--accent); }
+  .detail-research-item-left { flex: 1; min-width: 0; }
+  .detail-research-item-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .detail-research-item-preview { font-size: 12px; color: var(--ink-mute); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .detail-research-item-right { font-size: 11px; color: var(--ink-mute); white-space: nowrap; padding-left: 12px; margin-top: 2px; }
+  .detail-research-empty { font-size: 13px; color: var(--ink-mute); padding: 8px 0; }
+
   /* ── Company profile modal ── */
   .prof-header { margin-bottom: 12px; }
   .prof-name { font-size: 18px; font-weight: 700; color: var(--ink); }
@@ -1437,6 +1484,10 @@
     <button class="page-tab" id="pageTabDiscovery" onclick="switchPage('discovery')">
       <span>Discovery</span>
       <span class="pill zero" id="pageDiscoveryCount">0</span>
+    </button>
+    <button class="page-tab" id="pageTabResearch" onclick="switchPage('research')">
+      <span>Research</span>
+      <span class="pill zero" id="pageResearchCount">0</span>
     </button>
   </div>
 
@@ -1622,10 +1673,55 @@
       <div id="detailValBody"><div class="val-loading">Loading…</div></div>
     </div>
 
+    <div class="detail-section">
+      <div class="detail-section-head">
+        Research Notes
+        <button class="btn btn-sm" style="margin-left:auto" onclick="openResearchEditor(_detailTicker, null)">+ New Note</button>
+      </div>
+      <div id="detailResearchBody"></div>
+    </div>
+
     <div class="detail-add-bar">
       <div class="disc-add-wrap">
         <button class="btn btn-primary" onclick="toggleDiscMenu(this)">+ Add to Watchlist ▾</button>
         <div class="disc-add-menu" id="detailAddMenu"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RESEARCH PAGE ═══════════════ -->
+  <div id="researchPage" class="research-page" hidden>
+    <div class="research-head">
+      <h2>Research <em>Notes</em></h2>
+      <button class="btn btn-primary" onclick="openResearchEditor(null, null)">+ New Note</button>
+    </div>
+    <div class="research-sub" id="researchSub">Your private research docs, stored locally.</div>
+    <div class="research-filter-bar" id="researchFilterBar"></div>
+    <div id="researchList" class="research-list"></div>
+  </div>
+
+  <!-- ═══════════════ RESEARCH EDITOR PAGE ═══════════════ -->
+  <div id="researchEditorPage" class="editor-page" hidden>
+    <div class="editor-back">
+      <button class="btn btn-sm" onclick="backFromEditor()">← Back</button>
+      <span class="editor-back-title" id="editorBackTitle"></span>
+    </div>
+    <div class="editor-form">
+      <div class="editor-ticker-row">
+        <input type="text" id="editorTickerInput" class="editor-ticker-input" placeholder="TICKER" maxlength="10" autocomplete="off">
+        <span id="editorTickerBadge" class="editor-ticker-badge" style="display:none"></span>
+      </div>
+      <input type="text" id="editorTitleInput" class="editor-title-input" placeholder="Note title…" maxlength="120">
+      <textarea id="editorBody" class="editor-body" placeholder="Write your research, thesis, risks, key metrics… Markdown-friendly plain text."></textarea>
+      <div class="editor-actions">
+        <div>
+          <button class="btn" id="editorDeleteBtn" onclick="deleteResearchDoc()" style="color:var(--red);display:none">Delete</button>
+        </div>
+        <div class="editor-actions-right">
+          <span class="editor-meta" id="editorMeta"></span>
+          <button class="btn" onclick="backFromEditor()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveResearchDoc()">Save</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2120,11 +2216,15 @@ function switchPage(name) {
   document.getElementById('alertsPage').hidden = (name !== 'alerts');
   document.getElementById('discoveryPage').hidden = (name !== 'discovery');
   document.getElementById('detailPage').hidden = (name !== 'detail');
+  document.getElementById('researchPage').hidden = (name !== 'research');
+  document.getElementById('researchEditorPage').hidden = (name !== 'researchEditor');
   document.getElementById('pageTabWatchlist').classList.toggle('active', name === 'watchlist');
   document.getElementById('pageTabAlerts').classList.toggle('active', name === 'alerts');
   document.getElementById('pageTabDiscovery').classList.toggle('active', name === 'discovery');
+  document.getElementById('pageTabResearch').classList.toggle('active', name === 'research' || name === 'researchEditor');
   if (name === 'alerts') renderAlertsPage();
   if (name === 'discovery') fetchDiscovery();
+  if (name === 'research') renderResearchPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2593,6 +2693,7 @@ function openTickerDetail(ticker, from = 'watchlist') {
   document.getElementById('detailAddMenu').innerHTML = state.lists.map(l =>
     `<button class="disc-list-opt" onclick="addDiscoveryToList('${_detailTicker}','${l.id}',this)">${l.name}</button>`
   ).join('');
+  renderDetailResearchSection(_detailTicker);
   switchPage('detail');
   loadDetailProfile(_detailTicker, false);
   loadDetailValuation(_detailTicker, false);
@@ -2994,12 +3095,215 @@ function render() {
 }
 
 // ════════════════════════════════════════════════════════════
+// RESEARCH NOTES
+// ════════════════════════════════════════════════════════════
+const RESEARCH_KEY = 'sp_research_v1';
+
+function _loadResearchData() {
+  try { return JSON.parse(localStorage.getItem(RESEARCH_KEY) || '{}'); } catch { return {}; }
+}
+function _saveResearchData(data) {
+  try { localStorage.setItem(RESEARCH_KEY, JSON.stringify(data)); } catch {}
+}
+function _researchCount() {
+  const data = _loadResearchData();
+  return Object.values(data).reduce((sum, arr) => sum + arr.length, 0);
+}
+function _fmtResearchDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function _uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ── Research tab pill update ─────────────────────────────────
+function updateResearchPill() {
+  const n = _researchCount();
+  const el = document.getElementById('pageResearchCount');
+  if (!el) return;
+  el.textContent = n;
+  el.classList.toggle('zero', n === 0);
+}
+
+// ── Research list page ───────────────────────────────────────
+let _researchFilterTicker = null;
+
+function renderResearchPage() {
+  const data = _loadResearchData();
+  const allTickers = Object.keys(data).filter(t => data[t]?.length > 0).sort();
+
+  // Filter bar
+  const filterBar = document.getElementById('researchFilterBar');
+  const sub = document.getElementById('researchSub');
+  const total = allTickers.reduce((s, t) => s + data[t].length, 0);
+  sub.textContent = `${total} note${total !== 1 ? 's' : ''} across ${allTickers.length} ticker${allTickers.length !== 1 ? 's' : ''}`;
+
+  if (_researchFilterTicker && !allTickers.includes(_researchFilterTicker)) _researchFilterTicker = null;
+  filterBar.innerHTML = [
+    `<button class="research-filter ${!_researchFilterTicker ? 'active' : ''}" onclick="_setResearchFilter(null)">All</button>`,
+    ...allTickers.map(t => `<button class="research-filter ${_researchFilterTicker === t ? 'active' : ''}" onclick="_setResearchFilter('${t}')">${t}</button>`)
+  ].join('');
+
+  // Cards
+  const listEl = document.getElementById('researchList');
+  const tickers = _researchFilterTicker ? [_researchFilterTicker] : allTickers;
+  let allDocs = [];
+  tickers.forEach(t => (data[t] || []).forEach(doc => allDocs.push({ ...doc, ticker: t })));
+  allDocs.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+
+  if (!allDocs.length) {
+    listEl.innerHTML = `<div class="research-empty">No research notes yet.<br>Click <strong>+ New Note</strong> to start.</div>`;
+    return;
+  }
+  listEl.innerHTML = allDocs.map(doc => `
+    <div class="research-card" onclick="openResearchEditor('${escAttr(doc.ticker)}', '${escAttr(doc.id)}')">
+      <div class="research-card-head">
+        <span class="research-card-ticker">${escHtml(doc.ticker)}</span>
+        <span class="research-card-date">${_fmtResearchDate(doc.updated_at)}</span>
+      </div>
+      <div class="research-card-title">${escHtml(doc.title || 'Untitled')}</div>
+      <div class="research-card-preview">${escHtml((doc.content || '').replace(/\n/g, ' ').trim())}</div>
+    </div>`).join('');
+  updateResearchPill();
+}
+
+function _setResearchFilter(ticker) {
+  _researchFilterTicker = ticker;
+  renderResearchPage();
+}
+
+// ── Detail page research section ────────────────────────────
+function renderDetailResearchSection(ticker) {
+  const el = document.getElementById('detailResearchBody');
+  if (!el) return;
+  const data = _loadResearchData();
+  const docs = (data[ticker] || []).slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  if (!docs.length) {
+    el.innerHTML = `<div class="detail-research-empty">No notes yet for ${ticker}.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="detail-research-list">${docs.map(doc => `
+    <div class="detail-research-item" onclick="openResearchEditor('${escAttr(ticker)}', '${escAttr(doc.id)}')">
+      <div class="detail-research-item-left">
+        <div class="detail-research-item-title">${escHtml(doc.title || 'Untitled')}</div>
+        <div class="detail-research-item-preview">${escHtml((doc.content || '').replace(/\n/g, ' ').trim())}</div>
+      </div>
+      <div class="detail-research-item-right">${_fmtResearchDate(doc.updated_at)}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ── Editor ───────────────────────────────────────────────────
+let _editorTicker = null;
+let _editorDocId = null;
+let _editorFrom = 'research';
+
+function openResearchEditor(ticker, docId) {
+  _editorTicker = ticker ? ticker.toUpperCase() : null;
+  _editorDocId = docId;
+  _editorFrom = _activePage;
+
+  const tickerInput = document.getElementById('editorTickerInput');
+  const tickerBadge = document.getElementById('editorTickerBadge');
+  const titleInput = document.getElementById('editorTitleInput');
+  const bodyEl = document.getElementById('editorBody');
+  const metaEl = document.getElementById('editorMeta');
+  const deleteBtn = document.getElementById('editorDeleteBtn');
+  const backTitle = document.getElementById('editorBackTitle');
+
+  if (_editorTicker) {
+    tickerInput.style.display = 'none';
+    tickerBadge.style.display = '';
+    tickerBadge.textContent = _editorTicker;
+  } else {
+    tickerInput.style.display = '';
+    tickerBadge.style.display = 'none';
+    tickerInput.value = '';
+  }
+
+  if (docId) {
+    const data = _loadResearchData();
+    const doc = (data[_editorTicker] || []).find(d => d.id === docId);
+    if (doc) {
+      titleInput.value = doc.title || '';
+      bodyEl.value = doc.content || '';
+      metaEl.textContent = `Last edited ${_fmtResearchDate(doc.updated_at)}`;
+      deleteBtn.style.display = '';
+      backTitle.textContent = `Editing: ${doc.title || 'Untitled'}`;
+    }
+  } else {
+    titleInput.value = '';
+    bodyEl.value = '';
+    metaEl.textContent = '';
+    deleteBtn.style.display = 'none';
+    backTitle.textContent = _editorTicker ? `New note for ${_editorTicker}` : 'New Note';
+  }
+
+  switchPage('researchEditor');
+  setTimeout(() => (docId ? bodyEl : (_editorTicker ? titleInput : tickerInput)).focus(), 80);
+}
+
+function saveResearchDoc() {
+  const tickerInput = document.getElementById('editorTickerInput');
+  const ticker = (_editorTicker || tickerInput.value.trim().toUpperCase());
+  const title = document.getElementById('editorTitleInput').value.trim();
+  const content = document.getElementById('editorBody').value;
+
+  if (!ticker) { toast('Enter a ticker symbol', 'error'); tickerInput.focus(); return; }
+  if (!title) { toast('Add a title for the note', 'error'); document.getElementById('editorTitleInput').focus(); return; }
+
+  const now = new Date().toISOString();
+  const data = _loadResearchData();
+  if (!data[ticker]) data[ticker] = [];
+
+  if (_editorDocId) {
+    const idx = data[ticker].findIndex(d => d.id === _editorDocId);
+    if (idx !== -1) {
+      data[ticker][idx] = { ...data[ticker][idx], title, content, updated_at: now };
+    }
+  } else {
+    data[ticker].push({ id: _uid(), title, content, created_at: now, updated_at: now });
+  }
+
+  _saveResearchData(data);
+  updateResearchPill();
+  toast(`Note saved for ${ticker}`, 'success');
+  _backFromEditorTo(_editorFrom, ticker);
+}
+
+function deleteResearchDoc() {
+  if (!_editorTicker || !_editorDocId) return;
+  if (!confirm('Delete this note? This cannot be undone.')) return;
+  const data = _loadResearchData();
+  if (data[_editorTicker]) {
+    data[_editorTicker] = data[_editorTicker].filter(d => d.id !== _editorDocId);
+    if (!data[_editorTicker].length) delete data[_editorTicker];
+  }
+  _saveResearchData(data);
+  updateResearchPill();
+  toast('Note deleted', 'info');
+  _backFromEditorTo(_editorFrom, _editorTicker);
+}
+
+function backFromEditor() { _backFromEditorTo(_editorFrom, _editorTicker); }
+
+function _backFromEditorTo(from, ticker) {
+  if (from === 'detail' && ticker) {
+    switchPage('detail');
+    renderDetailResearchSection(ticker);
+  } else {
+    switchPage('research');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 setupAutoFetch();
 renderTabs();
 render();
 renderMovers();
+updateResearchPill();
 
 const _isFirstTime = !localStorage.getItem('cl_wlists_v1') && !localStorage.getItem('cl_watchlist_v2');
 if (_isFirstTime) {
