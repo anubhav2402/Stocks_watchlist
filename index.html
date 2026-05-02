@@ -3134,7 +3134,9 @@ async function discAddAccount() {
     userEl.value = '';
     if (nameEl) nameEl.value = '';
     await discLoadAccounts();
-    toast(`@${username} added`, 'success');
+    toast(`@${username} added — scraping now…`, 'success');
+    // Kick off an immediate scrape so the new account appears in discovery without waiting 30 min
+    fetch(`${BACKEND_URL}/api/alerts/scrape`, { method: 'POST' }).catch(() => {});
   } catch (e) {
     toast(`Add failed: ${e.message}`, 'error');
   }
