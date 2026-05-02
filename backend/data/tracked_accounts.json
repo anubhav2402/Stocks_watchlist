@@ -47,5 +47,12 @@
     "category": "analyst",
     "market": "US",
     "enabled": true
+  },
+  {
+    "username": "damnang2",
+    "display_name": "Damnang",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
   }
 ]
