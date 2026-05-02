@@ -1374,6 +1374,9 @@
   .disc-add-menu.open { display: block; }
   .disc-list-opt { display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 14px; font-size: 13px; color: var(--ink); cursor: pointer; transition: background .1s; }
   .disc-list-opt:hover { background: var(--paper); }
+  .disc-tweets { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .disc-tweet { font-size: 12px; line-height: 1.55; border-left: 2px solid var(--rule); padding-left: 10px; }
+  .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; }
   .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
 
   /* ── Company profile modal ── */
@@ -2182,10 +2185,9 @@ function _alertCard(alert) {
   // Unique accounts
   const accounts = [...new Set((alert.mentions || []).map(m => m.account))];
 
-  // Latest 3 tweets (most recent first)
+  // All tweets, most recent first
   const tweets = [...(alert.mentions || [])]
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 3);
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const tweetsHtml = tweets.map(t => {
     const tSent = t.sentiment_label || 'neutral';
@@ -2741,10 +2743,13 @@ function _discCard(t, wlTickers) {
   const isNew = !wlTickers.has(t.ticker.toUpperCase());
   const ago = _relTime(t.last_seen);
   const tweet = t.recent_mentions?.[t.recent_mentions.length - 1];
-  const snippet = tweet ? tweet.text.replace(/</g, '&lt;').slice(0, 130) : '';
   const listsHtml = state.lists.map(l =>
     `<button class="disc-list-opt" onclick="addDiscoveryToList('${t.ticker}','${l.id}',this)">${l.name}</button>`
   ).join('');
+  const tweetsHtml = (t.recent_mentions || [])
+    .slice().reverse()
+    .map(m => `<div class="disc-tweet"><span class="disc-account">@${m.account}</span> <span class="disc-tweet-text">${m.text.replace(/</g,'&lt;')}</span></div>`)
+    .join('');
   return `
   <div class="disc-card ${isNew ? 'disc-new' : ''}">
     <div class="disc-card-head">
@@ -2755,7 +2760,7 @@ function _discCard(t, wlTickers) {
       <div class="disc-meta">${t.mention_count} mention${t.mention_count !== 1 ? 's' : ''} · ${ago}</div>
     </div>
     <div class="disc-accounts">${t.unique_accounts.map(a => `<span class="disc-account">@${a}</span>`).join('')}</div>
-    ${snippet ? `<div class="disc-snippet">&ldquo;${snippet}${snippet.length >= 130 ? '…' : ''}&rdquo;</div>` : ''}
+    ${tweetsHtml ? `<div class="disc-tweets">${tweetsHtml}</div>` : ''}
     <div class="disc-actions">
       <button class="btn btn-sm" onclick="openTickerDetail('${t.ticker}','discovery')">View Details</button>
       <div class="disc-add-wrap">
