@@ -185,6 +185,91 @@ def _fetch_research_sync(symbol: str) -> dict:
         except Exception:
             pass
 
+        # ── News headlines ────────────────────────────────────────────
+        news_items = []
+        try:
+            from datetime import datetime as _dt
+            raw_news = t.news or []
+            for n in raw_news[:7]:
+                ts = n.get('providerPublishTime') or n.get('content', {}).get('pubDate')
+                try:
+                    date_str = _dt.fromtimestamp(int(ts)).strftime('%Y-%m-%d') if ts else ''
+                except Exception:
+                    date_str = ''
+                title = n.get('title') or (n.get('content') or {}).get('title', '')
+                url = n.get('link') or (n.get('content') or {}).get('canonicalUrl', {}).get('url', '')
+                publisher = n.get('publisher') or (n.get('content') or {}).get('provider', {}).get('displayName', '')
+                if title:
+                    news_items.append({'title': title, 'url': url, 'publisher': publisher, 'date': date_str})
+        except Exception:
+            pass
+
+        # ── Analyst upgrades / downgrades (last 90 days) ─────────────
+        upgrades = []
+        try:
+            from datetime import timedelta as _td, datetime as _dt2
+            cutoff = pd.Timestamp.now(tz='UTC') - pd.Timedelta(days=90)
+            upg_df = _get_df(t, 'upgrades_downgrades')
+            if upg_df is not None:
+                upg_df = upg_df.sort_index(ascending=False)
+                for idx, row in upg_df.head(10).iterrows():
+                    try:
+                        row_date = pd.Timestamp(idx)
+                        if row_date.tz is None:
+                            row_date = row_date.tz_localize('UTC')
+                        if row_date < cutoff:
+                            continue
+                    except Exception:
+                        pass
+                    upgrades.append({
+                        'date': str(idx)[:10],
+                        'firm': str(row.get('Firm', '')),
+                        'from_grade': str(row.get('FromGrade', '')),
+                        'to_grade': str(row.get('ToGrade', '')),
+                        'action': str(row.get('Action', '')),
+                    })
+                    if len(upgrades) >= 8:
+                        break
+        except Exception:
+            pass
+
+        # ── Insider transactions (last 60 days) ──────────────────────
+        insider_trades = []
+        try:
+            ins_df = _get_df(t, 'insider_transactions', 'insider_purchases')
+            if ins_df is not None:
+                for _, row in ins_df.head(6).iterrows():
+                    shares = _safe(row.get('Shares') or row.get('shares'))
+                    value = _safe(row.get('Value') or row.get('value'))
+                    insider_trades.append({
+                        'date': str(row.get('Start Date') or row.get('startDate') or row.get('Date') or '')[:10],
+                        'insider': str(row.get('Insider') or row.get('insider') or ''),
+                        'position': str(row.get('Position') or row.get('position') or ''),
+                        'transaction': str(row.get('Transaction') or row.get('transaction') or ''),
+                        'shares': int(shares) if shares else None,
+                        'value': _fmt_m(shares * (_safe(info.get('currentPrice')) or 0) / 1e6) if shares else None,
+                    })
+        except Exception:
+            pass
+
+        # ── Earnings surprise history (last 4 quarters) ──────────────
+        earnings_surprises = []
+        try:
+            eh_df = _get_df(t, 'earnings_history')
+            if eh_df is not None and not eh_df.empty:
+                for _, row in eh_df.head(4).iterrows():
+                    est = _safe(row.get('epsEstimate') or row.get('EPS Estimate'))
+                    act = _safe(row.get('epsActual') or row.get('EPS Actual'))
+                    surprise_pct = round((act - est) / abs(est) * 100, 1) if est and act and est != 0 else None
+                    earnings_surprises.append({
+                        'period': str(row.get('quarter') or row.get('Quarter') or '')[:10],
+                        'estimate': est,
+                        'actual': act,
+                        'surprise_pct': surprise_pct,
+                    })
+        except Exception:
+            pass
+
         mktcap = _safe(info.get('marketCap'))
 
         return {
@@ -284,6 +369,12 @@ def _fetch_research_sync(symbol: str) -> dict:
 
             # Calendar
             'earnings_date': earnings_date,
+
+            # Activity feeds
+            'news_items': news_items,
+            'upgrades': upgrades,
+            'insider_trades': insider_trades,
+            'earnings_surprises': earnings_surprises,
         }
 
     except Exception as e:
