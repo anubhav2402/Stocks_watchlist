@@ -1378,6 +1378,14 @@
   .disc-tweet { font-size: 12px; line-height: 1.55; border-left: 2px solid var(--rule); padding-left: 10px; }
   .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; }
   .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
+  .disc-dismiss-btn { background: none; border: none; cursor: pointer; color: var(--ink-mute); font-size: 14px; padding: 2px 4px; border-radius: 4px; line-height: 1; transition: color .15s, background .15s; flex-shrink: 0; }
+  .disc-dismiss-btn:hover { color: var(--red); background: var(--red-bg); }
+  .disc-dismissed { opacity: .5; }
+  .disc-hidden-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 10px 14px; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; }
+  .disc-hidden-toggle { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--ink-mute); padding: 0; font-weight: 600; }
+  .disc-hidden-toggle:hover { color: var(--ink); }
+  .disc-hidden-clear { margin-left: auto; font-size: 12px; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
+  .disc-hidden-clear:hover { text-decoration: underline; }
 
   /* ── Research page ── */
   .research-page { padding: 28px 40px 80px; max-width: 860px; margin: 0 auto; }
@@ -2800,6 +2808,31 @@ function _renderValuation(d) {
 // ════════════════════════════════════════════════════════════
 let _discoveryData = [];
 let _discFilter = 'all';
+let _discShowHidden = false;
+
+function _loadDiscDismissed() {
+  try { return new Set(JSON.parse(localStorage.getItem('sp_disc_dismissed_v1') || '[]')); } catch { return new Set(); }
+}
+function _saveDiscDismissed(set) {
+  try { localStorage.setItem('sp_disc_dismissed_v1', JSON.stringify([...set])); } catch {}
+}
+function dismissDiscTicker(ticker) {
+  const s = _loadDiscDismissed();
+  s.add(ticker.toUpperCase());
+  _saveDiscDismissed(s);
+  renderDiscovery();
+}
+function restoreDiscTicker(ticker) {
+  const s = _loadDiscDismissed();
+  s.delete(ticker.toUpperCase());
+  _saveDiscDismissed(s);
+  renderDiscovery();
+}
+function clearAllDiscDismissed() {
+  _saveDiscDismissed(new Set());
+  _discShowHidden = false;
+  renderDiscovery();
+}
 
 async function fetchDiscovery(force = false) {
   if (!BACKEND_URL) return;
@@ -2828,24 +2861,37 @@ function renderDiscovery() {
   const allWlTickers = new Set(
     state.lists.flatMap(l => l.stocks || []).map(s => s.ticker.toUpperCase())
   );
-  const newTickers = _discoveryData.filter(t => !allWlTickers.has(t.ticker.toUpperCase()));
-  const knownTickers = _discoveryData.filter(t => allWlTickers.has(t.ticker.toUpperCase()));
+  const dismissed = _loadDiscDismissed();
+  const visible = _discoveryData.filter(t => !dismissed.has(t.ticker.toUpperCase()));
+  const hidden = _discoveryData.filter(t => dismissed.has(t.ticker.toUpperCase()));
+  const newTickers = visible.filter(t => !allWlTickers.has(t.ticker.toUpperCase()));
+  const knownTickers = visible.filter(t => allWlTickers.has(t.ticker.toUpperCase()));
   const newCount = newTickers.length;
   document.getElementById('discSub').textContent =
     `All tickers mentioned by tracked accounts in the last 48h · ${newCount} new pick${newCount !== 1 ? 's' : ''} not in your watchlists.`;
-  const toShow = _discFilter === 'new' ? newTickers : [...newTickers, ...knownTickers];
+  const base = _discFilter === 'new' ? newTickers : [...newTickers, ...knownTickers];
+  const toShow = _discShowHidden ? [...base, ...hidden] : base;
   const wrap = document.getElementById('discoveryWrap');
-  if (toShow.length === 0) {
-    wrap.innerHTML = `<div class="disc-empty">${_discoveryData.length === 0 ? 'No tickers discovered yet — scrape runs every 30 min.' : 'No new tickers outside your watchlists.'}</div>`;
+  // Hidden tickers footer
+  let hiddenBar = '';
+  if (hidden.length > 0) {
+    hiddenBar = `<div class="disc-hidden-bar">
+      <button class="disc-hidden-toggle" onclick="_discShowHidden=!_discShowHidden;renderDiscovery()">
+        ${_discShowHidden ? '▾' : '▸'} ${hidden.length} hidden ticker${hidden.length !== 1 ? 's' : ''}
+      </button>
+      <button class="disc-hidden-clear" onclick="clearAllDiscDismissed()">Clear all</button>
+    </div>`;
+  }
+  if (base.length === 0 && !_discShowHidden) {
+    wrap.innerHTML = `<div class="disc-empty">${_discoveryData.length === 0 ? 'No tickers discovered yet — scrape runs every 30 min.' : 'No new tickers outside your watchlists.'}</div>${hiddenBar}`;
     return;
   }
-  wrap.innerHTML = `<div class="disc-list">${toShow.map(t => _discCard(t, allWlTickers)).join('')}</div>`;
+  wrap.innerHTML = `<div class="disc-list">${toShow.map(t => _discCard(t, allWlTickers, dismissed.has(t.ticker.toUpperCase()))).join('')}</div>${hiddenBar}`;
 }
 
-function _discCard(t, wlTickers) {
+function _discCard(t, wlTickers, isDismissed = false) {
   const isNew = !wlTickers.has(t.ticker.toUpperCase());
   const ago = _relTime(t.last_seen);
-  const tweet = t.recent_mentions?.[t.recent_mentions.length - 1];
   const listsHtml = state.lists.map(l =>
     `<button class="disc-list-opt" onclick="addDiscoveryToList('${t.ticker}','${l.id}',this)">${l.name}</button>`
   ).join('');
@@ -2854,14 +2900,20 @@ function _discCard(t, wlTickers) {
     .map(m => `<div class="disc-tweet"><span class="disc-account">@${m.account}</span>${m.url ? ` <a href="${m.url}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : ''} <span class="disc-tweet-text">${m.text.replace(/</g,'&lt;')}</span></div>`)
     .join('');
   return `
-  <div class="disc-card ${isNew ? 'disc-new' : ''}">
+  <div class="disc-card ${isNew && !isDismissed ? 'disc-new' : ''} ${isDismissed ? 'disc-dismissed' : ''}">
     <div class="disc-card-head">
       <div class="disc-ticker-block">
         <span class="disc-ticker">${t.ticker}</span>
-        ${isNew ? '<span class="disc-new-badge">NEW</span>' : '<span class="disc-tracked-badge">Tracked</span>'}
+        ${isDismissed ? '<span class="disc-tracked-badge" style="opacity:.6">Hidden</span>' : isNew ? '<span class="disc-new-badge">NEW</span>' : '<span class="disc-tracked-badge">Tracked</span>'}
       </div>
-      <div class="disc-meta">${t.mention_count} mention${t.mention_count !== 1 ? 's' : ''} · ${ago}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="disc-meta">${t.mention_count} mention${t.mention_count !== 1 ? 's' : ''} · ${ago}</div>
+        ${isDismissed
+          ? `<button class="disc-dismiss-btn" onclick="restoreDiscTicker('${t.ticker}')" title="Restore">↩</button>`
+          : `<button class="disc-dismiss-btn" onclick="dismissDiscTicker('${t.ticker}')" title="Remove from Discovery">✕</button>`}
+      </div>
     </div>
+    ${isDismissed ? '' : `
     <div class="disc-accounts">${t.unique_accounts.map(a => `<span class="disc-account">@${a}</span>`).join('')}</div>
     ${tweetsHtml ? `<div class="disc-tweets">${tweetsHtml}</div>` : ''}
     <div class="disc-actions">
@@ -2870,7 +2922,7 @@ function _discCard(t, wlTickers) {
         <button class="btn btn-sm btn-primary" onclick="toggleDiscMenu(this)">+ Add to List ▾</button>
         <div class="disc-add-menu">${listsHtml}</div>
       </div>
-    </div>
+    </div>`}
   </div>`;
 }
 
