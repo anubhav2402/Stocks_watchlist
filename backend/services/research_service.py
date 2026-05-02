@@ -1,9 +1,36 @@
 import asyncio
 import logging
+import feedparser
 import pandas as pd
 import yfinance as yf
 
 logger = logging.getLogger(__name__)
+
+
+def _fetch_google_news(symbol: str) -> list[dict]:
+    url = f'https://news.google.com/rss/search?q={symbol}+stock&hl=en-US&gl=US&ceid=US:en'
+    try:
+        feed = feedparser.parse(url)
+        items = []
+        for entry in (feed.entries or [])[:10]:
+            title = getattr(entry, 'title', '').strip()
+            link  = getattr(entry, 'link', '')
+            date_str = ''
+            if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                from datetime import datetime as _dt
+                try:
+                    date_str = _dt(*entry.published_parsed[:3]).strftime('%Y-%m-%d')
+                except Exception:
+                    pass
+            source = ''
+            if hasattr(entry, 'source') and isinstance(entry.source, dict):
+                source = entry.source.get('title', '')
+            if title and link:
+                items.append({'title': title, 'url': link, 'publisher': source, 'date': date_str})
+        return items
+    except Exception as e:
+        logger.warning('Google News RSS fetch failed for %s: %s', symbol, e)
+        return []
 
 
 def _safe(val, default=None):
@@ -185,24 +212,25 @@ def _fetch_research_sync(symbol: str) -> dict:
         except Exception:
             pass
 
-        # ── News headlines ────────────────────────────────────────────
-        news_items = []
-        try:
-            from datetime import datetime as _dt
-            raw_news = t.news or []
-            for n in raw_news[:7]:
-                ts = n.get('providerPublishTime') or n.get('content', {}).get('pubDate')
-                try:
-                    date_str = _dt.fromtimestamp(int(ts)).strftime('%Y-%m-%d') if ts else ''
-                except Exception:
-                    date_str = ''
-                title = n.get('title') or (n.get('content') or {}).get('title', '')
-                url = n.get('link') or (n.get('content') or {}).get('canonicalUrl', {}).get('url', '')
-                publisher = n.get('publisher') or (n.get('content') or {}).get('provider', {}).get('displayName', '')
-                if title:
-                    news_items.append({'title': title, 'url': url, 'publisher': publisher, 'date': date_str})
-        except Exception:
-            pass
+        # ── News headlines (Google News RSS, yfinance fallback) ───────
+        news_items = _fetch_google_news(symbol)
+        if not news_items:
+            try:
+                from datetime import datetime as _dt
+                raw_news = getattr(t, 'news', []) or []
+                for n in raw_news[:7]:
+                    ts = n.get('providerPublishTime') or n.get('content', {}).get('pubDate')
+                    try:
+                        date_str = _dt.fromtimestamp(int(ts)).strftime('%Y-%m-%d') if ts else ''
+                    except Exception:
+                        date_str = ''
+                    title = n.get('title') or (n.get('content') or {}).get('title', '')
+                    url = n.get('link') or (n.get('content') or {}).get('canonicalUrl', {}).get('url', '')
+                    publisher = n.get('publisher') or (n.get('content') or {}).get('provider', {}).get('displayName', '')
+                    if title:
+                        news_items.append({'title': title, 'url': url, 'publisher': publisher, 'date': date_str})
+            except Exception:
+                pass
 
         # ── Analyst upgrades / downgrades (last 90 days) ─────────────
         upgrades = []
@@ -267,6 +295,62 @@ def _fetch_research_sync(symbol: str) -> dict:
                         'actual': act,
                         'surprise_pct': surprise_pct,
                     })
+        except Exception:
+            pass
+
+        # ── Quarterly income (last 4 quarters) ───────────────────────
+        q_periods, q_revenue, q_gross_profit, q_ebit, q_net_income, q_eps, q_rev_growth = [], [], [], [], [], [], []
+        try:
+            q_income = _get_df(t, 'quarterly_income_stmt', 'quarterly_financials')
+            if q_income is not None and not q_income.empty:
+                q_periods = [col.strftime('%b %Y') for col in q_income.columns[:4]]
+                q_rev_raw      = _row(q_income, 'Total Revenue')[:4]
+                q_gross_profit = [_fmt_m(v) for v in _row(q_income, 'Gross Profit')[:4]]
+                q_ebit         = [_fmt_m(v) for v in _row(q_income, 'EBIT', 'Operating Income')[:4]]
+                q_net_income   = [_fmt_m(v) for v in _row(q_income, 'Net Income Common Stockholders', 'Net Income')[:4]]
+                q_eps          = [_safe(v) for v in _row(q_income, 'Diluted EPS', 'Basic EPS')[:4]]
+                q_revenue      = [_fmt_m(v) for v in q_rev_raw]
+                q_rev_growth   = []
+                for i, curr in enumerate(q_rev_raw):
+                    prev = q_rev_raw[i + 1] if i + 1 < len(q_rev_raw) else None
+                    if curr is not None and prev is not None and prev != 0:
+                        q_rev_growth.append(round((curr - prev) / abs(prev) * 100, 1))
+                    else:
+                        q_rev_growth.append(None)
+        except Exception:
+            pass
+
+        # ── Forward analyst estimates (CY + NY revenue & EPS) ────────
+        revenue_estimates, eps_estimates = [], []
+        try:
+            rev_est = t.revenue_estimate
+            if rev_est is not None and not rev_est.empty:
+                for period_key, period_label in [('0y', 'Current Year'), ('+1y', 'Next Year')]:
+                    if period_key in rev_est.index:
+                        r = rev_est.loc[period_key]
+                        revenue_estimates.append({
+                            'period': period_label,
+                            'avg': _safe(r.get('avg')),
+                            'low': _safe(r.get('low')),
+                            'high': _safe(r.get('high')),
+                            'growth': _safe(r.get('growth')),
+                            'num_analysts': int(r.get('numberOfAnalysts') or 0),
+                        })
+        except Exception:
+            pass
+        try:
+            eps_est = t.earnings_estimate
+            if eps_est is not None and not eps_est.empty:
+                for period_key, period_label in [('0y', 'Current Year'), ('+1y', 'Next Year')]:
+                    if period_key in eps_est.index:
+                        r = eps_est.loc[period_key]
+                        eps_estimates.append({
+                            'period': period_label,
+                            'avg': _safe(r.get('avg')),
+                            'growth': _safe(r.get('growth')),
+                            'year_ago_eps': _safe(r.get('yearAgoEps')),
+                            'num_analysts': int(r.get('numberOfAnalysts') or 0),
+                        })
         except Exception:
             pass
 
@@ -375,6 +459,19 @@ def _fetch_research_sync(symbol: str) -> dict:
             'upgrades': upgrades,
             'insider_trades': insider_trades,
             'earnings_surprises': earnings_surprises,
+
+            # Quarterly income ($M, most recent first)
+            'q_periods': q_periods,
+            'q_revenue': q_revenue,
+            'q_gross_profit': q_gross_profit,
+            'q_ebit': q_ebit,
+            'q_net_income': q_net_income,
+            'q_eps': q_eps,
+            'q_rev_growth': q_rev_growth,
+
+            # Forward analyst estimates
+            'revenue_estimates': revenue_estimates,
+            'eps_estimates': eps_estimates,
         }
 
     except Exception as e:

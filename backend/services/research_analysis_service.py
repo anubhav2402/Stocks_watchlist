@@ -93,6 +93,33 @@ def _build_prompt(symbol: str, d: dict, investment_profile: str) -> str:
             for u in upgrades[:5]
         )
 
+    # MRQ snapshot
+    mrq_block = ''
+    q_periods = d.get('q_periods', [])
+    if q_periods:
+        qr  = (d.get('q_revenue')    or [None])[0]
+        qni = (d.get('q_net_income') or [None])[0]
+        qg  = (d.get('q_rev_growth') or [None])[0]
+        mrq_block = (
+            f'Most Recent Quarter ({q_periods[0]}): '
+            f'Rev={_fmt_m(qr)} | Net Income={_fmt_m(qni)} | '
+            f'QoQ Rev Growth={_fmt(qg, 1, "%") if qg is not None else "N/A"}'
+        )
+
+    # Forward analyst consensus estimates
+    fwd_block = ''
+    rev_ests = d.get('revenue_estimates', [])
+    eps_ests = d.get('eps_estimates', [])
+    if rev_ests or eps_ests:
+        rows = []
+        for r in rev_ests:
+            g = f' ({r["growth"] * 100:+.0f}% YoY)' if r.get('growth') is not None else ''
+            rows.append(f'  {r["period"]} Revenue: {_fmt_m(r["avg"])} consensus{g}')
+        for e in eps_ests:
+            g = f' ({e["growth"] * 100:+.0f}% YoY)' if e.get('growth') is not None else ''
+            rows.append(f'  {e["period"]} EPS: ${_fmt(e["avg"], 2)} consensus{g}')
+        fwd_block = 'Analyst Consensus Estimates (forward):\n' + '\n'.join(rows)
+
     # Twitter buzz for this ticker
     buzz_block = ''
     try:
@@ -121,6 +148,10 @@ def _build_prompt(symbol: str, d: dict, investment_profile: str) -> str:
         '4-Year Financials ($M):',
         fin_block,
     ]
+    if mrq_block:
+        lines += ['', mrq_block]
+    if fwd_block:
+        lines += ['', fwd_block]
     if news_block:
         lines += ['', news_block]
     if upg_block:

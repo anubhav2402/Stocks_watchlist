@@ -1347,6 +1347,21 @@
   .prof-foot a:hover { text-decoration: underline; }
 
   /* ── Discovery page ── */
+  /* Tracked accounts management panel */
+  .disc-acct-panel { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; display: none; }
+  .disc-acct-panel.open { display: block; }
+  .disc-acct-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; min-height: 20px; }
+  .disc-acct-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: var(--paper); border: 1px solid var(--rule-soft); border-radius: 6px; font-size: 13px; }
+  .disc-acct-handle { font-weight: 700; color: var(--accent); flex: 1; }
+  .disc-acct-name { font-size: 11px; color: var(--ink-mute); }
+  .disc-acct-toggle { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--rule); background: none; cursor: pointer; color: var(--ink-mute); }
+  .disc-acct-toggle.enabled { border-color: var(--green); color: var(--green); }
+  .disc-acct-del { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; padding: 0 4px; line-height: 1; }
+  .disc-acct-del:hover { color: var(--red); }
+  .disc-acct-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .disc-acct-add input { flex: 1; min-width: 120px; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--ink); }
+  .disc-acct-add input:focus { outline: none; border-color: var(--accent); }
+
   .disc-page { padding: 28px 40px 80px; max-width: 1200px; margin: 0 auto; }
   .disc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .disc-head h2 { font-size: 22px; font-weight: 700; margin: 0; }
@@ -1790,7 +1805,19 @@
   <div id="discoveryPage" class="disc-page" hidden>
     <div class="disc-head">
       <h2>Stock <em>Discovery</em></h2>
-      <button class="btn btn-sm" onclick="fetchDiscovery(true)">↻ Refresh</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="discToggleAcctPanel()">⚙ Accounts</button>
+        <button class="btn btn-sm" onclick="fetchDiscovery(true)">↻ Refresh</button>
+      </div>
+    </div>
+    <div id="discAcctPanel" class="disc-acct-panel">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:10px">Tracked Twitter Accounts</div>
+      <div id="discAcctList" class="disc-acct-list"><span style="font-size:12px;color:var(--ink-faint)">Loading…</span></div>
+      <div class="disc-acct-add">
+        <input id="discAcctUsername" placeholder="@username" maxlength="50" autocomplete="off" onkeydown="if(event.key==='Enter')discAddAccount()">
+        <input id="discAcctName" placeholder="Display name (optional)" maxlength="80" autocomplete="off" onkeydown="if(event.key==='Enter')discAddAccount()">
+        <button class="btn btn-sm btn-primary" onclick="discAddAccount()">+ Add</button>
+      </div>
     </div>
     <p class="disc-sub" id="discSub">All tickers mentioned by tracked accounts in the last 48h — new picks highlighted first.</p>
     <div class="disc-filter-bar">
@@ -3032,6 +3059,98 @@ function clearAllDiscDismissed() {
   renderDiscovery();
 }
 
+// ── Tracked Accounts Management ──────────────────────────────
+let _discAcctPanelOpen = false;
+
+async function discToggleAcctPanel() {
+  _discAcctPanelOpen = !_discAcctPanelOpen;
+  const panel = document.getElementById('discAcctPanel');
+  if (!panel) return;
+  panel.classList.toggle('open', _discAcctPanelOpen);
+  if (_discAcctPanelOpen) await discLoadAccounts();
+}
+
+async function discLoadAccounts() {
+  const el = document.getElementById('discAcctList');
+  if (!el || !BACKEND_URL) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/accounts`, { signal: timeoutSignal(8000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const accounts = data.accounts || [];
+    if (!accounts.length) {
+      el.innerHTML = '<span style="font-size:12px;color:var(--ink-faint)">No tracked accounts yet.</span>';
+      return;
+    }
+    el.innerHTML = accounts.map(a => `
+      <div class="disc-acct-row" id="discAcctRow_${escAttr(a.username)}">
+        <span class="disc-acct-handle">@${escHtml(a.username)}</span>
+        ${a.display_name ? `<span class="disc-acct-name">${escHtml(a.display_name)}</span>` : ''}
+        <button class="disc-acct-toggle ${a.enabled ? 'enabled' : ''}"
+          onclick="discToggleAcct('${escAttr(a.username)}', ${!a.enabled})">
+          ${a.enabled ? 'ON' : 'OFF'}
+        </button>
+        <button class="disc-acct-del" onclick="discDeleteAcct('${escAttr(a.username)}')" title="Remove">✕</button>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = `<span style="font-size:12px;color:var(--red)">Failed to load: ${escHtml(e.message)}</span>`;
+  }
+}
+
+async function discAddAccount() {
+  const userEl = document.getElementById('discAcctUsername');
+  const nameEl = document.getElementById('discAcctName');
+  if (!userEl || !BACKEND_URL) return;
+  const username = userEl.value.trim().replace(/^@/, '');
+  if (!username) { userEl.focus(); return; }
+  const display_name = nameEl ? nameEl.value.trim() : '';
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/accounts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, display_name, enabled: true }),
+      signal: timeoutSignal(8000),
+    });
+    if (res.status === 409) { toast(`@${username} is already tracked`, 'error'); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    userEl.value = '';
+    if (nameEl) nameEl.value = '';
+    await discLoadAccounts();
+    toast(`@${username} added`, 'success');
+  } catch (e) {
+    toast(`Add failed: ${e.message}`, 'error');
+  }
+}
+
+async function discToggleAcct(username, enable) {
+  if (!BACKEND_URL) return;
+  const action = enable ? 'enable' : 'disable';
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/accounts/${encodeURIComponent(username)}/${action}`, {
+      method: 'PATCH', signal: timeoutSignal(8000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await discLoadAccounts();
+  } catch (e) {
+    toast(`Update failed: ${e.message}`, 'error');
+  }
+}
+
+async function discDeleteAcct(username) {
+  if (!BACKEND_URL) return;
+  if (!confirm(`Remove @${username} from tracked accounts?`)) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/accounts/${encodeURIComponent(username)}`, {
+      method: 'DELETE', signal: timeoutSignal(8000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await discLoadAccounts();
+    toast(`@${username} removed`, 'success');
+  } catch (e) {
+    toast(`Delete failed: ${e.message}`, 'error');
+  }
+}
+
 async function fetchDiscovery(force = false) {
   if (!BACKEND_URL) return;
   try {
@@ -3804,8 +3923,14 @@ function rwSectionHtml(n) {
     `);
 
     case '04': return _rwSec('04', '<em>Financials</em>', `
-      <div class="rw-sub-head">Income Statement <span style="font-weight:400;color:var(--ink-faint)">( · most recent first)</span></div>
+      <div class="rw-sub-head">Annual Income Statement <span style="font-weight:400;color:var(--ink-faint)">(most recent first)</span></div>
       <div style="overflow-x:auto"><table class="rw-fin-table" id="rwFinTable"><tr><td colspan="5" style="color:var(--ink-mute);font-size:12px;padding:20px 0">Loading…</td></tr></table></div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Most Recent Quarter</div>
+      <div style="overflow-x:auto"><table class="rw-fin-table" id="rwQtrTable"><tr><td colspan="5" style="color:var(--ink-mute);font-size:12px;padding:12px 0">—</td></tr></table></div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">Analyst Estimates <span style="font-weight:400;color:var(--ink-faint)">(consensus · current &amp; next year)</span></div>
+      <div id="rwEstimatesBlock" class="rw-auto-grid" style="margin-bottom:16px"><span style="color:var(--ink-mute);font-size:12px">—</span></div>
       <hr class="rw-divider">
       <div class="rw-sub-head">Balance Sheet & Cash Flow</div>
       <div class="rw-auto-grid">
@@ -3932,6 +4057,8 @@ function rwPopulateAuto() {
 
   rwBuildFinTable();
   rwBuildCfTable();
+  rwBuildQtrTable();
+  rwBuildEstimatesBlock();
 }
 
 function rwRenderNewsActivity(d) {
@@ -4109,6 +4236,89 @@ function rwBuildCfTable() {
     ${mRow('Free Cash Flow', d.fcf)}
     ${pctRow('  FCF Conversion', d.fcf_conv)}
   </tbody>`;
+}
+
+// ── Quarterly income table ────────────────────────────────────
+function rwBuildQtrTable() {
+  const d = _rwData;
+  const periods = d.q_periods || [];
+  const el = document.getElementById('rwQtrTable');
+  if (!el) return;
+  if (!periods.length) {
+    el.innerHTML = '<tr><td colspan="5" style="color:var(--ink-mute);font-size:12px;padding:12px 0">No quarterly data available.</td></tr>';
+    return;
+  }
+  const cols = periods.slice(0, 4);
+  const ncols = cols.length;
+  const header = `<thead><tr><th></th>${cols.map(p => `<th>${p}</th>`).join('')}</tr></thead>`;
+  function mRowQ(label, vals, sub=false) {
+    if (!vals || !vals.length) return '';
+    const cells = Array.from({length: ncols}, (_, i) => {
+      const v = vals[i];
+      const str = v !== null && v !== undefined
+        ? (Math.abs(v) >= 1000 ? '$' + (v/1000).toFixed(1) + 'B' : '$' + v.toFixed(0) + 'M') : '—';
+      return `<td>${str}</td>`;
+    }).join('');
+    return `<tr${sub ? ' class="sub"' : ''}><td>${label}</td>${cells}</tr>`;
+  }
+  function growthRowQ(label, vals) {
+    if (!vals || !vals.length) return '';
+    const cells = Array.from({length: ncols}, (_, i) => {
+      const v = vals[i];
+      return `<td>${v !== null && v !== undefined ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '—'}</td>`;
+    }).join('');
+    return `<tr class="sub"><td>${label}</td>${cells}</tr>`;
+  }
+  const epsRow = Array.from({length: ncols}, (_, i) => {
+    const v = (d.q_eps || [])[i];
+    return `<td>${v !== null && v !== undefined ? '$' + Number(v).toFixed(2) : '—'}</td>`;
+  }).join('');
+  el.innerHTML = header + `<tbody>
+    ${mRowQ('Revenue', d.q_revenue)}
+    ${growthRowQ('  QoQ Growth', d.q_rev_growth)}
+    ${mRowQ('Gross Profit', d.q_gross_profit)}
+    ${mRowQ('EBIT', d.q_ebit)}
+    ${mRowQ('Net Income', d.q_net_income)}
+    <tr><td>EPS (Diluted)</td>${epsRow}</tr>
+  </tbody>`;
+}
+
+// ── Analyst estimates block ───────────────────────────────────
+function rwBuildEstimatesBlock() {
+  const d = _rwData;
+  const el = document.getElementById('rwEstimatesBlock');
+  if (!el) return;
+  const revEsts = d.revenue_estimates || [];
+  const epsEsts = d.eps_estimates || [];
+  if (!revEsts.length && !epsEsts.length) {
+    el.innerHTML = '<span style="color:var(--ink-mute);font-size:12px">No analyst estimates available.</span>';
+    return;
+  }
+  const cells = [
+    ...revEsts.map(r => {
+      const val = r.avg !== null && r.avg !== undefined ? _fmtM(r.avg / 1e6) : '—';
+      const g = r.growth !== null && r.growth !== undefined
+        ? (r.growth > 0 ? '+' : '') + (r.growth * 100).toFixed(0) + '% YoY' : '';
+      const gcls = r.growth > 0 ? 'positive' : r.growth < 0 ? 'negative' : '';
+      return `<div class="rw-auto-cell">
+        <div class="rw-auto-label"><span class="rw-auto-badge">EST</span>${escHtml(r.period)} Revenue</div>
+        <div class="rw-auto-val">${val}</div>
+        ${g ? `<div style="font-size:10px;font-weight:600;margin-top:2px" class="${gcls}">${g}</div>` : ''}
+      </div>`;
+    }),
+    ...epsEsts.map(e => {
+      const val = e.avg !== null && e.avg !== undefined ? '$' + Number(e.avg).toFixed(2) : '—';
+      const g = e.growth !== null && e.growth !== undefined
+        ? (e.growth > 0 ? '+' : '') + (e.growth * 100).toFixed(0) + '% YoY' : '';
+      const gcls = e.growth > 0 ? 'positive' : e.growth < 0 ? 'negative' : '';
+      return `<div class="rw-auto-cell">
+        <div class="rw-auto-label"><span class="rw-auto-badge">EST</span>${escHtml(e.period)} EPS</div>
+        <div class="rw-auto-val">${val}</div>
+        ${g ? `<div style="font-size:10px;font-weight:600;margin-top:2px" class="${gcls}">${g}</div>` : ''}
+      </div>`;
+    }),
+  ];
+  el.innerHTML = cells.join('');
 }
 
 // ── Field save/restore ────────────────────────────────────────
