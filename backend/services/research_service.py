@@ -333,11 +333,11 @@ def _fetch_research_sync(symbol: str) -> dict:
                         r = rev_est.loc[period_key]
                         revenue_estimates.append({
                             'period': period_label,
-                            'avg': _safe(r.get('avg')),
-                            'low': _safe(r.get('low')),
-                            'high': _safe(r.get('high')),
-                            'growth': _safe(r.get('growth')),
-                            'num_analysts': int(r.get('numberOfAnalysts') or 0),
+                            'avg': float(_safe(r.get('avg'))) if _safe(r.get('avg')) is not None else None,
+                            'low': float(_safe(r.get('low'))) if _safe(r.get('low')) is not None else None,
+                            'high': float(_safe(r.get('high'))) if _safe(r.get('high')) is not None else None,
+                            'growth': float(_safe(r.get('growth'))) if _safe(r.get('growth')) is not None else None,
+                            'num_analysts': int(_safe(r.get('numberOfAnalysts')) or 0),
                         })
         except Exception:
             pass
@@ -349,10 +349,10 @@ def _fetch_research_sync(symbol: str) -> dict:
                         r = eps_est.loc[period_key]
                         eps_estimates.append({
                             'period': period_label,
-                            'avg': _safe(r.get('avg')),
-                            'growth': _safe(r.get('growth')),
-                            'year_ago_eps': _safe(r.get('yearAgoEps')),
-                            'num_analysts': int(r.get('numberOfAnalysts') or 0),
+                            'avg': float(_safe(r.get('avg'))) if _safe(r.get('avg')) is not None else None,
+                            'growth': float(_safe(r.get('growth'))) if _safe(r.get('growth')) is not None else None,
+                            'year_ago_eps': float(_safe(r.get('yearAgoEps'))) if _safe(r.get('yearAgoEps')) is not None else None,
+                            'num_analysts': int(_safe(r.get('numberOfAnalysts')) or 0),
                         })
         except Exception:
             pass
