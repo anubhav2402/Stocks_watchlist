@@ -69,7 +69,9 @@ def extract_tickers(text: str) -> list[str]:
 
     # 1. Cashtags — most reliable signal
     for m in _CASHTAG_RE.finditer(text):
-        raw = m.group(1).upper()
+        raw = m.group(1).upper().rstrip('.-')  # strip sentence-ending punctuation
+        if not raw:
+            continue
         # Map via alias (handles $RELIANCE → RELIANCE.NS)
         resolved = _ALIAS_WORDS.get(raw.lower()) or _ALIAS_WORDS.get(raw)
         _add(resolved or raw)
