@@ -18,6 +18,13 @@ async def get_discovery():
     }
 
 
+@router.get("/discovery/tweets")
+async def get_discovery_tweets():
+    """Return unique tweets within the discovery window, each with all tickers found in it."""
+    tweets = buzz_engine.get_discovery_tweets()
+    return {"tweets": tweets, "total": len(tweets)}
+
+
 @router.get("/company/{symbol}", response_model=CompanyProfile)
 async def get_company_profile(symbol: str):
     return await fetch_company_profile(symbol.upper())

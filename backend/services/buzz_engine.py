@@ -138,6 +138,41 @@ def get_discovery_tickers() -> list[dict]:
     return sorted(result, key=lambda x: x["mention_count"], reverse=True)
 
 
+def get_discovery_tweets() -> list[dict]:
+    """Return unique tweets within DISCOVERY_WINDOW_HOURS, each with all tickers found in it.
+    Sorted newest-first. Deduplicates by (account, tweet_id)."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=DISCOVERY_WINDOW_HOURS)
+    seen: dict[tuple, dict] = {}
+
+    for ticker, mentions in _mention_log.items():
+        for m in mentions:
+            if _parse_ts(m.timestamp) < cutoff:
+                continue
+            key = (m.account, m.tweet_id)
+            if key not in seen:
+                seen[key] = {
+                    'tweet_id': m.tweet_id,
+                    'account': m.account,
+                    'text': m.text,
+                    'url': m.url,
+                    'timestamp': m.timestamp,
+                    'sentiment_score': m.sentiment_score,
+                    'sentiment_label': m.sentiment_label,
+                    'tickers': [],
+                    '_set': set(),
+                }
+            if ticker not in seen[key]['_set']:
+                seen[key]['_set'].add(ticker)
+                seen[key]['tickers'].append(ticker)
+
+    result = []
+    for tweet in seen.values():
+        result.append({k: v for k, v in tweet.items() if k != '_set'})
+
+    result.sort(key=lambda x: x['timestamp'], reverse=True)
+    return result
+
+
 def mention_log_snapshot() -> dict[str, list[dict]]:
     """Debug endpoint: raw mention log."""
     return {t: [m.model_dump() for m in mentions]
