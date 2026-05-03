@@ -61,5 +61,26 @@
     "category": "analyst",
     "market": "all",
     "enabled": true
+  },
+  {
+    "username": "KawzInvests",
+    "display_name": "Kawz Invests",
+    "category": "analyst",
+    "market": "all",
+    "enabled": true
+  },
+  {
+    "username": "joinautopilot",
+    "display_name": "Autopilot",
+    "category": "analyst",
+    "market": "all",
+    "enabled": true
+  },
+  {
+    "username": "SuperDuperInvst",
+    "display_name": "Super Duper Invest",
+    "category": "analyst",
+    "market": "all",
+    "enabled": true
   }
 ]
