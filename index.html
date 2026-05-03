@@ -1723,6 +1723,7 @@
             <th data-col="price">Price <span class="sort-arrow">▲▼</span></th>
             <th data-col="dayChangePct">Today % <span class="sort-arrow">▲▼</span></th>
             <th data-col="returnSinceAdded">Since Added <span class="sort-arrow">▲▼</span></th>
+            <th data-col="return1m">1M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return6m">6M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return1y">1Y <span class="sort-arrow">▲▼</span></th>
             <th data-col="return5y">5Y <span class="sort-arrow">▲▼</span></th>
@@ -2213,6 +2214,7 @@ async function fetchChart(ticker) {
 
   // Historical returns — index directly into monthly closes
   const pct = (old) => old != null && old > 0 ? ((price - old) / old * 100) : null;
+  const return1m = pct(n > 1  ? moCloses[n - 2]  : null);
   const return6m = pct(n > 6  ? moCloses[n - 7]  : null);
   const return1y = pct(n > 12 ? moCloses[n - 13] : null);
   const return5y = pct(n > 60 ? moCloses[n - 61] : null);
@@ -2236,6 +2238,7 @@ async function fetchChart(ticker) {
     dayChangePct,
     name: meta.shortName || meta.longName || ticker,
     currency: meta.currency || 'USD',
+    return1m,
     return6m,
     return1y,
     return5y,
@@ -2289,6 +2292,7 @@ async function fetchTickerData(ticker) {
             dayChangePct: d.day_change_pct,
             name:        d.name,
             currency:    d.currency || 'USD',
+            return1m:    d.return_1m,
             return6m:    d.return_6m,
             return1y:    d.return_1y,
             return5y:    d.return_5y,
@@ -2522,6 +2526,7 @@ async function refreshAll() {
           price: d.price,
           prevClose: d.prevClose,
           dayChangePct: d.dayChangePct,
+          return1m: d.return1m,
           return6m: d.return6m,
           return1y: d.return1y,
           return5y: d.return5y,
@@ -2668,7 +2673,7 @@ async function refreshSingle(ticker) {
       name: d.name || watchlist[idx].name,
       price: d.price, prevClose: d.prevClose,
       dayChangePct: d.dayChangePct,
-      return6m: d.return6m, return1y: d.return1y, return5y: d.return5y,
+      return1m: d.return1m, return6m: d.return6m, return1y: d.return1y, return5y: d.return5y,
       pe: d.pe, forwardPe: d.forwardPe, pb: d.pb, grossMargin: d.grossMargin,
       currency: d.currency, lastFetched: Date.now(),
     };
@@ -3429,6 +3434,7 @@ function render() {
       <td><span class="price-main">${fmtPrice(s.price, s.currency)}</span></td>
       <td>${fmtPct(s.dayChangePct)}</td>
       <td>${fmtPct(sinceAdded)}</td>
+      <td>${fmtPct(s.return1m)}</td>
       <td>${fmtPct(s.return6m)}</td>
       <td>${fmtPct(s.return1y)}</td>
       <td>${fmtPct(s.return5y)}</td>
