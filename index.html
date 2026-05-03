@@ -1323,7 +1323,7 @@
   .disc-list-opt:hover { background: var(--paper); }
   .disc-tweets { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
   .disc-tweet { font-size: 12px; line-height: 1.55; border-left: 2px solid var(--rule); padding-left: 10px; }
-  .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; }
+  .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
   .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
   .disc-dismiss-btn { background: none; border: none; cursor: pointer; color: var(--ink-mute); font-size: 14px; padding: 2px 4px; border-radius: 4px; line-height: 1; transition: color .15s, background .15s; flex-shrink: 0; }
   .disc-dismiss-btn:hover { color: var(--red); background: var(--red-bg); }
@@ -2999,6 +2999,7 @@ async function fetchDiscovery(force = false) {
     if (!res.ok) return;
     const data = await res.json();
     _discoveryData = data.tweets || [];
+    _discoveryData.forEach(tw => { _discTweetRegistry[_discTweetKey(tw)] = tw; });
     const pill = document.getElementById('pageDiscoveryCount');
     pill.textContent = _discoveryData.length;
     pill.classList.toggle('zero', _discoveryData.length === 0);
@@ -3068,7 +3069,7 @@ function _discTweetCard(tw, wlTickers, isDismissed = false) {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
         <span class="disc-meta">${escHtml(ago)}</span>
-        <button class="disc-bm-btn${bmSaved ? ' saved' : ''}" title="${bmSaved ? 'Remove bookmark' : 'Save tweet'}" onclick='_toggleBm(${JSON.stringify(tw)})'>${bmSaved ? '🔖' : '🏷️'}</button>
+        <button class="disc-bm-btn${bmSaved ? ' saved' : ''}" title="${bmSaved ? 'Remove bookmark' : 'Save tweet'}" onclick="_discBmToggle('${escAttr(key)}')">${bmSaved ? '🔖' : '🏷️'}</button>
         ${isDismissed
           ? `<button class="disc-dismiss-btn" onclick="restoreDiscTweet('${escAttr(key)}')" title="Restore">↩</button>`
           : `<button class="disc-dismiss-btn" onclick="dismissDiscTweet('${escAttr(key)}')" title="Hide">✕</button>`}
@@ -3152,6 +3153,14 @@ function _addTickerToWl(ticker, listId) {
 // ════════════════════════════════════════════════════════════
 // BOOKMARKS
 // ════════════════════════════════════════════════════════════
+// Registry so cards can reference tweets by key without embedding JSON in onclick
+const _discTweetRegistry = {};
+
+function _discBmToggle(key) {
+  const tw = _discTweetRegistry[key];
+  if (tw) _toggleBm(tw);
+}
+
 const _BM_KEY = 'sp_bookmarks_v1';
 let _bmQuery = '';
 
