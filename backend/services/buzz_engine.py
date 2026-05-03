@@ -42,7 +42,7 @@ def _load_state() -> None:
             mentions = [TweetMention(**m) for m in mentions_data]
             _mention_log[ticker] = mentions
             for m in mentions:
-                _seen_tweets.add((m.account, m.tweet_id))
+                _seen_tweets.add((m.account, m.tweet_id, ticker))
         # Prune expired entries and rebuild alerts
         for ticker in list(_mention_log.keys()):
             _prune_window(ticker)
@@ -86,7 +86,7 @@ def ingest_mention(ticker: str, mention: TweetMention) -> Optional[BuzzAlert]:
     Add a mention and return a BuzzAlert if buzz threshold is reached,
     or update an existing alert.  Returns None if no buzz yet.
     """
-    key = (mention.account, mention.tweet_id)
+    key = (mention.account, mention.tweet_id, ticker)
     if key in _seen_tweets:
         return None
     _seen_tweets.add(key)
