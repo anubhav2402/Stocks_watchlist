@@ -54,5 +54,12 @@
     "category": "analyst",
     "market": "US",
     "enabled": true
+  },
+  {
+    "username": "WealthyReadings",
+    "display_name": "Wealthy Readings",
+    "category": "analyst",
+    "market": "all",
+    "enabled": true
   }
 ]
