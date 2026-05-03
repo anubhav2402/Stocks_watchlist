@@ -82,5 +82,12 @@
     "category": "analyst",
     "market": "all",
     "enabled": true
+  },
+  {
+    "username": "PhotonCap",
+    "display_name": "Photon Capital",
+    "category": "analyst",
+    "market": "US",
+    "enabled": true
   }
 ]
