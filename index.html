@@ -1329,6 +1329,32 @@
   .disc-dismiss-btn:hover { color: var(--red); background: var(--red-bg); }
   .disc-dismissed { opacity: .5; }
   .disc-hidden-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 10px 14px; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; }
+
+  /* ── Ticker tags inside tweet text ── */
+  .tw-tag { display: inline-block; background: var(--paper-deep); color: var(--accent); border: 1px solid color-mix(in srgb,var(--accent) 30%,transparent); border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 700; letter-spacing: .02em; cursor: pointer; position: relative; transition: background .12s; }
+  .tw-tag:hover { background: var(--accent); color: var(--paper); }
+  .ticker-pop { position: absolute; top: calc(100% + 4px); left: 0; z-index: 300; background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 10px; min-width: 160px; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+  .ticker-pop .tp-sym { font-family: 'JetBrains Mono',monospace; font-weight: 800; font-size: 13px; color: var(--accent); margin-bottom: 8px; }
+  .ticker-pop .tp-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: 7px 10px; font-size: 12px; color: var(--ink); cursor: pointer; border-radius: 6px; transition: background .1s; white-space: nowrap; }
+  .ticker-pop .tp-btn:hover { background: var(--paper-deep); }
+  .ticker-pop .tp-btn.primary { color: var(--accent); font-weight: 700; }
+  .ticker-pop .tp-sep { height: 1px; background: var(--rule); margin: 6px 0; }
+  /* ── Bookmark button ── */
+  .disc-bm-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 5px; border-radius: 5px; color: var(--ink-faint); transition: color .15s, background .15s; flex-shrink: 0; line-height: 1; }
+  .disc-bm-btn:hover, .disc-bm-btn.saved { color: var(--accent); }
+  /* ── Bookmarks page ── */
+  .bm-page { max-width: 740px; margin: 0 auto; padding: 0 16px 80px; }
+  .bm-head { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 20px; border-bottom: 1px solid var(--rule); margin-bottom: 20px; }
+  .bm-head h2 { font-family: 'Fraunces',serif; font-size: 26px; font-weight: 700; }
+  .bm-head h2 em { color: var(--accent); font-style: italic; }
+  .bm-search-wrap { display: flex; gap: 8px; align-items: center; margin-bottom: 18px; }
+  .bm-search { flex: 1; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 14px; font-size: 13px; color: var(--ink); outline: none; }
+  .bm-search:focus { border-color: var(--accent); }
+  .bm-list { display: flex; flex-direction: column; gap: 14px; }
+  .bm-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+  .bm-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .bm-tickers { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .bm-text { font-size: 13px; color: var(--ink-mute); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
   .disc-hidden-toggle { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--ink-mute); padding: 0; font-weight: 600; }
   .disc-hidden-toggle:hover { color: var(--ink); }
   .disc-hidden-clear { margin-left: auto; font-size: 12px; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
@@ -1596,6 +1622,10 @@
     <button class="page-tab" id="pageTabResearch" onclick="switchPage('research')">
       <span>Research</span>
       <span class="pill zero" id="pageResearchCount">0</span>
+    </button>
+    <button class="page-tab" id="pageTabSaved" onclick="switchPage('saved')">
+      <span>Saved</span>
+      <span class="pill zero" id="pageSavedCount">0</span>
     </button>
   </div>
 
@@ -1888,6 +1918,18 @@
     </div>
   </div>
 
+</div>
+
+<!-- ═══════════════ SAVED / BOOKMARKS PAGE ═══════════════ -->
+<div id="savedPage" class="bm-page" hidden>
+  <div class="bm-head">
+    <h2>Saved <em>Tweets</em></h2>
+    <button class="btn btn-sm" onclick="_clearAllBms()" id="bmClearBtn" style="display:none">Clear all</button>
+  </div>
+  <div class="bm-search-wrap">
+    <input class="bm-search" id="bmSearchInput" placeholder="Search by ticker, account, or keyword…" oninput="_bmQuery=this.value;renderBookmarks()">
+  </div>
+  <div id="bookmarksWrap"><div class="disc-empty">No saved tweets yet.</div></div>
 </div>
 
 <!-- ═══════════════ ADD MODAL ═══════════════ -->
@@ -2378,11 +2420,14 @@ function switchPage(name) {
   document.getElementById('detailPage').hidden = (name !== 'detail');
   document.getElementById('researchPage').hidden = (name !== 'research');
   document.getElementById('researchEditorPage').hidden = (name !== 'researchEditor');
+  document.getElementById('savedPage').hidden = (name !== 'saved');
   document.getElementById('pageTabWatchlist').classList.toggle('active', name === 'watchlist');
   document.getElementById('pageTabDiscovery').classList.toggle('active', name === 'discovery');
   document.getElementById('pageTabResearch').classList.toggle('active', name === 'research' || name === 'researchEditor');
+  document.getElementById('pageTabSaved').classList.toggle('active', name === 'saved');
   if (name === 'discovery') fetchDiscovery();
   if (name === 'research') rwRenderHome();
+  if (name === 'saved') renderBookmarks();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3016,7 +3061,17 @@ function _discCard(t, wlTickers, isDismissed = false) {
   ).join('');
   const tweetsHtml = (t.recent_mentions || [])
     .slice().reverse()
-    .map(m => `<div class="disc-tweet"><span class="disc-account">@${m.account}</span>${m.url ? ` <a href="${m.url}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : ''} <span class="disc-tweet-text">${m.text.replace(/</g,'&lt;')}</span></div>`)
+    .map(m => {
+      const bmSaved = _isBm(m.account, m.tweet_id);
+      return `<div class="disc-tweet">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span class="disc-account">@${escHtml(m.account)}</span>
+          ${m.url ? `<a href="${escAttr(m.url)}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : ''}
+          <button class="disc-bm-btn${bmSaved?' saved':''}" title="${bmSaved?'Remove bookmark':'Bookmark'}" onclick='_toggleBm(${JSON.stringify(m)})'>${bmSaved?'🔖':'🏷️'}</button>
+        </div>
+        <div class="disc-tweet-text">${_highlightTickers(m.text)}</div>
+      </div>`;
+    })
     .join('');
   return `
   <div class="disc-card ${isNew && !isDismissed ? 'disc-new' : ''} ${isDismissed ? 'disc-dismissed' : ''}">
@@ -3071,6 +3126,146 @@ function addDiscoveryToList(ticker, listId, btnEl) {
   renderDiscovery();
   setTimeout(() => refreshSingle(ticker.toUpperCase()), 400);
 }
+
+// ════════════════════════════════════════════════════════════
+// TICKER TAG HIGHLIGHTING + POPOVER
+// ════════════════════════════════════════════════════════════
+function _highlightTickers(text) {
+  const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/\$([A-Z][A-Z0-9]{1,8})\b/g, (_, t) =>
+    `<span class="tw-tag" onclick="event.stopPropagation();_showTickerPop(this,'${t}')">\$${t}</span>`
+  );
+}
+
+let _tickerPopEl = null;
+function _showTickerPop(el, ticker) {
+  _closeTickerPop();
+  const addBtns = state.lists.map(l =>
+    `<button class="tp-btn" onclick="_addTickerToWl('${escAttr(ticker)}','${escAttr(l.id)}');_closeTickerPop()">${escHtml('+ ' + l.name)}</button>`
+  ).join('');
+  const pop = document.createElement('div');
+  pop.className = 'ticker-pop';
+  pop.innerHTML = `<div class="tp-sym">\$${escHtml(ticker)}</div>
+    <button class="tp-btn primary" onclick="openTickerDetail('${escAttr(ticker)}','discovery');_closeTickerPop()">View Details →</button>
+    ${addBtns ? `<div class="tp-sep"></div>${addBtns}` : ''}`;
+  el.appendChild(pop);
+  _tickerPopEl = pop;
+}
+function _closeTickerPop() {
+  if (_tickerPopEl) { _tickerPopEl.remove(); _tickerPopEl = null; }
+}
+document.addEventListener('click', _closeTickerPop);
+
+function _addTickerToWl(ticker, listId) {
+  const list = state.lists.find(l => l.id === listId);
+  if (!list) return;
+  if (list.stocks.find(s => s.ticker === ticker.toUpperCase())) {
+    toast(`${ticker} already in "${list.name}"`, 'error'); return;
+  }
+  list.stocks.push({ ticker: ticker.toUpperCase(), name: ticker, thesis: '', addedAt: Date.now(), priceOnAdd: null });
+  save();
+  toast(`${ticker} added to "${list.name}"`, 'success');
+  renderDiscovery();
+  setTimeout(() => refreshSingle(ticker.toUpperCase()), 400);
+}
+
+// ════════════════════════════════════════════════════════════
+// BOOKMARKS
+// ════════════════════════════════════════════════════════════
+const _BM_KEY = 'sp_bookmarks_v1';
+let _bmQuery = '';
+
+function _loadBms() {
+  try { return JSON.parse(localStorage.getItem(_BM_KEY) || '[]'); }
+  catch { return []; }
+}
+function _saveBms(bms) {
+  localStorage.setItem(_BM_KEY, JSON.stringify(bms));
+  // update tab pill
+  const pill = document.getElementById('pageSavedCount');
+  if (pill) { pill.textContent = bms.length; pill.classList.toggle('zero', bms.length === 0); }
+}
+function _isBm(account, tweetId) {
+  return _loadBms().some(b => b.account === account && b.tweet_id === tweetId);
+}
+function _toggleBm(m) {
+  // m is a TweetMention-shaped object from discovery
+  const bms = _loadBms();
+  const idx = bms.findIndex(b => b.account === m.account && b.tweet_id === m.tweet_id);
+  if (idx >= 0) {
+    bms.splice(idx, 1);
+    _saveBms(bms);
+    toast('Bookmark removed', 'success');
+  } else {
+    const tickers = [...new Set((m.text || '').match(/\$([A-Z][A-Z0-9]{1,8})\b/g)?.map(x => x.slice(1)) || [])];
+    bms.unshift({
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      tweet_id: m.tweet_id,
+      account: m.account,
+      text: m.text || '',
+      url: m.url || '',
+      timestamp: m.timestamp || '',
+      tickers,
+      saved_at: new Date().toISOString(),
+    });
+    _saveBms(bms);
+    toast('Tweet saved to Bookmarks', 'success');
+  }
+  renderDiscovery();
+}
+function _removeBm(id) {
+  const bms = _loadBms().filter(b => b.id !== id);
+  _saveBms(bms);
+  renderBookmarks();
+}
+function _clearAllBms() {
+  if (!confirm('Remove all saved tweets?')) return;
+  _saveBms([]);
+  renderBookmarks();
+}
+
+function renderBookmarks() {
+  const bms = _loadBms();
+  const el = document.getElementById('bookmarksWrap');
+  const clearBtn = document.getElementById('bmClearBtn');
+  if (!el) return;
+  if (clearBtn) clearBtn.style.display = bms.length ? '' : 'none';
+  const q = _bmQuery.trim().toLowerCase();
+  const filtered = q ? bms.filter(b =>
+    b.tickers.some(t => t.toLowerCase().includes(q)) ||
+    b.account.toLowerCase().includes(q) ||
+    b.text.toLowerCase().includes(q)
+  ) : bms;
+  if (!filtered.length) {
+    el.innerHTML = `<div class="disc-empty">${bms.length === 0 ? 'No saved tweets yet.<br><small>Use the 🏷️ button on any tweet in Discovery to save it.</small>' : `No results for "${escHtml(q)}"`}</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="bm-list">${filtered.map(_bmCard).join('')}</div>`;
+}
+
+function _bmCard(bm) {
+  const ago = _relTime(bm.saved_at);
+  const tickerTags = bm.tickers.map(t =>
+    `<span class="tw-tag" onclick="event.stopPropagation();_showTickerPop(this,'${escAttr(t)}')">\$${escHtml(t)}</span>`
+  ).join('');
+  return `<div class="bm-card">
+    <div class="bm-card-head">
+      <span class="disc-account">@${escHtml(bm.account)}</span>
+      ${bm.url ? `<a href="${escAttr(bm.url)}" target="_blank" rel="noopener" class="tweet-ext-link">↗</a>` : ''}
+      <span style="margin-left:auto;font-size:11px;color:var(--ink-faint)">${escHtml(ago)}</span>
+      <button class="disc-bm-btn saved" title="Remove bookmark" onclick="_removeBm('${escAttr(bm.id)}')">🔖</button>
+    </div>
+    ${tickerTags ? `<div class="bm-tickers">${tickerTags}</div>` : ''}
+    <div class="bm-text">${_highlightTickers(bm.text)}</div>
+  </div>`;
+}
+
+// Init saved count on load
+(function() {
+  const bms = _loadBms();
+  const pill = document.getElementById('pageSavedCount');
+  if (pill) { pill.textContent = bms.length; pill.classList.toggle('zero', bms.length === 0); }
+})();
 
 function _relTime(isoStr) {
   if (!isoStr) return '';
