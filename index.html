@@ -228,44 +228,6 @@
   .page-tab .pill.zero { background: var(--rule); color: var(--ink-mute); }
 
   /* ════════════════ ALERTS PAGE ════════════════ */
-  .alerts-page { padding: 28px 40px 80px; max-width: 1200px; margin: 0 auto; }
-
-  .alerts-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-  }
-
-  .alerts-head h2 {
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 32px;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-  }
-  .alerts-head h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
-
-  .alerts-head .meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .alerts-sub {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    color: var(--ink-mute);
-    font-size: 14px;
-    margin-bottom: 22px;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 14px;
-  }
-
   .alerts-list { display: flex; flex-direction: column; gap: 14px; }
 
   .alert-card {
@@ -469,36 +431,6 @@
     transition: all 0.15s;
   }
   .alert-jump:hover { background: var(--ink); color: var(--paper); }
-
-  .alerts-empty {
-    border: 1px dashed var(--rule);
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--ink-mute);
-  }
-
-  .alerts-empty .mark {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 56px;
-    color: var(--ink-faint);
-    margin-bottom: 12px;
-  }
-
-  .alerts-empty p {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 16px;
-    margin-bottom: 4px;
-  }
-
-  .alerts-empty .hint {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
 
   /* ════════════════ WATCHLIST TABS ════════════════ */
   .wl-tabs-bar {
@@ -1657,10 +1589,6 @@
   <!-- ═══════════════ PAGE TABS ═══════════════ -->
   <div class="page-tabs-bar">
     <button class="page-tab active" id="pageTabWatchlist" onclick="switchPage('watchlist')">Watchlist</button>
-    <button class="page-tab" id="pageTabAlerts" onclick="switchPage('alerts')">
-      <span>Alerts</span>
-      <span class="pill zero" id="pageAlertCount">0</span>
-    </button>
     <button class="page-tab" id="pageTabDiscovery" onclick="switchPage('discovery')">
       <span>Discovery</span>
       <span class="pill zero" id="pageDiscoveryCount">0</span>
@@ -1791,16 +1719,6 @@
     </footer>
   </main>
   </div><!-- /#watchlistPage -->
-
-  <!-- ═══════════════ ALERTS PAGE ═══════════════ -->
-  <div id="alertsPage" class="alerts-page" hidden>
-    <div class="alerts-head">
-      <h2>Buzz <em>Alerts</em></h2>
-      <span class="meta" id="alertsLastUpdated">—</span>
-    </div>
-    <p class="alerts-sub">Two or more tracked accounts mentioned the ticker within the last 48 hours. Bullish first, then bearish.</p>
-    <div id="alertsListWrap"></div>
-  </div>
 
   <div id="discoveryPage" class="disc-page" hidden>
     <div class="disc-head">
@@ -2442,7 +2360,6 @@ async function fetchAlerts() {
       }
     }
     renderAlerts();
-    renderAlertsPage();
     render();
   } catch (e) {
     console.warn('fetchAlerts failed:', e.message);
@@ -2450,158 +2367,23 @@ async function fetchAlerts() {
 }
 
 // ════════════════════════════════════════════════════════════
-// PAGE TABS — Watchlist / Alerts
+// PAGE TABS
 // ════════════════════════════════════════════════════════════
 let _activePage = 'watchlist';
 
 function switchPage(name) {
   _activePage = name;
   document.getElementById('watchlistPage').hidden = (name !== 'watchlist');
-  document.getElementById('alertsPage').hidden = (name !== 'alerts');
   document.getElementById('discoveryPage').hidden = (name !== 'discovery');
   document.getElementById('detailPage').hidden = (name !== 'detail');
   document.getElementById('researchPage').hidden = (name !== 'research');
   document.getElementById('researchEditorPage').hidden = (name !== 'researchEditor');
   document.getElementById('pageTabWatchlist').classList.toggle('active', name === 'watchlist');
-  document.getElementById('pageTabAlerts').classList.toggle('active', name === 'alerts');
   document.getElementById('pageTabDiscovery').classList.toggle('active', name === 'discovery');
   document.getElementById('pageTabResearch').classList.toggle('active', name === 'research' || name === 'researchEditor');
-  if (name === 'alerts') renderAlertsPage();
   if (name === 'discovery') fetchDiscovery();
   if (name === 'research') rwRenderHome();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function _sentimentRank(label) {
-  // bullish first, neutral middle, bearish last
-  if (label === 'bullish') return 0;
-  if (label === 'neutral') return 1;
-  return 2; // bearish
-}
-
-function renderAlertsPage() {
-  const alerts = Object.values(_buzzAlerts);
-
-  // Update tab pill count
-  const pill = document.getElementById('pageAlertCount');
-  pill.textContent = alerts.length;
-  pill.classList.toggle('zero', alerts.length === 0);
-
-  // Update last-updated stamp
-  const stampEl = document.getElementById('alertsLastUpdated');
-  if (stampEl) {
-    const t = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    stampEl.textContent = `Refreshed ${t}`;
-  }
-
-  const wrap = document.getElementById('alertsListWrap');
-  if (!wrap) return;
-
-  if (alerts.length === 0) {
-    wrap.innerHTML = `
-      <div class="alerts-empty">
-        <div class="mark">∅</div>
-        <p>No active buzz alerts on your watchlist.</p>
-        <div class="hint">Alerts fire when 2+ tracked accounts mention a ticker within 24h.</div>
-      </div>`;
-    return;
-  }
-
-  // Sort: bullish → neutral → bearish; within group, most recent last_seen first
-  const sorted = [...alerts].sort((a, b) => {
-    const sa = _sentimentRank(a.sentiment_label);
-    const sb = _sentimentRank(b.sentiment_label);
-    if (sa !== sb) return sa - sb;
-    return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
-  });
-
-  wrap.innerHTML = `<div class="alerts-list">${sorted.map(_alertCard).join('')}</div>`;
-}
-
-function _alertCard(alert) {
-  const ticker = alert.ticker.replace('.NS','').replace('.BO','');
-  const wlStock = watchlist.find(s => s.ticker.toUpperCase() === ticker || s.ticker.toUpperCase() === alert.ticker.toUpperCase());
-  const name = wlStock?.name || alert.name || ticker;
-  const sentClass = alert.sentiment_label || 'neutral';
-  const sentLabel = sentClass.charAt(0).toUpperCase() + sentClass.slice(1);
-  const score = (alert.avg_sentiment >= 0 ? '+' : '') + (alert.avg_sentiment * 100).toFixed(0);
-
-  // Unique accounts
-  const accounts = [...new Set((alert.mentions || []).map(m => m.account))];
-
-  // All tweets, most recent first
-  const tweets = [...(alert.mentions || [])]
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-  const tweetsHtml = tweets.map(t => {
-    const tSent = t.sentiment_label || 'neutral';
-    const tSentLabel = tSent.charAt(0).toUpperCase() + tSent.slice(1);
-    const ago = _timeAgo(t.timestamp);
-    const author = '@' + t.account;
-    const authorLink = t.url
-      ? `<a href="${escAttr(t.url)}" target="_blank" rel="noopener">${escHtml(author)}</a>`
-      : escHtml(author);
-    const tweetLink = t.url ? `<a href="${escAttr(t.url)}" target="_blank" rel="noopener" class="tweet-ext-link" title="View on X">↗</a>` : '';
-    return `
-      <div class="alert-tweet">
-        <div class="alert-tweet-meta">
-          <span class="alert-tweet-author">${authorLink}</span>
-          <span>
-            <span class="alert-tweet-sent ${tSent}">${tSentLabel}</span>
-            &nbsp;·&nbsp;${ago}
-            &nbsp;${tweetLink}
-          </span>
-        </div>
-        <div class="alert-tweet-text">${_linkify(t.text || '')}</div>
-      </div>`;
-  }).join('');
-
-  const firstSeen = new Date(alert.first_seen).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
-  const lastSeen = new Date(alert.last_seen).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
-
-  return `
-    <div class="alert-card ${sentClass}">
-      <div class="alert-card-head">
-        <div class="alert-ticker-block">
-          <div class="alert-ticker-mark">${escHtml(ticker.slice(0, 4))}</div>
-          <div class="alert-ticker-info">
-            <div class="alert-ticker-symbol">${escHtml(ticker)} <span class="buzz-bell" style="font-size:13px">🔔</span></div>
-            <div class="alert-ticker-name">${escHtml(name)}</div>
-          </div>
-        </div>
-        <span class="alert-sentiment ${sentClass}">${sentLabel} ${score}</span>
-      </div>
-      <div class="alert-stats">
-        <span><strong>${alert.unique_accounts}</strong> accounts</span>
-        <span><strong>${alert.mention_count}</strong> mentions</span>
-        <span><strong>${_timeAgo(alert.last_seen)}</strong> last</span>
-      </div>
-      <div class="alert-accounts">
-        <span class="alert-accounts-label">Accounts:</span>
-        ${accounts.map(a => `<span class="alert-account-tag">@${escHtml(a)}</span>`).join('')}
-      </div>
-      <div class="alert-tweets">${tweetsHtml}</div>
-      <div class="alert-card-foot">
-        <span>First seen ${escHtml(firstSeen)}</span>
-        <span>Last seen ${escHtml(lastSeen)}</span>
-        <button class="alert-jump" onclick="jumpToTicker('${escAttr(ticker)}')">View in Watchlist →</button>
-      </div>
-    </div>`;
-}
-
-function jumpToTicker(ticker) {
-  switchPage('watchlist');
-  // Filter table to that ticker
-  const input = document.getElementById('searchInput');
-  if (input) {
-    input.value = ticker;
-    if (typeof searchQuery !== 'undefined') searchQuery = ticker;
-    if (typeof render === 'function') render();
-  }
 }
 
 function escAttr(s) {
