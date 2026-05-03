@@ -145,8 +145,17 @@ def _scrape_account_sync(client, account: TrackedAccount) -> int:
             return 0
 
         for tweet in tweets:
-            # full_text has the complete note-tweet text; text may be truncated
-            full = getattr(tweet, 'full_text', None) or tweet.text
+            # For retweets, get the original tweet's full text (RT text is 140-char truncated)
+            retweeted = getattr(tweet, 'retweeted_tweet', None)
+            if retweeted:
+                orig_full = getattr(retweeted, 'full_text', None) or getattr(retweeted, 'text', None) or ''
+                if orig_full:
+                    rt_author = getattr(getattr(retweeted, 'user', None), 'screen_name', '') or ''
+                    full = f"RT @{rt_author}: {orig_full}" if rt_author else orig_full
+                else:
+                    full = getattr(tweet, 'full_text', None) or tweet.text
+            else:
+                full = getattr(tweet, 'full_text', None) or tweet.text
             tickers = extract_tickers(full)
             if not tickers:
                 continue
