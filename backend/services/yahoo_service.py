@@ -86,10 +86,11 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
 
         def hist_return(months_ago: int) -> Optional[float]:
             idx = len(closes) - 1 - months_ago
-            if idx >= 0 and closes[-1] and closes[idx]:
-                return _pct(closes[-1], closes[idx])
+            if idx >= 0 and price and closes[idx]:
+                return _pct(price, closes[idx])
             return None
 
+        return_1m = hist_return(1)
         return_6m = hist_return(6)
         return_1y = hist_return(12)
         return_5y = hist_return(60)
@@ -121,6 +122,7 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             forward_pe=forward_pe,
             pb=pb,
             gross_margin=gross_margin,
+            return_1m=return_1m,
             return_6m=return_6m,
             return_1y=return_1y,
             return_5y=return_5y,

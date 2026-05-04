@@ -15,6 +15,7 @@ class QuoteResponse(BaseModel):
     forward_pe: Optional[float] = None
     pb: Optional[float] = None
     gross_margin: Optional[float] = None
+    return_1m: Optional[float] = None
     return_6m: Optional[float] = None
     return_1y: Optional[float] = None
     return_5y: Optional[float] = None
