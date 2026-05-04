@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import requests
 from datetime import datetime, timezone
 from typing import Optional
 import yfinance as yf
@@ -8,18 +7,6 @@ from services.cache_service import quote_cache, catalyst_cache, profile_cache
 from models.stock import QuoteResponse, CatalystResponse, CompanyProfile
 
 logger = logging.getLogger(__name__)
-
-# Shared requests session with browser-like headers to avoid Yahoo Finance 429s
-_session = requests.Session()
-_session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Referer": "https://finance.yahoo.com/",
-    "DNT": "1",
-    "Connection": "keep-alive",
-})
 
 
 def _pct(new_price: float, old_price: Optional[float]) -> Optional[float]:
@@ -36,7 +23,7 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         last_exc = None
         for attempt in range(3):
             try:
-                t = yf.Ticker(symbol, session=_session)
+                t = yf.Ticker(symbol)
                 i = t.info
                 if i and (i.get("regularMarketPrice") or i.get("currentPrice") or i.get("previousClose")):
                     return t, i
@@ -49,7 +36,7 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
                     time.sleep(2 ** attempt + random.uniform(0, 1))
         if last_exc:
             raise last_exc
-        return yf.Ticker(symbol, session=_session), {}  # best-effort empty
+        return yf.Ticker(symbol), {}  # best-effort empty
 
     try:
         ticker, info = _get_ticker_info()
@@ -158,7 +145,7 @@ async def fetch_quotes_batch(symbols: list[str]) -> list[QuoteResponse]:
 def _fetch_catalyst_sync(symbol: str) -> CatalystResponse:
     today = datetime.now(timezone.utc).date()
     try:
-        t = yf.Ticker(symbol, session=_session)
+        t = yf.Ticker(symbol)
         cal = t.calendar
 
         earnings_date = None
