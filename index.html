@@ -1294,54 +1294,54 @@
   .disc-acct-add input { flex: 1; min-width: 120px; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--ink); }
   .disc-acct-add input:focus { outline: none; border-color: var(--accent); }
 
-  .disc-page { padding: 28px 40px 80px; max-width: 1200px; margin: 0 auto; }
+  .disc-page { padding: 20px 20px 80px; max-width: 660px; margin: 0 auto; }
   .disc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .disc-head h2 { font-size: 22px; font-weight: 700; margin: 0; }
   .disc-head h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
-  .disc-sub { font-size: 13px; color: var(--ink-mute); margin-bottom: 20px; }
-  .disc-filter-bar { display: flex; gap: 8px; margin-bottom: 18px; }
+  .disc-sub { font-size: 13px; color: var(--ink-mute); margin-bottom: 16px; }
+  .disc-filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
   .disc-filter { background: none; border: 1px solid var(--rule); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: var(--ink-mute); cursor: pointer; transition: all .15s; }
-  .disc-filter.active, .disc-filter:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg, rgba(255,255,255,.04)); }
-  .disc-list { display: flex; flex-direction: column; gap: 12px; }
-  .disc-card { background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; transition: border-color .15s; }
-  .disc-card:hover { border-color: var(--ink-mute); }
-  .disc-card.disc-new { border-left: 3px solid var(--accent); }
-  .disc-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .disc-ticker-block { display: flex; align-items: center; gap: 8px; }
-  .disc-ticker { font-size: 18px; font-weight: 800; letter-spacing: .04em; color: var(--ink); }
-  .disc-new-badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: .05em; }
-  .disc-tracked-badge { background: var(--paper-deep); color: var(--ink-mute); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--rule); }
-  .disc-meta { font-size: 12px; color: var(--ink-mute); }
-  .disc-accounts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-  .disc-account { font-size: 12px; color: var(--ink-mute); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 7px; }
-  .disc-snippet { font-size: 12px; color: var(--ink-mute); font-style: italic; margin-bottom: 12px; line-height: 1.5; border-left: 2px solid var(--rule); padding-left: 10px; }
-  .disc-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .disc-add-wrap { position: relative; }
-  .disc-add-menu { display: none; position: absolute; bottom: calc(100% + 4px); left: 0; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; min-width: 160px; z-index: 200; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
-  .disc-add-menu.open { display: block; }
-  .disc-list-opt { display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 14px; font-size: 13px; color: var(--ink); cursor: pointer; transition: background .1s; }
-  .disc-list-opt:hover { background: var(--paper); }
-  .disc-tweets { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-  .disc-tweet { font-size: 12px; line-height: 1.55; border-left: 2px solid var(--rule); padding-left: 10px; }
-  .disc-tweet-text { color: var(--ink-mute); white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
+  .disc-filter.active, .disc-filter:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,.04); }
+  /* ── Twitter-style timeline ── */
+  .disc-list { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+  .disc-tweet-item { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--rule); transition: background .15s; position: relative; }
+  .disc-tweet-item:last-child { border-bottom: none; }
+  .disc-tweet-item:hover { background: rgba(255,255,255,.025); }
+  .disc-tweet-item.disc-new { border-left: 3px solid var(--accent); padding-left: 13px; }
+  .disc-tweet-item.disc-dismissed { opacity: .4; }
+  .disc-avatar-col { flex-shrink: 0; padding-top: 2px; }
+  .disc-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; color: #fff; user-select: none; }
+  .disc-tweet-col { flex: 1; min-width: 0; }
+  .disc-tweet-header { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; flex-wrap: wrap; line-height: 1.3; }
+  .disc-handle { font-weight: 700; color: var(--ink); font-size: 14px; }
+  .disc-tweet-dot { color: var(--ink-faint); font-size: 13px; line-height: 1; }
+  .disc-tweet-time { color: var(--ink-mute); font-size: 13px; }
+  .disc-new-badge { background: var(--accent); color: #000; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; letter-spacing: .05em; }
+  .disc-tweet-text { font-size: 14px; line-height: 1.65; color: var(--ink); white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; margin: 3px 0 8px; }
+  .disc-tweet-body-muted { font-size: 13px; color: var(--ink-faint); font-style: italic; margin: 4px 0; }
+  .disc-chips-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+  .disc-sent { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+  .disc-sent.bullish { color: var(--green); background: var(--green-bg); }
+  .disc-sent.bearish { color: var(--red); background: var(--red-bg); }
+  .disc-tweet-footer { display: flex; align-items: center; gap: 20px; margin-top: 4px; }
+  .disc-footer-btn { background: none; border: none; color: var(--ink-faint); font-size: 12px; font-weight: 500; cursor: pointer; padding: 3px 0; display: inline-flex; align-items: center; gap: 5px; transition: color .15s; text-decoration: none; line-height: 1; }
+  .disc-footer-btn:hover { color: var(--ink); }
+  .disc-footer-btn.active { color: var(--accent); }
+  .disc-footer-btn.dismiss:hover { color: var(--red); }
   .disc-empty { text-align: center; color: var(--ink-mute); padding: 60px 0; font-size: 14px; }
-  .disc-dismiss-btn { background: none; border: none; cursor: pointer; color: var(--ink-mute); font-size: 14px; padding: 2px 4px; border-radius: 4px; line-height: 1; transition: color .15s, background .15s; flex-shrink: 0; }
-  .disc-dismiss-btn:hover { color: var(--red); background: var(--red-bg); }
-  .disc-dismissed { opacity: .5; }
   .disc-hidden-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 10px 14px; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 8px; }
-
   /* ── Ticker tags inside tweet text ── */
-  .tw-tag { display: inline-block; background: var(--paper-deep); color: var(--ink-mute); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 700; letter-spacing: .02em; cursor: pointer; position: relative; transition: background .12s; }
-  .tw-tag.new-ticker { color: var(--accent); border-color: color-mix(in srgb,var(--accent) 40%,transparent); }
-  .tw-tag:hover { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .tw-tag { display: inline-block; background: rgba(29,155,240,.12); color: #1d9bf0; border-radius: 4px; padding: 0 5px; font-size: 12px; font-weight: 700; letter-spacing: .01em; cursor: pointer; position: relative; transition: background .12s; }
+  .tw-tag.new-ticker { background: rgba(29,155,240,.2); color: #1d9bf0; }
+  .tw-tag:hover { background: rgba(29,155,240,.3); }
   .ticker-pop { position: absolute; top: calc(100% + 4px); left: 0; z-index: 300; background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 10px; min-width: 160px; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
   .ticker-pop .tp-sym { font-family: 'JetBrains Mono',monospace; font-weight: 800; font-size: 13px; color: var(--accent); margin-bottom: 8px; }
   .ticker-pop .tp-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: 7px 10px; font-size: 12px; color: var(--ink); cursor: pointer; border-radius: 6px; transition: background .1s; white-space: nowrap; }
   .ticker-pop .tp-btn:hover { background: var(--paper-deep); }
   .ticker-pop .tp-btn.primary { color: var(--accent); font-weight: 700; }
   .ticker-pop .tp-sep { height: 1px; background: var(--rule); margin: 6px 0; }
-  /* ── Bookmark button ── */
-  .disc-bm-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 5px; border-radius: 5px; color: var(--ink-faint); transition: color .15s, background .15s; flex-shrink: 0; line-height: 1; }
+  /* ── Bookmark button (legacy, kept for bm page) ── */
+  .disc-bm-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 5px; border-radius: 5px; color: var(--ink-faint); transition: color .15s; flex-shrink: 0; line-height: 1; }
   .disc-bm-btn:hover, .disc-bm-btn.saved { color: var(--accent); }
   /* ── Bookmarks page ── */
   .bm-page { max-width: 740px; margin: 0 auto; padding: 0 16px 80px; }
@@ -3058,31 +3058,57 @@ function _discTweetCard(tw, wlTickers, isDismissed = false) {
   const key = _discTweetKey(tw);
   const ago = _relTime(tw.timestamp);
   const bmSaved = _isBm(tw.account, tw.tweet_id);
-  const newTickers  = tw.tickers.filter(t => !wlTickers.has(t.toUpperCase()));
-  const knownTickers = tw.tickers.filter(t =>  wlTickers.has(t.toUpperCase()));
+  const newTickers = tw.tickers.filter(t => !wlTickers.has(t.toUpperCase()));
+
+  // Deterministic avatar color from account name
+  const avatarPalette = ['#1d9bf0','#7856ff','#ff7a00','#00ba7c','#f91880','#e2b203','#17bf63','#ff6b6b'];
+  const avatarColor = avatarPalette[tw.account.split('').reduce((a,c) => a + c.charCodeAt(0), 0) % avatarPalette.length];
+  const avatarInitial = tw.account[0].toUpperCase();
+
   const tickerChips = tw.tickers.map(t => {
     const isNew = !wlTickers.has(t.toUpperCase());
     return `<span class="tw-tag${isNew ? ' new-ticker' : ''}" onclick="event.stopPropagation();_showTickerPop(this,'${escAttr(t)}')">\$${escHtml(t)}</span>`;
   }).join('');
+
+  const sentimentLabel = tw.sentiment_label === 'bullish'
+    ? '<span class="disc-sent bullish">▲ bullish</span>'
+    : tw.sentiment_label === 'bearish'
+    ? '<span class="disc-sent bearish">▼ bearish</span>'
+    : '';
+
   return `
-  <div class="disc-card ${!isDismissed && newTickers.length ? 'disc-new' : ''} ${isDismissed ? 'disc-dismissed' : ''}">
-    <div class="disc-card-head">
-      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-        <span class="disc-account" style="font-size:13px;font-weight:700">@${escHtml(tw.account)}</span>
-        ${tw.url ? `<a href="${escAttr(tw.url)}" target="_blank" rel="noopener" class="tweet-ext-link">↗</a>` : ''}
+  <div class="disc-tweet-item${!isDismissed && newTickers.length ? ' disc-new' : ''}${isDismissed ? ' disc-dismissed' : ''}">
+    <div class="disc-avatar-col">
+      <div class="disc-avatar" style="background:${avatarColor}">${avatarInitial}</div>
+    </div>
+    <div class="disc-tweet-col">
+      <div class="disc-tweet-header">
+        <span class="disc-handle">@${escHtml(tw.account)}</span>
+        <span class="disc-tweet-dot">·</span>
+        <span class="disc-tweet-time">${escHtml(ago)}</span>
         ${!isDismissed && newTickers.length ? '<span class="disc-new-badge">NEW</span>' : ''}
+        ${!isDismissed ? sentimentLabel : ''}
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="disc-meta">${escHtml(ago)}</span>
-        <button class="disc-bm-btn${bmSaved ? ' saved' : ''}" title="${bmSaved ? 'Remove bookmark' : 'Save tweet'}" onclick="_discBmToggle('${escAttr(key)}')">${bmSaved ? '🔖' : '🏷️'}</button>
+      ${isDismissed
+        ? `<div class="disc-tweet-body-muted">Tweet hidden</div>`
+        : `<div class="disc-tweet-text">${_highlightTickers(tw.text)}</div>
+           ${tw.tickers.length ? `<div class="disc-chips-row">${tickerChips}</div>` : ''}`}
+      <div class="disc-tweet-footer">
+        ${tw.url ? `<a href="${escAttr(tw.url)}" target="_blank" rel="noopener" class="disc-footer-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View on X</a>` : ''}
+        <button class="disc-footer-btn${bmSaved ? ' active' : ''}" onclick="_discBmToggle('${escAttr(key)}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${bmSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          ${bmSaved ? 'Saved' : 'Save'}
+        </button>
         ${isDismissed
-          ? `<button class="disc-dismiss-btn" onclick="restoreDiscTweet('${escAttr(key)}')" title="Restore">↩</button>`
-          : `<button class="disc-dismiss-btn" onclick="dismissDiscTweet('${escAttr(key)}')" title="Hide">✕</button>`}
+          ? `<button class="disc-footer-btn" onclick="restoreDiscTweet('${escAttr(key)}')">↩ Restore</button>`
+          : `<button class="disc-footer-btn dismiss" onclick="dismissDiscTweet('${escAttr(key)}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Hide
+            </button>`}
       </div>
     </div>
-    ${isDismissed ? '' : `
-    <div class="bm-tickers" style="margin:6px 0 10px">${tickerChips}</div>
-    <div class="disc-tweet-text">${_highlightTickers(tw.text)}</div>`}
   </div>`;
 }
 
