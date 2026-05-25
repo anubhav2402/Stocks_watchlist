@@ -68,15 +68,84 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         gross_margin = info.get("grossMargins")
         total_revenue = info.get("totalRevenue")
         ps_ratio = info.get("priceToSalesTrailing12Months")
+        peg_ratio = info.get("trailingPegRatio") or info.get("pegRatio")
 
-        # Last quarter revenue from quarterly income statement
+        # Quarterly income: last Q revenue, + YOY growth vs same Q last year
         quarterly_revenue = None
+        qtr_revenue_yoy = None
+        qtr_profit_yoy = None
         try:
+            import math
             q_inc = ticker.quarterly_income_stmt
             if q_inc is not None and not q_inc.empty:
-                rev_row = next((q_inc.loc[r] for r in q_inc.index if 'total revenue' in r.lower()), None)
-                if rev_row is not None:
-                    quarterly_revenue = float(rev_row.iloc[0])
+                def _safe_float(series, col_idx):
+                    try:
+                        v = series.iloc[col_idx]
+                        return None if (v is None or math.isnan(float(v))) else float(v)
+                    except Exception:
+                        return None
+
+                rev_names = [r for r in q_inc.index if 'total revenue' in r.lower()]
+                if rev_names:
+                    rev_s = q_inc.loc[rev_names[0]]
+                    quarterly_revenue = _safe_float(rev_s, 0)
+                    if len(q_inc.columns) >= 5:
+                        r0 = _safe_float(rev_s, 0)
+                        r4 = _safe_float(rev_s, 4)
+                        if r0 is not None and r4 is not None and r4 != 0:
+                            qtr_revenue_yoy = (r0 - r4) / abs(r4) * 100
+
+                ni_names = None
+                for key in ['net income common stockholders', 'net income']:
+                    matches = [r for r in q_inc.index if key in r.lower()]
+                    if matches:
+                        ni_names = matches
+                        break
+                if ni_names and len(q_inc.columns) >= 5:
+                    ni_s = q_inc.loc[ni_names[0]]
+                    n0 = _safe_float(ni_s, 0)
+                    n4 = _safe_float(ni_s, 4)
+                    if n0 is not None and n4 is not None and n4 != 0:
+                        qtr_profit_yoy = (n0 - n4) / abs(n4) * 100
+        except Exception:
+            pass
+
+        # Annual income: revenue + profit CAGR over available history (typically 3-4 yrs)
+        revenue_cagr = None
+        profit_cagr = None
+        try:
+            import math
+            ann_inc = ticker.income_stmt
+            if ann_inc is not None and not ann_inc.empty and len(ann_inc.columns) >= 2:
+                n_years = len(ann_inc.columns) - 1
+
+                def _ann_safe(series, col_idx):
+                    try:
+                        v = series.iloc[col_idx]
+                        return None if (v is None or math.isnan(float(v))) else float(v)
+                    except Exception:
+                        return None
+
+                rev_names_ann = [r for r in ann_inc.index if 'total revenue' in r.lower()]
+                if rev_names_ann:
+                    rv = ann_inc.loc[rev_names_ann[0]]
+                    r_new = _ann_safe(rv, 0)
+                    r_old = _ann_safe(rv, -1)
+                    if r_new and r_old and r_new > 0 and r_old > 0 and n_years > 0:
+                        revenue_cagr = ((r_new / r_old) ** (1 / n_years) - 1) * 100
+
+                ni_names_ann = None
+                for key in ['net income common stockholders', 'net income']:
+                    matches = [r for r in ann_inc.index if key in r.lower()]
+                    if matches:
+                        ni_names_ann = matches
+                        break
+                if ni_names_ann:
+                    nv = ann_inc.loc[ni_names_ann[0]]
+                    n_new = _ann_safe(nv, 0)
+                    n_old = _ann_safe(nv, -1)
+                    if n_new and n_old and n_new > 0 and n_old > 0 and n_years > 0:
+                        profit_cagr = ((n_new / n_old) ** (1 / n_years) - 1) * 100
         except Exception:
             pass
 
@@ -129,6 +198,11 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             total_revenue=total_revenue,
             quarterly_revenue=quarterly_revenue,
             ps_ratio=ps_ratio,
+            peg_ratio=peg_ratio,
+            qtr_revenue_yoy=qtr_revenue_yoy,
+            qtr_profit_yoy=qtr_profit_yoy,
+            revenue_cagr=revenue_cagr,
+            profit_cagr=profit_cagr,
             sparkline=sparkline,
         )
 
