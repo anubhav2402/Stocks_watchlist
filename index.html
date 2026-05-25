@@ -227,210 +227,6 @@
 
   .page-tab .pill.zero { background: var(--rule); color: var(--ink-mute); }
 
-  /* ════════════════ ALERTS PAGE ════════════════ */
-  .alerts-list { display: flex; flex-direction: column; gap: 14px; }
-
-  .alert-card {
-    border: 1px solid var(--ink);
-    background: var(--paper);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-
-  .alert-card.bullish { border-left: 4px solid var(--green); }
-  .alert-card.bearish { border-left: 4px solid var(--red); }
-  .alert-card.neutral { border-left: 4px solid var(--gold); }
-
-  .alert-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px 10px;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-
-  .alert-ticker-block { display: flex; align-items: center; gap: 12px; min-width: 0; }
-
-  .alert-ticker-mark {
-    width: 38px; height: 38px;
-    border: 1px solid var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Fraunces', serif;
-    font-weight: 700; font-size: 13px;
-    flex-shrink: 0;
-    background: var(--paper-deep);
-    color: var(--ink);
-  }
-
-  .alert-ticker-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-
-  .alert-ticker-symbol {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    color: var(--ink);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .alert-ticker-name {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 12px;
-    color: var(--ink-mute);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 320px;
-  }
-
-  .alert-sentiment {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    padding: 5px 10px;
-    border-radius: 12px;
-    flex-shrink: 0;
-  }
-  .alert-sentiment.bullish { background: var(--green-bg); color: var(--green); }
-  .alert-sentiment.bearish { background: var(--red-bg); color: var(--red); }
-  .alert-sentiment.neutral { background: var(--paper-deep); color: var(--ink-mute); }
-
-  .alert-stats {
-    display: flex;
-    gap: 18px;
-    padding: 8px 18px 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    border-bottom: 1px solid var(--rule-soft);
-    flex-wrap: wrap;
-  }
-
-  .alert-stats strong {
-    color: var(--ink);
-    font-weight: 700;
-    margin-right: 4px;
-  }
-
-  .alert-accounts {
-    padding: 12px 18px 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    align-items: center;
-  }
-
-  .alert-accounts-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin-right: 4px;
-  }
-
-  .alert-account-tag {
-    display: inline-block;
-    background: var(--paper-deep);
-    border: 1px solid var(--rule);
-    padding: 3px 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-soft);
-    border-radius: 3px;
-  }
-
-  .alert-tweets {
-    padding: 6px 18px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .alert-tweet {
-    border-top: 1px dashed var(--rule-soft);
-    padding-top: 10px;
-    font-family: 'Fraunces', serif;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--ink-soft);
-  }
-
-  .alert-tweet:first-child { border-top: none; padding-top: 0; }
-
-  .alert-tweet-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    flex-wrap: wrap;
-  }
-
-  .alert-tweet-author { color: var(--ink); font-weight: 600; }
-  .alert-tweet-author a { color: var(--ink); text-decoration: none; }
-  .alert-tweet-author a:hover { color: var(--accent); }
-
-  .alert-tweet-sent {
-    padding: 1px 6px;
-    border-radius: 8px;
-    font-size: 9px;
-  }
-  .alert-tweet-sent.bullish { background: var(--green-bg); color: var(--green); }
-  .alert-tweet-sent.bearish { background: var(--red-bg); color: var(--red); }
-  .alert-tweet-sent.neutral { background: var(--paper-deep); color: var(--ink-mute); }
-
-  .alert-tweet-text {
-    color: var(--ink-soft);
-    word-break: break-word;
-  }
-
-  .alert-tweet-text a { color: var(--accent); text-decoration: none; }
-  .alert-tweet-text a:hover { text-decoration: underline; }
-
-  .alert-card-foot {
-    background: var(--paper-deep);
-    padding: 8px 18px;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    border-top: 1px solid var(--rule-soft);
-    flex-wrap: wrap;
-  }
-
-  .alert-jump {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    background: transparent;
-    border: 1px solid var(--ink);
-    color: var(--ink);
-    padding: 4px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .alert-jump:hover { background: var(--ink); color: var(--paper); }
 
   /* ════════════════ WATCHLIST TABS ════════════════ */
   .wl-tabs-bar {
@@ -629,148 +425,6 @@
     text-align: center;
   }
 
-  /* ════════════════ BUZZ ALERTS ════════════════ */
-  .buzz-panel {
-    margin: 0 40px 28px;
-    border: 1.5px solid var(--gold);
-    border-radius: 4px;
-    background: rgba(168,122,31,0.06);
-    overflow: hidden;
-  }
-
-  .buzz-panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: rgba(168,122,31,0.10);
-    border-bottom: 1px solid rgba(168,122,31,0.25);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-
-  .buzz-panel-head .buzz-count {
-    background: var(--gold);
-    color: var(--paper);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
-    letter-spacing: 1px;
-  }
-
-  .buzz-empty {
-    padding: 14px 16px;
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 13px;
-    color: var(--ink-faint);
-    text-align: center;
-  }
-
-  .buzz-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-  }
-
-  .buzz-card {
-    flex: 1 1 280px;
-    padding: 14px 16px;
-    border-right: 1px solid rgba(168,122,31,0.15);
-    border-bottom: 1px solid rgba(168,122,31,0.15);
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .buzz-card:hover { background: rgba(168,122,31,0.08); }
-
-  .buzz-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
-
-  .buzz-ticker {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ink);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .buzz-bell { font-size: 14px; animation: buzz-ring 1.5s ease infinite; }
-  @keyframes buzz-ring {
-    0%, 100% { transform: rotate(0deg); }
-    10%  { transform: rotate(-12deg); }
-    20%  { transform: rotate(12deg); }
-    30%  { transform: rotate(-8deg); }
-    40%  { transform: rotate(8deg); }
-    50%  { transform: rotate(0deg); }
-  }
-
-  .buzz-sentiment {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 2px 7px;
-    border-radius: 10px;
-  }
-  .buzz-sentiment.bullish { background: var(--green-bg); color: var(--green); }
-  .buzz-sentiment.bearish { background: var(--red-bg); color: var(--red); }
-  .buzz-sentiment.neutral { background: var(--paper-deep); color: var(--ink-mute); }
-
-  .buzz-meta {
-    font-size: 11px;
-    color: var(--ink-mute);
-    font-family: 'JetBrains Mono', monospace;
-    margin-bottom: 5px;
-  }
-
-  .buzz-accounts {
-    font-size: 11px;
-    color: var(--ink-soft);
-    line-height: 1.5;
-  }
-
-  .buzz-account-tag {
-    display: inline-block;
-    background: var(--paper-deep);
-    border: 1px solid var(--rule-soft);
-    border-radius: 3px;
-    padding: 1px 5px;
-    margin: 1px 2px 1px 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--ink-mute);
-  }
-
-  /* Row buzz badge */
-  .buzz-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: rgba(168,122,31,0.12);
-    border: 1px solid rgba(168,122,31,0.3);
-    border-radius: 3px;
-    padding: 1px 5px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--gold);
-    letter-spacing: 0.5px;
-    vertical-align: middle;
-    margin-left: 5px;
-  }
   .catalyst-badge {
     display: inline-flex;
     align-items: center;
@@ -1685,15 +1339,6 @@
       </div>
     </div>
 
-    <!-- Buzz Alerts -->
-    <div class="buzz-panel" id="buzzPanel" style="display:none">
-      <div class="buzz-panel-head">
-        🔔 Buzz Alerts — Watchlist Stocks
-        <span class="buzz-count" id="buzzCount">0</span>
-      </div>
-      <div id="buzzCards"><div class="buzz-empty">No active alerts for your watchlist stocks</div></div>
-    </div>
-
     <!-- Filter bar -->
     <h2 class="section-title">
       <span><em>Holdings</em> & Watch</span>
@@ -2343,10 +1988,6 @@ function setupAutoFetch() {
   input.addEventListener('blur', () => { clearTimeout(timer); if (input.value.trim()) run(); });
 }
 
-// ════════════════════════════════════════════════════════════
-// BUZZ ALERTS — fetch from backend, match to watchlist
-// ════════════════════════════════════════════════════════════
-let _buzzAlerts = {};   // { TICKER: BuzzAlert }
 let _catalysts = {};   // { TICKER: CatalystResponse }
 
 // ════════════════════════════════════════════════════════════
@@ -2386,32 +2027,6 @@ async function fetchCatalysts(ticker) {
   } catch (e) { /* silent — catalyst is supplementary data */ }
 }
 
-async function fetchAlerts() {
-  if (!BACKEND_URL) return;
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/alerts`, { signal: timeoutSignal(12000) });
-    if (!res.ok) return;
-    const data = await res.json();
-
-    // Index by ticker, only keep tickers present in ANY watchlist
-    const allStocks = state.lists.flatMap(l => l.stocks || []);
-    const wlTickers = new Set(allStocks.map(s => s.ticker.toUpperCase()));
-    _buzzAlerts = {};
-    for (const alert of (data.alerts || [])) {
-      const t = alert.ticker.toUpperCase().replace('.NS','').replace('.BO','');
-      // Match exact ticker OR strip suffix (e.g. RELIANCE.NS → RELIANCE)
-      const matchKey = wlTickers.has(alert.ticker.toUpperCase()) ? alert.ticker.toUpperCase()
-                     : wlTickers.has(t) ? t : null;
-      if (matchKey && alert.is_active) {
-        _buzzAlerts[matchKey] = alert;
-      }
-    }
-    renderAlerts();
-    render();
-  } catch (e) {
-    console.warn('fetchAlerts failed:', e.message);
-  }
-}
 
 // ════════════════════════════════════════════════════════════
 // PAGE TABS
@@ -2446,44 +2061,6 @@ function _linkify(text) {
   return safe.replace(/(https?:\/\/[^\s<]+)/g, (m) => `<a href="${m}" target="_blank" rel="noopener">${m}</a>`);
 }
 
-function renderAlerts() {
-  const panel = document.getElementById('buzzPanel');
-  const cards = document.getElementById('buzzCards');
-  const count = document.getElementById('buzzCount');
-  const alerts = Object.values(_buzzAlerts);
-
-  if (alerts.length === 0) {
-    panel.style.display = 'none';
-    return;
-  }
-
-  panel.style.display = '';
-  count.textContent = alerts.length;
-
-  cards.innerHTML = `<div class="buzz-cards">${alerts.map(alert => {
-    const ticker = alert.ticker.replace('.NS','').replace('.BO','');
-    const wlStock = watchlist.find(s => s.ticker.toUpperCase() === ticker || s.ticker.toUpperCase() === alert.ticker.toUpperCase());
-    const name = wlStock?.name || ticker;
-    const sentClass = alert.sentiment_label;
-    const sentLabel = alert.sentiment_label.charAt(0).toUpperCase() + alert.sentiment_label.slice(1);
-    const accounts = [...new Set((alert.mentions || []).map(m => '@' + m.account))].slice(0, 5);
-    const timeAgo = _timeAgo(alert.last_seen);
-    const score = (alert.avg_sentiment >= 0 ? '+' : '') + (alert.avg_sentiment * 100).toFixed(0);
-
-    return `<div class="buzz-card" onclick="document.getElementById('searchInput').value='${ticker}'; searchQuery='${ticker}'; render()">
-      <div class="buzz-card-top">
-        <div class="buzz-ticker">
-          <span class="buzz-bell">🔔</span>
-          ${ticker}
-          <span style="font-weight:400;color:var(--ink-mute);font-size:11px">${escHtml(name)}</span>
-        </div>
-        <span class="buzz-sentiment ${sentClass}">${sentLabel} ${score}</span>
-      </div>
-      <div class="buzz-meta">${alert.mention_count} mentions · ${alert.unique_accounts} accounts · ${timeAgo}</div>
-      <div class="buzz-accounts">${accounts.map(a => `<span class="buzz-account-tag">${escHtml(a)}</span>`).join('')}</div>
-    </div>`;
-  }).join('')}</div>`;
-}
 
 function _timeAgo(isoStr) {
   if (!isoStr) return '';
@@ -2554,9 +2131,6 @@ async function refreshAll() {
 
   isFetching = false;
   btn.classList.remove('spinning');
-
-  // Fetch buzz alerts from backend (non-blocking — won't affect quote refresh)
-  fetchAlerts();
 
   const stamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   document.getElementById('lastUpdated').textContent = `Updated ${stamp}`;
@@ -2962,7 +2536,7 @@ async function discAddAccount() {
     await discLoadAccounts();
     toast(`@${username} added — scraping now…`, 'success');
     // Kick off an immediate scrape so the new account appears in discovery without waiting 30 min
-    fetch(`${BACKEND_URL}/api/alerts/scrape`, { method: 'POST' }).catch(() => {});
+    fetch(`${BACKEND_URL}/api/discovery/scrape`, { method: 'POST' }).catch(() => {});
   } catch (e) {
     toast(`Add failed: ${e.message}`, 'error');
   }
@@ -3439,20 +3013,16 @@ function render() {
   body.innerHTML = rows.map(s => {
     const sinceAdded = returnSinceAdded(s);
     const initials   = s.ticker.replace(/\W/g, '').slice(0, 2);
-    const buzz = _buzzAlerts[s.ticker.toUpperCase()];
     const catalyst = _catalysts[s.ticker.toUpperCase()];
-    const buzzBadge = buzz
-      ? `<span class="buzz-badge">🔔 ${buzz.mention_count} mentions</span>`
-      : '';
     const catalystBadge = catalyst && catalyst.days_to_earnings != null && catalyst.days_to_earnings <= 14
       ? `<span class="catalyst-badge">EPS IN ${catalyst.days_to_earnings}D</span>`
       : '';
-    return `<tr${buzz ? ' style="background:rgba(168,122,31,0.04)"' : ''}>
+    return `<tr>
       <td>
         <div class="ticker-cell">
           <div class="ticker-mark">${initials}</div>
           <div class="ticker-info">
-            <div class="ticker-symbol">${s.ticker}${buzzBadge}${catalystBadge}</div>
+            <div class="ticker-symbol">${s.ticker}${catalystBadge}</div>
             <div class="ticker-name" title="${escHtml(s.name || '')}">${escHtml(s.name || '')}</div>
           </div>
         </div>
@@ -4519,9 +4089,7 @@ if (_isFirstTime) {
 // Auto-refresh every 3 hours
 setInterval(refreshAll, 3 * 60 * 60 * 1000);
 
-// Poll alerts every 5 minutes independently of quote refresh
-fetchAlerts();
-setInterval(fetchAlerts, 5 * 60 * 1000);
+
 </script>
 </body>
 </html>

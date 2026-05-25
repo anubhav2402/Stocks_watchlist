@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import ALLOWED_ORIGINS, write_cookies_from_env
-from routers import health, quotes, news, alerts, accounts, discovery
+from routers import health, quotes, news, accounts, discovery
 from routers import research_router
 import scheduler as sched
 
@@ -38,7 +38,6 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(quotes.router, prefix="/api")
 app.include_router(news.router, prefix="/api")
-app.include_router(alerts.router, prefix="/api")
 app.include_router(accounts.router, prefix="/api")
 app.include_router(discovery.router, prefix="/api")
 app.include_router(research_router.router, prefix="/api")
