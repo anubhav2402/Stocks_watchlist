@@ -2076,16 +2076,22 @@ function _timeAgo(isoStr) {
 // ════════════════════════════════════════════════════════════
 // REFRESH ALL
 // ════════════════════════════════════════════════════════════
-// Auto-detect Indian exchange suffix (.NS / .BO) when a ticker returns no price
+// Auto-detect Indian exchange suffix (.NS / .BO) when a ticker returns no price.
+// Wraps every fetchTickerData call in try/catch because it can throw when
+// Yahoo Finance chart returns no data for an unknown symbol.
 async function _fetchWithSuffixFallback(ticker) {
-  let d = await fetchTickerData(ticker);
-  let resolvedTicker = ticker;
+  let d = { price: null }, resolvedTicker = ticker;
+  try { d = await fetchTickerData(ticker); } catch(e) {}
   if (d.price == null && !ticker.includes('.')) {
-    const dNS = await fetchTickerData(ticker + '.NS');
-    if (dNS.price != null) { d = dNS; resolvedTicker = ticker + '.NS'; }
-    else {
-      const dBO = await fetchTickerData(ticker + '.BO');
-      if (dBO.price != null) { d = dBO; resolvedTicker = ticker + '.BO'; }
+    try {
+      const dNS = await fetchTickerData(ticker + '.NS');
+      if (dNS.price != null) { d = dNS; resolvedTicker = ticker + '.NS'; }
+    } catch(e) {}
+    if (d.price == null) {
+      try {
+        const dBO = await fetchTickerData(ticker + '.BO');
+        if (dBO.price != null) { d = dBO; resolvedTicker = ticker + '.BO'; }
+      } catch(e) {}
     }
   }
   return { d, resolvedTicker };
