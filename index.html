@@ -440,6 +440,21 @@
     vertical-align: middle;
     margin-left: 5px;
   }
+  /* ── Stock notes ── */
+  .note-count-badge { display: inline-block; background: var(--accent); color: #000; font-size: 9px; font-weight: 800; padding: 0 4px; border-radius: 3px; margin-left: 4px; vertical-align: middle; line-height: 14px; }
+  .notes-list { max-height: 360px; overflow-y: auto; margin-bottom: 20px; }
+  .note-item { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .note-item:last-child { border-bottom: none; }
+  .note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .note-ts { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--ink-mute); letter-spacing: 0.03em; }
+  .note-text { font-size: 14px; line-height: 1.65; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+  .note-del { background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 11px; padding: 2px 5px; border-radius: 3px; transition: color .15s; }
+  .note-del:hover { color: var(--red); }
+  .notes-empty { font-style: italic; color: var(--ink-faint); font-size: 13px; padding: 20px 0; text-align: center; }
+  .notes-textarea { width: 100%; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: var(--ink); resize: vertical; min-height: 90px; font-family: inherit; line-height: 1.55; box-sizing: border-box; }
+  .notes-textarea:focus { outline: none; border-color: var(--accent); }
+  .notes-hint { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+
   .conviction-dots {
     cursor: pointer;
     font-size: 11px;
@@ -1649,6 +1664,23 @@
   </div>
 </div>
 
+<!-- ═══════════════ NOTES MODAL ═══════════════ -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal modal-wide">
+    <div class="modal-content">
+      <h2>Notes — <em id="notesTicker">—</em></h2>
+      <div class="modal-sub">Your timestamped thoughts on this position.</div>
+      <div class="notes-list" id="notesList"></div>
+      <textarea class="notes-textarea" id="notesInput" placeholder="Add a thought, thesis update, price target, reminder…"></textarea>
+      <div class="notes-hint">Ctrl + Enter to save</div>
+      <div class="modal-actions" style="margin-top:14px">
+        <button class="btn" onclick="closeModal('notes')">Close</button>
+        <button class="btn btn-primary" onclick="addNote()">Add Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ TICKER DETAIL PAGE ═══════════════ -->
 
 <div class="toast-container" id="toastContainer"></div>
@@ -2321,6 +2353,71 @@ function importBulk() {
   toast(`${added} added · ${skipped} skipped`, 'success');
   if (added > 0) setTimeout(refreshAll, 400);
 }
+
+// ════════════════════════════════════════════════════════════
+// STOCK NOTES
+// ════════════════════════════════════════════════════════════
+let _notesCurrentTicker = null;
+
+function openNotes(ticker) {
+  _notesCurrentTicker = ticker;
+  document.getElementById('notesTicker').textContent = ticker;
+  document.getElementById('notesInput').value = '';
+  _renderNotesList();
+  openModal('notes');
+  setTimeout(() => document.getElementById('notesInput').focus(), 100);
+}
+
+function _renderNotesList() {
+  const s = watchlist.find(x => x.ticker === _notesCurrentTicker);
+  const notes = (s?.notes || []).slice().reverse();
+  const el = document.getElementById('notesList');
+  if (!notes.length) {
+    el.innerHTML = '<div class="notes-empty">No notes yet — add your first thought below.</div>';
+    return;
+  }
+  el.innerHTML = notes.map((n, i) => {
+    const realIdx = (s.notes.length - 1) - i;
+    const d = new Date(n.ts);
+    const label = d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return `<div class="note-item">
+      <div class="note-header">
+        <span class="note-ts">${label}</span>
+        <button class="note-del" onclick="deleteNote(${realIdx})" title="Delete">✕</button>
+      </div>
+      <div class="note-text">${escHtml(n.text)}</div>
+    </div>`;
+  }).join('');
+}
+
+function addNote() {
+  const text = document.getElementById('notesInput').value.trim();
+  if (!text) { document.getElementById('notesInput').focus(); return; }
+  const idx = watchlist.findIndex(x => x.ticker === _notesCurrentTicker);
+  if (idx < 0) return;
+  if (!watchlist[idx].notes) watchlist[idx].notes = [];
+  watchlist[idx].notes.push({ text, ts: Date.now() });
+  save();
+  render();
+  document.getElementById('notesInput').value = '';
+  _renderNotesList();
+  toast(`Note saved for ${_notesCurrentTicker}`, 'success');
+}
+
+function deleteNote(noteIdx) {
+  const idx = watchlist.findIndex(x => x.ticker === _notesCurrentTicker);
+  if (idx < 0) return;
+  watchlist[idx].notes.splice(noteIdx, 1);
+  save();
+  render();
+  _renderNotesList();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && document.getElementById('notesModal').classList.contains('active')) {
+    addNote();
+  }
+});
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
@@ -3072,6 +3169,7 @@ function render() {
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>
           <button class="icon-btn" onclick="openTickerDetail('${s.ticker}','watchlist')" title="Profile &amp; Valuation">≡</button>
+          <button class="icon-btn" onclick="openNotes('${escAttr(s.ticker)}')" title="Notes">${(s.notes||[]).length > 0 ? `✎<span class="note-count-badge">${s.notes.length}</span>` : '✎'}</button>
           <button class="icon-btn danger" onclick="removeTicker('${s.ticker}')" title="Remove">✕</button>
         </div>
       </td>
