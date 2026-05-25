@@ -66,6 +66,19 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         forward_pe = info.get("forwardPE")
         pb = info.get("priceToBook")
         gross_margin = info.get("grossMargins")
+        total_revenue = info.get("totalRevenue")
+        ps_ratio = info.get("priceToSalesTrailing12Months")
+
+        # Last quarter revenue from quarterly income statement
+        quarterly_revenue = None
+        try:
+            q_inc = ticker.quarterly_income_stmt
+            if q_inc is not None and not q_inc.empty:
+                rev_row = next((q_inc.loc[r] for r in q_inc.index if 'total revenue' in r.lower()), None)
+                if rev_row is not None:
+                    quarterly_revenue = float(rev_row.iloc[0])
+        except Exception:
+            pass
 
         # Historical returns via monthly history (fast, small payload)
         hist = ticker.history(period="5y", interval="1mo")
@@ -113,6 +126,9 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             return_6m=return_6m,
             return_1y=return_1y,
             return_5y=return_5y,
+            total_revenue=total_revenue,
+            quarterly_revenue=quarterly_revenue,
+            ps_ratio=ps_ratio,
             sparkline=sparkline,
         )
 

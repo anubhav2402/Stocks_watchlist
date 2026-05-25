@@ -455,28 +455,6 @@
   .notes-textarea:focus { outline: none; border-color: var(--accent); }
   .notes-hint { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
 
-  .conviction-dots {
-    cursor: pointer;
-    font-size: 11px;
-    letter-spacing: 1px;
-    user-select: none;
-    color: var(--ink);
-    opacity: 0.85;
-  }
-  .conviction-dots:hover { opacity: 1; }
-  .alloc-input {
-    width: 44px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--rule);
-    color: var(--ink);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-align: right;
-    padding: 0 2px;
-    outline: none;
-  }
-  .alloc-input:focus { border-bottom-color: var(--ink); }
 
   /* Section headers */
   .section-title {
@@ -1326,11 +1304,6 @@
         <div class="sum-meta">trailing twelve</div>
       </div>
       <div class="sum-cell">
-        <div class="sum-label">Wtd 1Y</div>
-        <div class="sum-value" id="sumWtdYear">—</div>
-        <div class="sum-meta">by allocation</div>
-      </div>
-      <div class="sum-cell">
         <div class="sum-label">Best Performer</div>
         <div class="sum-value" id="sumBest" style="font-size:22px">—</div>
         <div class="sum-meta" id="sumBestMeta">since added</div>
@@ -1369,8 +1342,8 @@
       <button class="filter-chip" data-sort="return5y" data-dir="desc">5Y Return</button>
       <button class="filter-chip" data-sort="pe" data-dir="asc">P/E</button>
       <button class="filter-chip" data-sort="forwardPe" data-dir="asc">Fwd P/E</button>
-      <button class="filter-chip" data-sort="conviction" data-dir="desc">Conviction</button>
-      <button class="filter-chip" data-sort="allocation" data-dir="desc">Allocation</button>
+      <button class="filter-chip" data-sort="marketCap" data-dir="desc">Mkt Cap</button>
+      <button class="filter-chip" data-sort="psRatio" data-dir="asc">P/S</button>
       <input type="text" class="search-input" id="searchInput" placeholder="Filter ticker…">
     </div>
 
@@ -1391,8 +1364,10 @@
             <th data-col="forwardPe">Fwd P/E <span class="sort-arrow">▲▼</span></th>
             <th data-col="pb">P/B <span class="sort-arrow">▲▼</span></th>
             <th data-col="grossMargin">Gross Margin <span class="sort-arrow">▲▼</span></th>
-            <th data-col="conviction">Conv <span class="sort-arrow">▲▼</span></th>
-            <th data-col="allocation">Alloc% <span class="sort-arrow">▲▼</span></th>
+            <th data-col="marketCap">Mkt Cap <span class="sort-arrow">▲▼</span></th>
+            <th data-col="ttmRevenue">TTM Rev <span class="sort-arrow">▲▼</span></th>
+            <th data-col="qtrRevenue">Qtr Rev <span class="sort-arrow">▲▼</span></th>
+            <th data-col="psRatio">P/S <span class="sort-arrow">▲▼</span></th>
             <th></th>
           </tr>
         </thead>
@@ -1599,7 +1574,7 @@
   <div class="modal">
     <div class="modal-content">
       <h2>Add a <em>ticker</em></h2>
-      <div class="modal-sub">A new entry for the conviction list.</div>
+      <div class="modal-sub">Add a new ticker to your watchlist.</div>
       <div class="form-group">
         <label>Symbol</label>
         <div class="ticker-input-wrap">
@@ -1977,6 +1952,10 @@ async function fetchTickerData(ticker) {
             forwardPe:   d.forward_pe,
             pb:          d.pb,
             grossMargin: d.gross_margin,
+            marketCap:   d.market_cap,
+            ttmRevenue:  d.total_revenue,
+            qtrRevenue:  d.quarterly_revenue,
+            psRatio:     d.ps_ratio,
           };
         }
       }
@@ -2022,28 +2001,6 @@ function setupAutoFetch() {
 
 let _catalysts = {};   // { TICKER: CatalystResponse }
 
-// ════════════════════════════════════════════════════════════
-// CONVICTION & ALLOCATION HELPERS
-// ════════════════════════════════════════════════════════════
-function renderDots(n) {
-  const v = Math.max(0, Math.min(5, n || 0));
-  return '<span style="color:var(--ink)">●</span>'.repeat(v) + '<span style="opacity:0.2">●</span>'.repeat(5 - v);
-}
-
-function cycleConviction(ticker) {
-  const idx = watchlist.findIndex(s => s.ticker === ticker);
-  if (idx < 0) return;
-  watchlist[idx].conviction = ((watchlist[idx].conviction || 0) % 5) + 1;
-  save();
-  render();
-}
-
-function updateAllocation(ticker, value) {
-  const idx = watchlist.findIndex(s => s.ticker === ticker);
-  if (idx < 0) return;
-  watchlist[idx].allocation = parseFloat(value) || null;
-  save();
-}
 
 // ════════════════════════════════════════════════════════════
 // CATALYST — fetch from backend
@@ -2166,6 +2123,10 @@ async function refreshAll() {
           forwardPe: d.forwardPe,
           pb: d.pb,
           grossMargin: d.grossMargin,
+          marketCap: d.marketCap,
+          ttmRevenue: d.ttmRevenue,
+          qtrRevenue: d.qtrRevenue,
+          psRatio: d.psRatio,
           currency: d.currency,
           lastFetched: Date.now(),
         };
@@ -2309,6 +2270,7 @@ async function refreshSingle(ticker) {
       dayChangePct: d.dayChangePct,
       return1m: d.return1m, return6m: d.return6m, return1y: d.return1y, return5y: d.return5y,
       pe: d.pe, forwardPe: d.forwardPe, pb: d.pb, grossMargin: d.grossMargin,
+      marketCap: d.marketCap, ttmRevenue: d.ttmRevenue, qtrRevenue: d.qtrRevenue, psRatio: d.psRatio,
       currency: d.currency, lastFetched: Date.now(),
     };
     if (watchlist[idx].priceOnAdd == null && d.price != null) {
@@ -3053,6 +3015,14 @@ function fmtRatio(v, opts = {}) {
   return `<span class="${cls}">${v.toFixed(2)}</span>`;
 }
 
+function fmtLarge(v) {
+  if (v == null || isNaN(v) || v <= 0) return '<span class="metric na">—</span>';
+  if (v >= 1e12) return `<span class="metric">$${(v / 1e12).toFixed(2)}T</span>`;
+  if (v >= 1e9)  return `<span class="metric">$${(v / 1e9).toFixed(1)}B</span>`;
+  if (v >= 1e6)  return `<span class="metric">$${(v / 1e6).toFixed(0)}M</span>`;
+  return `<span class="metric">$${v.toFixed(0)}</span>`;
+}
+
 function fmtMargin(v) {
   if (v == null || isNaN(v)) return '<span class="metric na">—</span>';
   const pct = v * 100;
@@ -3114,13 +3084,6 @@ function render() {
   if (avgYr == null) { sumYearEl.textContent = '—'; sumYearEl.style.color = ''; }
   else { sumYearEl.textContent = (avgYr >= 0 ? '+' : '') + avgYr.toFixed(1) + '%'; sumYearEl.style.color = avgYr >= 0 ? 'var(--green)' : 'var(--red)'; }
 
-  // Weighted avg 1Y by allocation
-  const allocated = watchlist.filter(s => s.allocation != null && s.return1y != null && !isNaN(s.return1y));
-  const totalAlloc = allocated.reduce((a, s) => a + s.allocation, 0);
-  const wtdAvgYr = totalAlloc > 0 ? allocated.reduce((a, s) => a + s.return1y * s.allocation, 0) / totalAlloc : null;
-  const sumWtdEl = document.getElementById('sumWtdYear');
-  if (wtdAvgYr == null) { sumWtdEl.textContent = '—'; sumWtdEl.style.color = ''; }
-  else { sumWtdEl.textContent = (wtdAvgYr >= 0 ? '+' : '') + wtdAvgYr.toFixed(1) + '%'; sumWtdEl.style.color = wtdAvgYr >= 0 ? 'var(--green)' : 'var(--red)'; }
 
   const ranked = watchlist.map(s => ({ s, r: returnSinceAdded(s) })).filter(x => x.r != null).sort((a, b) => b.r - a.r);
   if (ranked.length) {
@@ -3163,8 +3126,10 @@ function render() {
       <td>${fmtRatio(s.forwardPe, { peLike: true })}</td>
       <td>${fmtRatio(s.pb, { pbLike: true })}</td>
       <td>${fmtMargin(s.grossMargin)}</td>
-      <td><span class="conviction-dots" onclick="cycleConviction('${s.ticker}')" title="Click to set conviction (1–5)">${renderDots(s.conviction)}</span></td>
-      <td><input class="alloc-input" type="number" min="0" max="100" step="0.5" value="${s.allocation != null ? s.allocation : ''}" placeholder="—" onchange="updateAllocation('${s.ticker}', this.value)" onclick="event.stopPropagation()" title="Target allocation %"></td>
+      <td>${fmtLarge(s.marketCap)}</td>
+      <td>${fmtLarge(s.ttmRevenue)}</td>
+      <td>${fmtLarge(s.qtrRevenue)}</td>
+      <td>${fmtRatio(s.psRatio)}</td>
       <td>
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>

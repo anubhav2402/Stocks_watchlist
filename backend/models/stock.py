@@ -19,6 +19,9 @@ class QuoteResponse(BaseModel):
     return_6m: Optional[float] = None
     return_1y: Optional[float] = None
     return_5y: Optional[float] = None
+    total_revenue: Optional[float] = None
+    quarterly_revenue: Optional[float] = None
+    ps_ratio: Optional[float] = None
     sparkline: list[float] = []
     error: Optional[str] = None
 
