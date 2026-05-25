@@ -2076,6 +2076,21 @@ function _timeAgo(isoStr) {
 // ════════════════════════════════════════════════════════════
 // REFRESH ALL
 // ════════════════════════════════════════════════════════════
+// Auto-detect Indian exchange suffix (.NS / .BO) when a ticker returns no price
+async function _fetchWithSuffixFallback(ticker) {
+  let d = await fetchTickerData(ticker);
+  let resolvedTicker = ticker;
+  if (d.price == null && !ticker.includes('.')) {
+    const dNS = await fetchTickerData(ticker + '.NS');
+    if (dNS.price != null) { d = dNS; resolvedTicker = ticker + '.NS'; }
+    else {
+      const dBO = await fetchTickerData(ticker + '.BO');
+      if (dBO.price != null) { d = dBO; resolvedTicker = ticker + '.BO'; }
+    }
+  }
+  return { d, resolvedTicker };
+}
+
 async function refreshAll() {
   if (isFetching) return;
   if (watchlist.length === 0) { toast('Nothing to refresh — add tickers first.', 'info'); return; }
@@ -2093,10 +2108,12 @@ async function refreshAll() {
     setStatus('fetching', `Fetching ${i + 1}–${Math.min(i + BATCH, watchlist.length)} of ${watchlist.length}…`);
     await Promise.all(watchlist.slice(i, i + BATCH).map(async (s) => {
       try {
-        const [d] = await Promise.all([fetchTickerData(s.ticker), fetchCatalysts(s.ticker)]);
+        const { d, resolvedTicker } = await _fetchWithSuffixFallback(s.ticker);
+        await fetchCatalysts(resolvedTicker);
         if (state.active !== activeListId) return;
         const idx = watchlist.findIndex(x => x.ticker === s.ticker);
         if (idx < 0) return;
+        if (resolvedTicker !== s.ticker) watchlist[idx].ticker = resolvedTicker;
         watchlist[idx] = {
           ...watchlist[idx],
           name: d.name || watchlist[idx].name || watchlist[idx].ticker,
@@ -2241,23 +2258,11 @@ async function refreshSingle(ticker) {
   const idx = watchlist.findIndex(s => s.ticker === ticker);
   if (idx < 0) return;
   try {
-    let d = await fetchTickerData(ticker);
-    let resolvedTicker = ticker;
-
-    // Auto-detect Indian stocks: if no price and no exchange suffix, try .NS then .BO
-    if (d.price == null && !ticker.includes('.')) {
-      const dNS = await fetchTickerData(ticker + '.NS');
-      if (dNS.price != null) { d = dNS; resolvedTicker = ticker + '.NS'; }
-      else {
-        const dBO = await fetchTickerData(ticker + '.BO');
-        if (dBO.price != null) { d = dBO; resolvedTicker = ticker + '.BO'; }
-      }
-      if (resolvedTicker !== ticker) {
-        watchlist[idx].ticker = resolvedTicker;
-        toast(`Saved as ${resolvedTicker} (Indian exchange)`, 'info');
-      }
+    const { d, resolvedTicker } = await _fetchWithSuffixFallback(ticker);
+    if (resolvedTicker !== ticker) {
+      watchlist[idx].ticker = resolvedTicker;
+      toast(`Saved as ${resolvedTicker} (Indian exchange)`, 'info');
     }
-
     await fetchCatalysts(resolvedTicker);
     watchlist[idx] = {
       ...watchlist[idx],
