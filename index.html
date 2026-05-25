@@ -1588,7 +1588,7 @@
       <div class="form-group">
         <label>Symbol</label>
         <div class="ticker-input-wrap">
-          <input type="text" id="addTicker" placeholder="AAPL · NVDA · TSLA" maxlength="10" style="text-transform:uppercase" autocomplete="off">
+          <input type="text" id="addTicker" placeholder="AAPL · RELIANCE.NS · INFY.NS" maxlength="20" style="text-transform:uppercase" autocomplete="off">
           <span class="fetch-status" id="addFetchStatus"></span>
         </div>
         <div class="form-hint">Type and pause — we'll fetch the rest.</div>
@@ -2241,7 +2241,24 @@ async function refreshSingle(ticker) {
   const idx = watchlist.findIndex(s => s.ticker === ticker);
   if (idx < 0) return;
   try {
-    const [d] = await Promise.all([fetchTickerData(ticker), fetchCatalysts(ticker)]);
+    let d = await fetchTickerData(ticker);
+    let resolvedTicker = ticker;
+
+    // Auto-detect Indian stocks: if no price and no exchange suffix, try .NS then .BO
+    if (d.price == null && !ticker.includes('.')) {
+      const dNS = await fetchTickerData(ticker + '.NS');
+      if (dNS.price != null) { d = dNS; resolvedTicker = ticker + '.NS'; }
+      else {
+        const dBO = await fetchTickerData(ticker + '.BO');
+        if (dBO.price != null) { d = dBO; resolvedTicker = ticker + '.BO'; }
+      }
+      if (resolvedTicker !== ticker) {
+        watchlist[idx].ticker = resolvedTicker;
+        toast(`Saved as ${resolvedTicker} (Indian exchange)`, 'info');
+      }
+    }
+
+    await fetchCatalysts(resolvedTicker);
     watchlist[idx] = {
       ...watchlist[idx],
       name: d.name || watchlist[idx].name,
