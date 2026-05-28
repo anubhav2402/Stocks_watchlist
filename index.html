@@ -555,7 +555,7 @@
     transition: background 0.15s;
   }
 
-  thead th:first-child { text-align: left; padding-left: 18px; }
+  thead th:first-child { text-align: left; padding-left: 18px; position: sticky; left: 0; z-index: 3; background: var(--ink); box-shadow: 2px 0 6px rgba(22,20,19,0.18); }
   thead th:last-child { padding-right: 18px; }
   thead th:hover { background: var(--accent-deep); }
 
@@ -579,7 +579,9 @@
     color: var(--ink-soft);
   }
 
-  td:first-child { text-align: left; padding-left: 18px; }
+  td:first-child { text-align: left; padding-left: 18px; position: sticky; left: 0; z-index: 1; background: var(--paper); box-shadow: 2px 0 6px rgba(22,20,19,0.08); }
+  tbody tr:nth-child(even) td:first-child { background: #efe8d8; }
+  tbody tr:hover td:first-child { background: var(--paper-deep); }
   td:last-child { padding-right: 18px; }
 
   /* Ticker cell */
