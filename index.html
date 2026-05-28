@@ -3090,41 +3090,71 @@ function fmtScore(v) {
 }
 
 function computeAllScores(stocks) {
-  const metrics = [
-    { key: 'forwardPe',     dir: 'asc',  w: 1.5 },
-    { key: 'pegRatio',      dir: 'asc',  w: 1.5 },
-    { key: 'psRatio',       dir: 'asc',  w: 1.0 },
-    { key: 'qtrRevenueYoy', dir: 'desc', w: 1.5 },
-    { key: 'qtrProfitYoy',  dir: 'desc', w: 1.5 },
-    { key: 'revenueCagr',   dir: 'desc', w: 0.5 },
-    { key: 'profitCagr',    dir: 'desc', w: 0.5 },
-    { key: 'fcfYield',      dir: 'desc', w: 2.0 },
-    { key: 'roe',           dir: 'desc', w: 1.5 },
-    { key: 'debtToEquity',  dir: 'asc',  w: 1.0 },
-  ];
+  // ── Scoring primitives ──────────────────────────────────────────────────────
+  // logScore: for valuation multiples — proportional differences matter more
+  //   (P/E 10→15 is a 50% premium; 45→50 is barely noise)
+  //   lo = bad value (score→0), hi = good value (score→100)
+  function logScore(v, lo, hi) {
+    if (v == null || isNaN(v) || !isFinite(v) || v <= 0) return null;
+    return Math.max(0, Math.min(100,
+      (Math.log(lo) - Math.log(v)) / (Math.log(lo) - Math.log(hi)) * 100));
+  }
 
-  const acc = {};
-  stocks.forEach(s => { acc[s.ticker] = { sum: 0, w: 0 }; });
+  // linearScore: for metrics with well-defined linear benchmarks (PEG)
+  function linearScore(v, lo, hi) {
+    if (v == null || isNaN(v) || !isFinite(v)) return null;
+    return Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
+  }
 
-  metrics.forEach(({ key, dir, w }) => {
-    const isDebt = key === 'debtToEquity';
-    const valid = stocks.filter(s => {
-      const v = s[key];
-      if (v == null || isNaN(v) || !isFinite(v)) return false;
-      return isDebt ? v >= 0 : v > 0;
-    });
-    if (valid.length < 2) return;
-    const sorted = [...valid].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
-    sorted.forEach((s, i) => {
-      const pct = (1 - i / (sorted.length - 1)) * 100;
-      acc[s.ticker].sum += pct * w;
-      acc[s.ticker].w   += w;
-    });
-  });
+  // sigmoidScore: for growth rates — diminishing credit at extremes,
+  //   smooth penalty for decline; center = score-50 value, scale = steepness
+  function sigmoidScore(v, center, scale) {
+    if (v == null || isNaN(v) || !isFinite(v)) return null;
+    return 100 / (1 + Math.exp(-(v - center) / scale));
+  }
+
+  // expDecayScore: for leverage — 0 debt is pristine; penalty accelerates
+  //   k tuned so 100% D/E (1x ratio in yfinance %-units) ≈ 74, 300% ≈ 41
+  function expDecayScore(v, k) {
+    if (v == null || isNaN(v) || !isFinite(v) || v < 0) return null;
+    return Math.max(0, 100 * Math.exp(-k * v));
+  }
+
+  // ── Per-stock metric scores ─────────────────────────────────────────────────
+  function scoreMetric(s) {
+    return {
+      // Valuation — log scale
+      forwardPe:     logScore(s.forwardPe,   50, 10),  // 10→100, 20→61, 30→38, 50→0
+      pegRatio:      linearScore(s.pegRatio, 3.0, 0.5),// 0.5→100, 1.0→81, 2.0→40, 3.0→0
+      psRatio:       logScore(s.psRatio,     20, 1),   // 1→100, 3→67, 5→52, 10→33, 20→0
+
+      // Growth — sigmoid (S-curve): diminishing returns above ~50%, soft floor for declines
+      qtrRevenueYoy: sigmoidScore(s.qtrRevenueYoy, 15, 15), // center 15% YoY
+      qtrProfitYoy:  sigmoidScore(s.qtrProfitYoy,  15, 18), // slightly wider — more volatile
+      revenueCagr:   sigmoidScore(s.revenueCagr,   10,  8), // center 10% CAGR
+      profitCagr:    sigmoidScore(s.profitCagr,    10,  8),
+
+      // Quality / capital efficiency
+      fcfYield:      sigmoidScore(s.fcfYield,      4, 2),   // center 4%; neg FCF scores ~12, not 0
+      roe:           sigmoidScore((s.roe || 0) * 100, 15, 8), // yfinance decimal→%; center 15% ROE
+      debtToEquity:  expDecayScore(s.debtToEquity, 0.003),  // yfinance %-units: 100=1x, 300=3x
+    };
+  }
+
+  const weights = {
+    forwardPe: 1.5, pegRatio: 1.5, psRatio: 1.0,
+    qtrRevenueYoy: 1.5, qtrProfitYoy: 1.5, revenueCagr: 0.5, profitCagr: 0.5,
+    fcfYield: 2.0, roe: 1.5, debtToEquity: 1.0,
+  };
 
   const result = {};
-  Object.entries(acc).forEach(([ticker, { sum, w }]) => {
-    result[ticker] = w > 0 ? sum / w : null;
+  stocks.forEach(s => {
+    const sc = scoreMetric(s);
+    let sum = 0, w = 0;
+    Object.entries(weights).forEach(([key, wt]) => {
+      if (sc[key] != null) { sum += sc[key] * wt; w += wt; }
+    });
+    result[s.ticker] = w > 0 ? sum / w : null;
   });
   return result;
 }
