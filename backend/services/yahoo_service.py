@@ -85,15 +85,33 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
                     except Exception:
                         return None
 
+                def _first_valid_idx(series):
+                    """Return index of the most recent non-NaN column."""
+                    for i in range(len(series)):
+                        v = _safe_float(series, i)
+                        if v is not None:
+                            return i
+                    return None
+
+                def _yoy(series):
+                    """YoY growth: most recent valid quarter vs same quarter last year (+4)."""
+                    cur_idx = _first_valid_idx(series)
+                    if cur_idx is None:
+                        return None, None
+                    prior_idx = cur_idx + 4
+                    if prior_idx >= len(series):
+                        return None, None
+                    v_cur  = _safe_float(series, cur_idx)
+                    v_prev = _safe_float(series, prior_idx)
+                    if v_cur is not None and v_prev is not None and v_prev != 0:
+                        return v_cur, (v_cur - v_prev) / abs(v_prev) * 100
+                    return v_cur, None
+
                 rev_names = [r for r in q_inc.index if 'total revenue' in r.lower()]
                 if rev_names:
                     rev_s = q_inc.loc[rev_names[0]]
-                    quarterly_revenue = _safe_float(rev_s, 0)
-                    if len(q_inc.columns) >= 5:
-                        r0 = _safe_float(rev_s, 0)
-                        r4 = _safe_float(rev_s, 4)
-                        if r0 is not None and r4 is not None and r4 != 0:
-                            qtr_revenue_yoy = (r0 - r4) / abs(r4) * 100
+                    cur_rev, qtr_revenue_yoy = _yoy(rev_s)
+                    quarterly_revenue = cur_rev
 
                 ni_names = None
                 for key in ['net income common stockholders', 'net income']:
@@ -101,12 +119,9 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
                     if matches:
                         ni_names = matches
                         break
-                if ni_names and len(q_inc.columns) >= 5:
+                if ni_names:
                     ni_s = q_inc.loc[ni_names[0]]
-                    n0 = _safe_float(ni_s, 0)
-                    n4 = _safe_float(ni_s, 4)
-                    if n0 is not None and n4 is not None and n4 != 0:
-                        qtr_profit_yoy = (n0 - n4) / abs(n4) * 100
+                    _, qtr_profit_yoy = _yoy(ni_s)
         except Exception:
             pass
 
