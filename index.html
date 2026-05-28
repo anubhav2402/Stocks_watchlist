@@ -3102,53 +3102,20 @@ function computeAllScores(stocks) {
     { key: 'debtToEquity',  dir: 'asc',  w: 1.0 },
   ];
 
-  // Build sector groups for sector-relative scoring
-  const bySector = {};
-  stocks.forEach(s => {
-    const sec = s.sector || '__none__';
-    if (!bySector[sec]) bySector[sec] = [];
-    bySector[sec].push(s);
-  });
-
   const acc = {};
   stocks.forEach(s => { acc[s.ticker] = { sum: 0, w: 0 }; });
 
   metrics.forEach(({ key, dir, w }) => {
     const isDebt = key === 'debtToEquity';
-    const allValid = stocks.filter(s => {
+    const valid = stocks.filter(s => {
       const v = s[key];
       if (v == null || isNaN(v) || !isFinite(v)) return false;
       return isDebt ? v >= 0 : v > 0;
     });
-    if (allValid.length < 2) return;
-
-    function rankPool(pool) {
-      const sorted = [...pool].sort((a, b) =>
-        dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
-      const map = {};
-      sorted.forEach((s, i) => {
-        map[s.ticker] = pool.length > 1 ? (1 - i / (pool.length - 1)) * 100 : 50;
-      });
-      return map;
-    }
-
-    const overallRank = rankPool(allValid);
-
-    allValid.forEach(s => {
-      const sec = s.sector || '__none__';
-      const sectorValid = (bySector[sec] || []).filter(x => {
-        const v = x[key];
-        if (v == null || isNaN(v) || !isFinite(v)) return false;
-        return isDebt ? v >= 0 : v > 0;
-      });
-      let pct;
-      if (sec !== '__none__' && sectorValid.length >= 3) {
-        const sectorRank = rankPool(sectorValid);
-        pct = 0.7 * (sectorRank[s.ticker] ?? overallRank[s.ticker])
-            + 0.3 * overallRank[s.ticker];
-      } else {
-        pct = overallRank[s.ticker];
-      }
+    if (valid.length < 2) return;
+    const sorted = [...valid].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+    sorted.forEach((s, i) => {
+      const pct = (1 - i / (sorted.length - 1)) * 100;
       acc[s.ticker].sum += pct * w;
       acc[s.ticker].w   += w;
     });
