@@ -3141,8 +3141,10 @@ function computeAllScores(stocks) {
       // Growth — sigmoid (S-curve): diminishing returns above ~50%, soft floor for declines
       qtrRevenueYoy: sigmoidScore(s.qtrRevenueYoy, 15, 15), // center 15% YoY
       qtrProfitYoy:  sigmoidScore(s.qtrProfitYoy,  15, 18), // slightly wider — more volatile
-      revenueCagr:   sigmoidScore(s.revenueCagr,   10,  8), // center 10% CAGR
-      profitCagr:    sigmoidScore(s.profitCagr,    10,  8),
+      revenueCagr:    sigmoidScore(s.revenueCagr,    10,  8), // center 10% CAGR
+      profitCagr:     sigmoidScore(s.profitCagr,    10,  8),
+      revEstCyGrowth: sigmoidScore(s.revEstCyGrowth, 12, 12), // analyst est CY; center 12% (conservative bias)
+      revEstNyGrowth: sigmoidScore(s.revEstNyGrowth, 10, 10), // analyst est NY; center 10% (further out, more muted)
 
       // Quality / capital efficiency
       fcfYield:      sigmoidScore(s.fcfYield,      4, 2),   // center 4%; neg FCF scores ~12, not 0
@@ -3152,8 +3154,12 @@ function computeAllScores(stocks) {
   }
 
   const weights = {
-    forwardPe: 1.5, pegRatio: 1.5, psRatio: 1.0,
-    qtrRevenueYoy: 1.5, qtrProfitYoy: 1.5, revenueCagr: 0.5, profitCagr: 0.5,
+    // Value  (33%) — Fama-French HML + valuation premia
+    forwardPe: 2.0, pegRatio: 1.5, psRatio: 1.0,
+    // Growth (33%) — momentum + analyst revision IC; forward > backward
+    revEstNyGrowth: 1.0, revEstCyGrowth: 0.8,
+    qtrRevenueYoy: 0.8, qtrProfitYoy: 0.8, revenueCagr: 0.5, profitCagr: 0.5,
+    // Quality (33%) — Novy-Marx FCF + Fama-French RMW profitability factor
     fcfYield: 2.0, roe: 1.5, debtToEquity: 1.0,
   };
 
