@@ -117,35 +117,42 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             import math
             ann_inc = ticker.income_stmt
             if ann_inc is not None and not ann_inc.empty and len(ann_inc.columns) >= 2:
-                n_years = len(ann_inc.columns) - 1
 
-                def _ann_safe(series, col_idx):
+                def _ann_val(series, col_idx):
                     try:
                         v = series.iloc[col_idx]
                         return None if (v is None or math.isnan(float(v))) else float(v)
                     except Exception:
                         return None
 
-                rev_names_ann = [r for r in ann_inc.index if 'total revenue' in r.lower()]
-                if rev_names_ann:
-                    rv = ann_inc.loc[rev_names_ann[0]]
-                    r_new = _ann_safe(rv, 0)
-                    r_old = _ann_safe(rv, -1)
-                    if r_new and r_old and r_new > 0 and r_old > 0 and n_years > 0:
-                        revenue_cagr = ((r_new / r_old) ** (1 / n_years) - 1) * 100
+                def _oldest_valid(series):
+                    """Return (value, col_index) for the oldest non-NaN column."""
+                    for i in range(len(series) - 1, -1, -1):
+                        v = _ann_val(series, i)
+                        if v is not None:
+                            return v, i
+                    return None, None
 
-                ni_names_ann = None
+                def _cagr(series, row_label):
+                    names = [r for r in ann_inc.index if row_label in r.lower()]
+                    if not names:
+                        return None
+                    s = ann_inc.loc[names[0]]
+                    v_new = _ann_val(s, 0)
+                    v_old, old_idx = _oldest_valid(s)
+                    if v_new and v_old and v_new > 0 and v_old > 0 and old_idx > 0:
+                        return ((v_new / v_old) ** (1 / old_idx) - 1) * 100
+                    return None
+
+                revenue_cagr = _cagr(ann_inc, 'total revenue')
+
+                ni_label = None
                 for key in ['net income common stockholders', 'net income']:
-                    matches = [r for r in ann_inc.index if key in r.lower()]
-                    if matches:
-                        ni_names_ann = matches
+                    if any(key in r.lower() for r in ann_inc.index):
+                        ni_label = key
                         break
-                if ni_names_ann:
-                    nv = ann_inc.loc[ni_names_ann[0]]
-                    n_new = _ann_safe(nv, 0)
-                    n_old = _ann_safe(nv, -1)
-                    if n_new and n_old and n_new > 0 and n_old > 0 and n_years > 0:
-                        profit_cagr = ((n_new / n_old) ** (1 / n_years) - 1) * 100
+                if ni_label:
+                    profit_cagr = _cagr(ann_inc, ni_label)
         except Exception:
             pass
 
