@@ -3092,9 +3092,9 @@ function fmtScore(v) {
 function computeAllScores(stocks) {
   const metrics = [
     { key: 'pe',            dir: 'asc',  w: 1.0 },
+    { key: 'forwardPe',     dir: 'asc',  w: 1.5 },
     { key: 'pegRatio',      dir: 'asc',  w: 1.5 },
     { key: 'psRatio',       dir: 'asc',  w: 1.0 },
-    { key: 'grossMargin',   dir: 'desc', w: 1.5 },
     { key: 'revenueCagr',   dir: 'desc', w: 1.0 },
     { key: 'profitCagr',    dir: 'desc', w: 1.0 },
     { key: 'fcfYield',      dir: 'desc', w: 2.0 },
