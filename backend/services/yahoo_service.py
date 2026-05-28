@@ -197,6 +197,29 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         spark_hist = ticker.history(period="5d", interval="1d")
         sparkline = spark_hist["Close"].dropna().tolist() if not spark_hist.empty else []
 
+        # Analyst revenue estimates (current year + next year)
+        rev_est_cy = rev_est_cy_growth = rev_est_ny = rev_est_ny_growth = None
+        try:
+            import math as _math
+            rev_est = ticker.revenue_estimate
+            if rev_est is not None and not rev_est.empty:
+                def _safe_est(v):
+                    try:
+                        f = float(v)
+                        return None if _math.isnan(f) else f
+                    except Exception:
+                        return None
+                if '0y' in rev_est.index:
+                    r = rev_est.loc['0y']
+                    rev_est_cy = _safe_est(r.get('avg'))
+                    rev_est_cy_growth = _safe_est(r.get('growth'))
+                if '+1y' in rev_est.index:
+                    r = rev_est.loc['+1y']
+                    rev_est_ny = _safe_est(r.get('avg'))
+                    rev_est_ny_growth = _safe_est(r.get('growth'))
+        except Exception:
+            pass
+
         # Derive day-change from sparkline if info-based values are missing
         if day_change_pct is None and len(sparkline) >= 2:
             spark_prev = sparkline[-2]
@@ -236,6 +259,10 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             sector=sector,
             roe=roe,
             debt_to_equity=debt_to_equity,
+            rev_est_cy=rev_est_cy,
+            rev_est_cy_growth=rev_est_cy_growth,
+            rev_est_ny=rev_est_ny,
+            rev_est_ny_growth=rev_est_ny_growth,
             sparkline=sparkline,
         )
 

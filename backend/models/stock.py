@@ -31,6 +31,10 @@ class QuoteResponse(BaseModel):
     sector: Optional[str] = None
     roe: Optional[float] = None
     debt_to_equity: Optional[float] = None
+    rev_est_cy: Optional[float] = None
+    rev_est_cy_growth: Optional[float] = None
+    rev_est_ny: Optional[float] = None
+    rev_est_ny_growth: Optional[float] = None
     sparkline: list[float] = []
     error: Optional[str] = None
 

@@ -1388,6 +1388,8 @@
             <th data-col="revenueCagr">Rev CAGR <span class="sort-arrow">▲▼</span></th>
             <th data-col="profitCagr">NI CAGR <span class="sort-arrow">▲▼</span></th>
             <th data-col="fcfYield">FCF Yield <span class="sort-arrow">▲▼</span></th>
+            <th data-col="revEstCyGrowth">Est CY Gr <span class="sort-arrow">▲▼</span></th>
+            <th data-col="revEstNyGrowth">Est NY Gr <span class="sort-arrow">▲▼</span></th>
             <th></th>
           </tr>
         </thead>
@@ -1982,6 +1984,10 @@ async function fetchTickerData(ticker) {
             revenueCagr:    d.revenue_cagr,
             profitCagr:     d.profit_cagr,
             fcfYield:       d.fcf_yield,
+            revEstCy:       d.rev_est_cy,
+            revEstCyGrowth: d.rev_est_cy_growth != null ? d.rev_est_cy_growth * 100 : null,
+            revEstNy:       d.rev_est_ny,
+            revEstNyGrowth: d.rev_est_ny_growth != null ? d.rev_est_ny_growth * 100 : null,
             sector:         d.sector,
             roe:            d.roe,
             debtToEquity:   d.debt_to_equity,
@@ -2162,6 +2168,8 @@ async function refreshAll() {
           revenueCagr: d.revenueCagr,
           profitCagr: d.profitCagr,
           fcfYield: d.fcfYield,
+          revEstCy: d.revEstCy, revEstCyGrowth: d.revEstCyGrowth,
+          revEstNy: d.revEstNy, revEstNyGrowth: d.revEstNyGrowth,
           sector: d.sector,
           roe: d.roe,
           debtToEquity: d.debtToEquity,
@@ -2311,6 +2319,8 @@ async function refreshSingle(ticker) {
       marketCap: d.marketCap, ttmRevenue: d.ttmRevenue, qtrRevenue: d.qtrRevenue, psRatio: d.psRatio,
       pegRatio: d.pegRatio, qtrRevenueYoy: d.qtrRevenueYoy, qtrProfitYoy: d.qtrProfitYoy,
       revenueCagr: d.revenueCagr, profitCagr: d.profitCagr, fcfYield: d.fcfYield,
+      revEstCy: d.revEstCy, revEstCyGrowth: d.revEstCyGrowth,
+      revEstNy: d.revEstNy, revEstNyGrowth: d.revEstNyGrowth,
       sector: d.sector, roe: d.roe, debtToEquity: d.debtToEquity,
       currency: d.currency, lastFetched: Date.now(),
     };
@@ -3278,6 +3288,8 @@ function render() {
       <td>${fmtGrowthPct(s.revenueCagr)}</td>
       <td>${fmtGrowthPct(s.profitCagr)}</td>
       <td>${fmtFcfYield(s.fcfYield)}</td>
+      <td>${fmtGrowthPct(s.revEstCyGrowth)}</td>
+      <td>${fmtGrowthPct(s.revEstNyGrowth)}</td>
       <td>
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>
