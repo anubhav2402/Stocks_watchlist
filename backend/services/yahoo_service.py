@@ -69,6 +69,9 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         total_revenue = info.get("totalRevenue")
         ps_ratio = info.get("priceToSalesTrailing12Months")
         peg_ratio = info.get("trailingPegRatio") or info.get("pegRatio")
+        fcf_ttm = info.get("freeCashflow")
+        market_cap_raw = info.get("marketCap")
+        fcf_yield = (fcf_ttm / market_cap_raw * 100) if fcf_ttm and market_cap_raw and market_cap_raw > 0 else None
 
         # Quarterly income: last Q revenue, + YOY growth vs same Q last year
         quarterly_revenue = None
@@ -225,6 +228,7 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             qtr_profit_yoy=qtr_profit_yoy,
             revenue_cagr=revenue_cagr,
             profit_cagr=profit_cagr,
+            fcf_yield=fcf_yield,
             sparkline=sparkline,
         )
 

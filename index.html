@@ -638,6 +638,12 @@
   .metric.low { color: var(--green); font-weight: 700; }
   .metric.na { color: var(--ink-faint); font-style: italic; font-size: 12px; }
 
+  .score-badge { display:inline-block; padding:2px 7px; border-radius:3px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; }
+  .score-badge.green { background:var(--green-bg); color:var(--green); }
+  .score-badge.amber { background:#fef3c7; color:#92400e; }
+  .score-badge.red   { background:var(--red-bg); color:var(--red); }
+  .score-badge.na    { background:transparent; color:var(--ink-faint); font-style:italic; }
+
   .actions { display: flex; gap: 4px; justify-content: flex-end; }
 
   .icon-btn {
@@ -1347,6 +1353,8 @@
       <button class="filter-chip" data-sort="pegRatio" data-dir="asc">PEG</button>
       <button class="filter-chip" data-sort="qtrRevenueYoy" data-dir="desc">Rev YoY</button>
       <button class="filter-chip" data-sort="revenueCagr" data-dir="desc">Rev CAGR</button>
+      <button class="filter-chip" data-sort="fcfYield" data-dir="desc">FCF Yield</button>
+      <button class="filter-chip" data-sort="compositeScore" data-dir="desc">Score</button>
       <input type="text" class="search-input" id="searchInput" placeholder="Filter ticker…">
     </div>
 
@@ -1358,6 +1366,7 @@
             <th data-col="ticker">Ticker <span class="sort-arrow">▲▼</span></th>
             <th data-col="price">Price <span class="sort-arrow">▲▼</span></th>
             <th data-col="dayChangePct">Today % <span class="sort-arrow">▲▼</span></th>
+            <th data-col="compositeScore">Score <span class="sort-arrow">▲▼</span></th>
             <th data-col="returnSinceAdded">Since Added <span class="sort-arrow">▲▼</span></th>
             <th data-col="return1m">1M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return6m">6M <span class="sort-arrow">▲▼</span></th>
@@ -1376,6 +1385,7 @@
             <th data-col="qtrProfitYoy">NI YoY <span class="sort-arrow">▲▼</span></th>
             <th data-col="revenueCagr">Rev CAGR <span class="sort-arrow">▲▼</span></th>
             <th data-col="profitCagr">NI CAGR <span class="sort-arrow">▲▼</span></th>
+            <th data-col="fcfYield">FCF Yield <span class="sort-arrow">▲▼</span></th>
             <th></th>
           </tr>
         </thead>
@@ -1969,6 +1979,7 @@ async function fetchTickerData(ticker) {
             qtrProfitYoy:   d.qtr_profit_yoy,
             revenueCagr:    d.revenue_cagr,
             profitCagr:     d.profit_cagr,
+            fcfYield:       d.fcf_yield,
           };
         }
       }
@@ -2145,6 +2156,7 @@ async function refreshAll() {
           qtrProfitYoy: d.qtrProfitYoy,
           revenueCagr: d.revenueCagr,
           profitCagr: d.profitCagr,
+          fcfYield: d.fcfYield,
           currency: d.currency,
           lastFetched: Date.now(),
         };
@@ -2290,7 +2302,7 @@ async function refreshSingle(ticker) {
       pe: d.pe, forwardPe: d.forwardPe, pb: d.pb, grossMargin: d.grossMargin,
       marketCap: d.marketCap, ttmRevenue: d.ttmRevenue, qtrRevenue: d.qtrRevenue, psRatio: d.psRatio,
       pegRatio: d.pegRatio, qtrRevenueYoy: d.qtrRevenueYoy, qtrProfitYoy: d.qtrProfitYoy,
-      revenueCagr: d.revenueCagr, profitCagr: d.profitCagr,
+      revenueCagr: d.revenueCagr, profitCagr: d.profitCagr, fcfYield: d.fcfYield,
       currency: d.currency, lastFetched: Date.now(),
     };
     if (watchlist[idx].priceOnAdd == null && d.price != null) {
@@ -3056,6 +3068,51 @@ function fmtPeg(v) {
   return `<span class="${cls}">${v.toFixed(2)}</span>`;
 }
 
+function fmtFcfYield(v) {
+  if (v == null || isNaN(v)) return '<span class="metric na">—</span>';
+  const cls = v > 5 ? 'metric low' : v > 2 ? 'metric' : v > 0 ? 'metric high' : 'metric na';
+  return `<span class="${cls}">${v.toFixed(1)}%</span>`;
+}
+
+function fmtScore(v) {
+  if (v == null || isNaN(v)) return '<span class="score-badge na">—</span>';
+  const cls = v >= 70 ? 'green' : v >= 40 ? 'amber' : 'red';
+  return `<span class="score-badge ${cls}">${Math.round(v)}</span>`;
+}
+
+function computeAllScores(stocks) {
+  const metrics = [
+    { key: 'pe',            dir: 'asc',  w: 1.0 },
+    { key: 'pegRatio',      dir: 'asc',  w: 1.5 },
+    { key: 'psRatio',       dir: 'asc',  w: 1.0 },
+    { key: 'grossMargin',   dir: 'desc', w: 1.5 },
+    { key: 'qtrRevenueYoy', dir: 'desc', w: 1.5 },
+    { key: 'revenueCagr',   dir: 'desc', w: 1.0 },
+    { key: 'profitCagr',    dir: 'desc', w: 1.0 },
+    { key: 'fcfYield',      dir: 'desc', w: 2.0 },
+  ];
+  const acc = {};
+  stocks.forEach(s => { acc[s.ticker] = { sum: 0, w: 0 }; });
+  metrics.forEach(({ key, dir, w }) => {
+    const valid = stocks.filter(s => {
+      const v = s[key];
+      return v != null && !isNaN(v) && isFinite(v) && v > 0;
+    });
+    if (valid.length < 2) return;
+    const sorted = [...valid].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+    sorted.forEach((s, i) => {
+      const pct = (1 - i / (sorted.length - 1)) * 100;
+      acc[s.ticker].sum += pct * w;
+      acc[s.ticker].w   += w;
+    });
+  });
+  const result = {};
+  Object.entries(acc).forEach(([ticker, { sum, w }]) => {
+    result[ticker] = w > 0 ? sum / w : null;
+  });
+  return result;
+}
+
 function fmtMargin(v) {
   if (v == null || isNaN(v)) return '<span class="metric na">—</span>';
   const pct = v * 100;
@@ -3086,10 +3143,13 @@ function render() {
 
   let rows = watchlist.filter(s => !searchQuery || s.ticker.includes(searchQuery));
 
+  const _sortScores = currentSort.col === 'compositeScore' ? computeAllScores(watchlist) : null;
+
   rows.sort((a, b) => {
     let av, bv;
     if (currentSort.col === 'returnSinceAdded') { av = returnSinceAdded(a); bv = returnSinceAdded(b); }
     else if (currentSort.col === 'ticker')        { av = a.ticker; bv = b.ticker; }
+    else if (currentSort.col === 'compositeScore') { av = _sortScores[a.ticker]; bv = _sortScores[b.ticker]; }
     else                                          { av = a[currentSort.col]; bv = b[currentSort.col]; }
     if (av == null && bv == null) return 0;
     if (av == null) return 1;
@@ -3131,6 +3191,8 @@ function render() {
 
   document.getElementById('visibleCount').textContent = `${rows.length} of ${watchlist.length} rows`;
 
+  const _scores = computeAllScores(watchlist);
+
   body.innerHTML = rows.map(s => {
     const sinceAdded = returnSinceAdded(s);
     const initials   = s.ticker.replace(/\W/g, '').slice(0, 2);
@@ -3150,6 +3212,7 @@ function render() {
       </td>
       <td><span class="price-main">${fmtPrice(s.price, s.currency)}</span></td>
       <td>${fmtPct(s.dayChangePct)}</td>
+      <td>${fmtScore(_scores[s.ticker])}</td>
       <td>${fmtPct(sinceAdded)}</td>
       <td>${fmtPct(s.return1m)}</td>
       <td>${fmtPct(s.return6m)}</td>
@@ -3168,6 +3231,7 @@ function render() {
       <td>${fmtGrowthPct(s.qtrProfitYoy)}</td>
       <td>${fmtGrowthPct(s.revenueCagr)}</td>
       <td>${fmtGrowthPct(s.profitCagr)}</td>
+      <td>${fmtFcfYield(s.fcfYield)}</td>
       <td>
         <div class="actions">
           <button class="icon-btn" onclick="refreshSingle('${s.ticker}')" title="Refresh">↻</button>
@@ -3673,7 +3737,8 @@ function rwSectionHtml(n) {
         ${_rwAutoCell('rwA_pe','P/E (TTM)')}${_rwAutoCell('rwA_fwd_pe','Fwd P/E')}
         ${_rwAutoCell('rwA_ev_ebitda','EV/EBITDA')}${_rwAutoCell('rwA_ev_rev','EV/Revenue')}
         ${_rwAutoCell('rwA_pb','P/Book')}${_rwAutoCell('rwA_ps','P/Sales')}
-        ${_rwAutoCell('rwA_div_yield','Div Yield')}${_rwAutoCell('rwA_num_analysts','# Analysts')}
+        ${_rwAutoCell('rwA_div_yield','Div Yield')}${_rwAutoCell('rwA_fcf_yield','FCF Yield')}
+        ${_rwAutoCell('rwA_num_analysts','# Analysts')}
       </div>
       ${_rwField('Your Price Target', '<input type="number" class="rw-input" data-rw="your_target" placeholder="e.g. 220.00" style="max-width:200px">')}
       <hr class="rw-divider">
@@ -3683,6 +3748,26 @@ function rwSectionHtml(n) {
       </div>
       <div id="rwLLMDecision" class="rw-llm-block">
         <span style="color:var(--ink-mute);font-size:12px">Loads automatically after fetching ticker data.</span>
+      </div>
+      <hr class="rw-divider">
+      <div class="rw-sub-head">
+        DCF Valuation
+        <span style="font-weight:400;color:var(--ink-faint)">(2-stage discounted cash flow)</span>
+      </div>
+      <div id="rwDcfBlock">
+        <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px">
+          <div>Base FCF (TTM): <strong id="rwDcfBaseFcf">—</strong></div>
+          <div>Net Debt: <strong id="rwDcfNetDebt">—</strong></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-mute)">Yr 1 Growth %<span style="font-size:9px">(analyst est.)</span><input type="number" id="rwDcfG1" class="rw-input" style="width:80px" step="1" value="12"></label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-mute)">Yr 2 Growth %<span style="font-size:9px">(analyst est.)</span><input type="number" id="rwDcfG2" class="rw-input" style="width:80px" step="1" value="10"></label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-mute)">Yr 3–5 Growth %<input type="number" id="rwDcfGMid" class="rw-input" style="width:80px" step="1" value="8"></label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-mute)">Terminal Growth %<input type="number" id="rwDcfGTerm" class="rw-input" style="width:80px" step="0.5" value="3"></label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-mute)">Discount Rate % (WACC)<input type="number" id="rwDcfWacc" class="rw-input" style="width:80px" step="0.5" value="10"></label>
+        </div>
+        <button class="btn btn-sm" onclick="rwComputeDCF()">Calculate</button>
+        <div id="rwDcfResult" style="margin-top:14px"></div>
       </div>
       <hr class="rw-divider">
       ${_rwField('Your Notes', _rwTextarea('pm_memo','Your own observations, thesis, or anything the AI missed.'))}
@@ -3776,6 +3861,21 @@ function rwPopulateAuto() {
   rwBuildCfTable();
   rwBuildQtrTable();
   rwBuildEstimatesBlock();
+
+  // §05 DCF — pre-fill growth rates from analyst estimates then auto-run
+  const revEsts = d.revenue_estimates || [];
+  const g1El   = document.getElementById('rwDcfG1');
+  const g2El   = document.getElementById('rwDcfG2');
+  if (g1El && revEsts[0]?.growth != null) g1El.value = (revEsts[0].growth * 100).toFixed(1);
+  if (g2El && revEsts[1]?.growth != null) g2El.value = (revEsts[1].growth * 100).toFixed(1);
+  const fcfEl = document.getElementById('rwDcfBaseFcf');
+  const ndEl  = document.getElementById('rwDcfNetDebt');
+  if (fcfEl) fcfEl.textContent = (d.fcf && d.fcf[0] != null) ? _fmtM(d.fcf[0]) : '—';
+  if (ndEl)  ndEl.textContent  = d.net_debt != null ? _fmtM(d.net_debt) : '—';
+  rwComputeDCF();
+  // FCF Yield in §05 Current Multiples
+  const fcfYieldRw = (d.fcf && d.fcf[0] != null && d.market_cap_m) ? (d.fcf[0] / d.market_cap_m * 100) : null;
+  _setAuto('rwA_fcf_yield', fcfYieldRw != null ? fcfYieldRw.toFixed(1) + '%' : '—');
 }
 
 function rwRenderNewsActivity(d) {
@@ -4036,6 +4136,90 @@ function rwBuildEstimatesBlock() {
     }),
   ];
   el.innerHTML = cells.join('');
+}
+
+// ── DCF Calculator ────────────────────────────────────────────
+function rwComputeDCF() {
+  const d = _rwData;
+  const el = document.getElementById('rwDcfResult');
+  if (!el) return;
+  if (!d || !d.fcf || d.fcf[0] == null) {
+    el.innerHTML = '<span style="color:var(--ink-mute);font-size:12px">No FCF data available for this ticker.</span>';
+    return;
+  }
+  const baseFcf  = d.fcf[0];           // $M
+  const netDebt  = d.net_debt  || 0;   // $M
+  const mktCapM  = d.market_cap_m;
+  const price    = d.price;
+  if (!mktCapM || !price || price <= 0) {
+    el.innerHTML = '<span style="color:var(--ink-mute);font-size:12px">Missing price or market cap data.</span>';
+    return;
+  }
+  const sharesM = mktCapM / price; // shares in millions
+
+  const g1    = (parseFloat(document.getElementById('rwDcfG1').value)    || 12) / 100;
+  const g2    = (parseFloat(document.getElementById('rwDcfG2').value)    || 10) / 100;
+  const gMid  = (parseFloat(document.getElementById('rwDcfGMid').value)  || 8)  / 100;
+  const gTerm = (parseFloat(document.getElementById('rwDcfGTerm').value) || 3)  / 100;
+  const wacc  = (parseFloat(document.getElementById('rwDcfWacc').value)  || 10) / 100;
+
+  if (wacc <= gTerm) {
+    el.innerHTML = '<span style="color:var(--red);font-size:12px">WACC must exceed terminal growth rate.</span>';
+    return;
+  }
+
+  const growthRates = [g1, g2, gMid, gMid, gMid];
+  const projected = [];
+  let fcf = baseFcf;
+  for (let i = 0; i < 5; i++) {
+    fcf = fcf * (1 + growthRates[i]);
+    projected.push(fcf);
+  }
+
+  let pvFcf = 0;
+  for (let i = 0; i < 5; i++) pvFcf += projected[i] / Math.pow(1 + wacc, i + 1);
+
+  const terminalValue = projected[4] * (1 + gTerm) / (wacc - gTerm);
+  const pvTerminal    = terminalValue / Math.pow(1 + wacc, 5);
+  const ev            = pvFcf + pvTerminal;
+  const equityValue   = ev - netDebt;
+  const intrinsic     = equityValue / sharesM;   // same currency as price
+  const upside        = ((intrinsic - price) / price) * 100;
+  const tvPct         = Math.round(pvTerminal / ev * 100);
+
+  const uCls  = upside > 10 ? 'positive' : upside < -10 ? 'negative' : '';
+  const uSign = upside > 0 ? '+' : '';
+
+  el.innerHTML = `
+    <div class="rw-auto-grid" style="margin-top:8px">
+      <div class="rw-auto-cell">
+        <div class="rw-auto-label">PV of FCFs (5yr)</div>
+        <div class="rw-auto-val">${_fmtM(pvFcf)}</div>
+      </div>
+      <div class="rw-auto-cell">
+        <div class="rw-auto-label">PV Terminal Value <span style="font-size:9px;color:var(--ink-faint)">${tvPct}% of EV</span></div>
+        <div class="rw-auto-val">${_fmtM(pvTerminal)}</div>
+      </div>
+      <div class="rw-auto-cell">
+        <div class="rw-auto-label">Implied EV</div>
+        <div class="rw-auto-val">${_fmtM(ev)}</div>
+      </div>
+      <div class="rw-auto-cell">
+        <div class="rw-auto-label">Implied Equity Value</div>
+        <div class="rw-auto-val">${_fmtM(equityValue)}</div>
+      </div>
+      <div class="rw-auto-cell" style="border:1px solid var(--rule);border-radius:6px;padding:10px">
+        <div class="rw-auto-label" style="font-weight:700">Intrinsic Value / Share</div>
+        <div class="rw-auto-val" style="font-size:26px;font-family:'Fraunces',serif;font-weight:800">${d.currency || ''} ${intrinsic.toFixed(2)}</div>
+        <div style="font-size:11px;color:var(--ink-mute)">vs current ${d.currency || ''} ${price.toFixed(2)}</div>
+      </div>
+      <div class="rw-auto-cell" style="border:1px solid var(--rule);border-radius:6px;padding:10px">
+        <div class="rw-auto-label" style="font-weight:700">Upside / Downside</div>
+        <div class="rw-auto-val ${uCls}" style="font-size:26px;font-family:'Fraunces',serif;font-weight:800">${uSign}${upside.toFixed(1)}%</div>
+        <div style="font-size:11px;color:var(--ink-mute)">at current price</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--ink-faint);margin-top:8px">FCF-based. Adjust growth assumptions and recalculate. Terminal value = ${tvPct}% of EV — high sensitivity to WACC and terminal growth inputs.</div>`;
 }
 
 // ── Field save/restore ────────────────────────────────────────

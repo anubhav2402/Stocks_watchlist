@@ -27,6 +27,7 @@ class QuoteResponse(BaseModel):
     qtr_profit_yoy: Optional[float] = None
     revenue_cagr: Optional[float] = None
     profit_cagr: Optional[float] = None
+    fcf_yield: Optional[float] = None
     sparkline: list[float] = []
     error: Optional[str] = None
 
