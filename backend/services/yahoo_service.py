@@ -73,6 +73,10 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
         market_cap_raw = info.get("marketCap")
         fcf_yield = (fcf_ttm / market_cap_raw * 100) if fcf_ttm and market_cap_raw and market_cap_raw > 0 else None
 
+        sector = info.get("sector")
+        roe = info.get("returnOnEquity")
+        debt_to_equity = info.get("debtToEquity")
+
         # Quarterly income: last Q revenue, + YOY growth vs same Q last year
         quarterly_revenue = None
         qtr_revenue_yoy = None
@@ -229,6 +233,9 @@ def _fetch_quote_sync(symbol: str) -> QuoteResponse:
             revenue_cagr=revenue_cagr,
             profit_cagr=profit_cagr,
             fcf_yield=fcf_yield,
+            sector=sector,
+            roe=roe,
+            debt_to_equity=debt_to_equity,
             sparkline=sparkline,
         )
 

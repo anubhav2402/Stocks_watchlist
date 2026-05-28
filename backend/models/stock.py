@@ -28,6 +28,9 @@ class QuoteResponse(BaseModel):
     revenue_cagr: Optional[float] = None
     profit_cagr: Optional[float] = None
     fcf_yield: Optional[float] = None
+    sector: Optional[str] = None
+    roe: Optional[float] = None
+    debt_to_equity: Optional[float] = None
     sparkline: list[float] = []
     error: Optional[str] = None
 

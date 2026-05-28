@@ -1982,6 +1982,9 @@ async function fetchTickerData(ticker) {
             revenueCagr:    d.revenue_cagr,
             profitCagr:     d.profit_cagr,
             fcfYield:       d.fcf_yield,
+            sector:         d.sector,
+            roe:            d.roe,
+            debtToEquity:   d.debt_to_equity,
           };
         }
       }
@@ -2159,6 +2162,9 @@ async function refreshAll() {
           revenueCagr: d.revenueCagr,
           profitCagr: d.profitCagr,
           fcfYield: d.fcfYield,
+          sector: d.sector,
+          roe: d.roe,
+          debtToEquity: d.debtToEquity,
           currency: d.currency,
           lastFetched: Date.now(),
         };
@@ -2305,6 +2311,7 @@ async function refreshSingle(ticker) {
       marketCap: d.marketCap, ttmRevenue: d.ttmRevenue, qtrRevenue: d.qtrRevenue, psRatio: d.psRatio,
       pegRatio: d.pegRatio, qtrRevenueYoy: d.qtrRevenueYoy, qtrProfitYoy: d.qtrProfitYoy,
       revenueCagr: d.revenueCagr, profitCagr: d.profitCagr, fcfYield: d.fcfYield,
+      sector: d.sector, roe: d.roe, debtToEquity: d.debtToEquity,
       currency: d.currency, lastFetched: Date.now(),
     };
     if (watchlist[idx].priceOnAdd == null && d.price != null) {
@@ -3088,26 +3095,65 @@ function computeAllScores(stocks) {
     { key: 'pegRatio',      dir: 'asc',  w: 1.5 },
     { key: 'psRatio',       dir: 'asc',  w: 1.0 },
     { key: 'grossMargin',   dir: 'desc', w: 1.5 },
-    { key: 'qtrRevenueYoy', dir: 'desc', w: 1.5 },
     { key: 'revenueCagr',   dir: 'desc', w: 1.0 },
     { key: 'profitCagr',    dir: 'desc', w: 1.0 },
     { key: 'fcfYield',      dir: 'desc', w: 2.0 },
+    { key: 'roe',           dir: 'desc', w: 1.5 },
+    { key: 'debtToEquity',  dir: 'asc',  w: 1.0 },
   ];
+
+  // Build sector groups for sector-relative scoring
+  const bySector = {};
+  stocks.forEach(s => {
+    const sec = s.sector || '__none__';
+    if (!bySector[sec]) bySector[sec] = [];
+    bySector[sec].push(s);
+  });
+
   const acc = {};
   stocks.forEach(s => { acc[s.ticker] = { sum: 0, w: 0 }; });
+
   metrics.forEach(({ key, dir, w }) => {
-    const valid = stocks.filter(s => {
+    const isDebt = key === 'debtToEquity';
+    const allValid = stocks.filter(s => {
       const v = s[key];
-      return v != null && !isNaN(v) && isFinite(v) && v > 0;
+      if (v == null || isNaN(v) || !isFinite(v)) return false;
+      return isDebt ? v >= 0 : v > 0;
     });
-    if (valid.length < 2) return;
-    const sorted = [...valid].sort((a, b) => dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
-    sorted.forEach((s, i) => {
-      const pct = (1 - i / (sorted.length - 1)) * 100;
+    if (allValid.length < 2) return;
+
+    function rankPool(pool) {
+      const sorted = [...pool].sort((a, b) =>
+        dir === 'asc' ? a[key] - b[key] : b[key] - a[key]);
+      const map = {};
+      sorted.forEach((s, i) => {
+        map[s.ticker] = pool.length > 1 ? (1 - i / (pool.length - 1)) * 100 : 50;
+      });
+      return map;
+    }
+
+    const overallRank = rankPool(allValid);
+
+    allValid.forEach(s => {
+      const sec = s.sector || '__none__';
+      const sectorValid = (bySector[sec] || []).filter(x => {
+        const v = x[key];
+        if (v == null || isNaN(v) || !isFinite(v)) return false;
+        return isDebt ? v >= 0 : v > 0;
+      });
+      let pct;
+      if (sec !== '__none__' && sectorValid.length >= 3) {
+        const sectorRank = rankPool(sectorValid);
+        pct = 0.7 * (sectorRank[s.ticker] ?? overallRank[s.ticker])
+            + 0.3 * overallRank[s.ticker];
+      } else {
+        pct = overallRank[s.ticker];
+      }
       acc[s.ticker].sum += pct * w;
       acc[s.ticker].w   += w;
     });
   });
+
   const result = {};
   Object.entries(acc).forEach(([ticker, { sum, w }]) => {
     result[ticker] = w > 0 ? sum / w : null;
