@@ -1369,6 +1369,9 @@
             <th data-col="price">Price <span class="sort-arrow">▲▼</span></th>
             <th data-col="dayChangePct">Today % <span class="sort-arrow">▲▼</span></th>
             <th data-col="compositeScore">Score <span class="sort-arrow">▲▼</span></th>
+            <th data-col="valueScore">Value <span class="sort-arrow">▲▼</span></th>
+            <th data-col="growthScore">Growth <span class="sort-arrow">▲▼</span></th>
+            <th data-col="qualityScore">Quality <span class="sort-arrow">▲▼</span></th>
             <th data-col="returnSinceAdded">Since Added <span class="sort-arrow">▲▼</span></th>
             <th data-col="return1m">1M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return6m">6M <span class="sort-arrow">▲▼</span></th>
@@ -3163,6 +3166,18 @@ function computeAllScores(stocks) {
     fcfYield: 2.0, roe: 1.5, debtToEquity: 1.0,
   };
 
+  const factorKeys = {
+    value:   ['forwardPe', 'pegRatio', 'psRatio'],
+    growth:  ['revEstNyGrowth', 'revEstCyGrowth', 'qtrRevenueYoy', 'qtrProfitYoy', 'revenueCagr', 'profitCagr'],
+    quality: ['fcfYield', 'roe', 'debtToEquity'],
+  };
+
+  function factorScore(sc, keys) {
+    let sum = 0, w = 0;
+    keys.forEach(k => { if (sc[k] != null) { sum += sc[k] * weights[k]; w += weights[k]; } });
+    return w > 0 ? sum / w : null;
+  }
+
   const result = {};
   stocks.forEach(s => {
     const sc = scoreMetric(s);
@@ -3170,7 +3185,12 @@ function computeAllScores(stocks) {
     Object.entries(weights).forEach(([key, wt]) => {
       if (sc[key] != null) { sum += sc[key] * wt; w += wt; }
     });
-    result[s.ticker] = w > 0 ? sum / w : null;
+    result[s.ticker] = {
+      composite: w > 0 ? sum / w : null,
+      value:     factorScore(sc, factorKeys.value),
+      growth:    factorScore(sc, factorKeys.growth),
+      quality:   factorScore(sc, factorKeys.quality),
+    };
   });
   return result;
 }
@@ -3205,13 +3225,17 @@ function render() {
 
   let rows = watchlist.filter(s => !searchQuery || s.ticker.includes(searchQuery));
 
-  const _sortScores = currentSort.col === 'compositeScore' ? computeAllScores(watchlist) : null;
+  const _scoresCols = ['compositeScore','valueScore','growthScore','qualityScore'];
+  const _sortScores = _scoresCols.includes(currentSort.col) ? computeAllScores(watchlist) : null;
 
   rows.sort((a, b) => {
     let av, bv;
     if (currentSort.col === 'returnSinceAdded') { av = returnSinceAdded(a); bv = returnSinceAdded(b); }
     else if (currentSort.col === 'ticker')        { av = a.ticker; bv = b.ticker; }
-    else if (currentSort.col === 'compositeScore') { av = _sortScores[a.ticker]; bv = _sortScores[b.ticker]; }
+    else if (currentSort.col === 'compositeScore') { av = _sortScores[a.ticker]?.composite; bv = _sortScores[b.ticker]?.composite; }
+    else if (currentSort.col === 'valueScore')    { av = _sortScores[a.ticker]?.value;     bv = _sortScores[b.ticker]?.value; }
+    else if (currentSort.col === 'growthScore')   { av = _sortScores[a.ticker]?.growth;    bv = _sortScores[b.ticker]?.growth; }
+    else if (currentSort.col === 'qualityScore')  { av = _sortScores[a.ticker]?.quality;   bv = _sortScores[b.ticker]?.quality; }
     else                                          { av = a[currentSort.col]; bv = b[currentSort.col]; }
     if (av == null && bv == null) return 0;
     if (av == null) return 1;
@@ -3274,7 +3298,10 @@ function render() {
       </td>
       <td><span class="price-main">${fmtPrice(s.price, s.currency)}</span></td>
       <td>${fmtPct(s.dayChangePct)}</td>
-      <td>${fmtScore(_scores[s.ticker])}</td>
+      <td>${fmtScore(_scores[s.ticker]?.composite)}</td>
+      <td>${fmtScore(_scores[s.ticker]?.value)}</td>
+      <td>${fmtScore(_scores[s.ticker]?.growth)}</td>
+      <td>${fmtScore(_scores[s.ticker]?.quality)}</td>
       <td>${fmtPct(sinceAdded)}</td>
       <td>${fmtPct(s.return1m)}</td>
       <td>${fmtPct(s.return6m)}</td>
