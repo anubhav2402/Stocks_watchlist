@@ -2176,7 +2176,8 @@ async function fetchTickerData(ticker) {
     } catch (e) { /* backend offline — fall through */ }
   }
 
-  // ── Fall back to Yahoo Finance via CORS proxy ────────────────────────────
+  // ── Fall back to Yahoo Finance via CORS proxy (only when no backend configured) ──
+  if (BACKEND_URL) throw new Error(`Backend returned no data for ${ticker}`);
   const [chart, fund] = await Promise.all([fetchChart(ticker), fetchFundamentals(ticker)]);
   return {
     ...chart,
