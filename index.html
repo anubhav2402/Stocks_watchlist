@@ -1759,12 +1759,13 @@ let _syncDebounce = null;
 async function pushStateToBackend() {
   if (!BACKEND_URL || !isLoggedIn()) return;
   try {
-    await fetch(`${BACKEND_URL}/api/sync/state`, {
+    const r = await fetch(`${BACKEND_URL}/api/sync/state`, {
       method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify({ state: JSON.stringify(state) }),
     });
-  } catch(e) {}
+    if (!r.ok) console.warn('Sync push failed:', r.status);
+  } catch(e) { console.warn('Sync push error:', e); }
 }
 
 async function pullStateFromBackend() {
@@ -1814,9 +1815,9 @@ async function authAction(mode) {
       await pushStateToBackend();
       renderTabs(); render(); renderMovers();
     } else {
-      // Login — pull their saved state; if nothing saved keep local
-      const synced = await pullStateFromBackend();
-      if (synced) { renderTabs(); render(); renderMovers(); }
+      // Login — always re-render; pull from backend if available
+      await pullStateFromBackend();
+      renderTabs(); render(); renderMovers();
     }
   } catch(e) {
     console.error('Auth error:', e);
@@ -1825,11 +1826,13 @@ async function authAction(mode) {
 }
 
 function logout() {
+  if (!confirm('Sign out? Your watchlists will reload from your account next time you sign in.')) return;
+  // Close any open modals
+  document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
   clearJwt();
-  // Reset to default mega caps state
+  // Reset to default mega caps state (keep sp_welcome_dismissed so banner shows sign-out message, not first-time copy)
   localStorage.removeItem('cl_wlists_v1');
   localStorage.removeItem('cl_watchlist_v2');
-  localStorage.removeItem('sp_welcome_dismissed');
   const freshId = 'wl_' + Date.now();
   state = { active: freshId, lists: [{ id: freshId, name: 'US Mega Caps', stocks: [] }] };
   watchlist = [];
@@ -2436,6 +2439,9 @@ function closeModal(type) {
     document.getElementById('addFetchStatus').textContent = '';
   } else if (type === 'bulk') {
     document.getElementById('bulkInput').value = '';
+  } else if (type === 'auth') {
+    ['authEmail', 'authPassword'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('authError').textContent = '';
   }
 }
 
@@ -4663,6 +4669,7 @@ function switchAuthTab(mode) {
   document.getElementById('authTabRegister').classList.toggle('active', !isLogin);
   document.getElementById('authSubmitBtn').textContent = isLogin ? 'Sign In' : 'Register';
   document.getElementById('authSubmitBtn').onclick = () => authAction(mode);
+  ['authEmail', 'authPassword'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('authError').textContent = '';
   document.getElementById('authPassword').autocomplete = isLogin ? 'current-password' : 'new-password';
 }
