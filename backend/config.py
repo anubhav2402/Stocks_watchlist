@@ -52,8 +52,11 @@ def write_cookies_from_env() -> bool:
         return False
     try:
         import base64, json
-        cookies = json.loads(base64.b64decode(TWITTER_COOKIES_B64).decode())
-        TWITTER_COOKIES_FILE.write_text(json.dumps(cookies, indent=2))
+        data = json.loads(base64.b64decode(TWITTER_COOKIES_B64).decode())
+        # Cookie-Editor exports a list of objects — twikit expects {name: value} dict
+        if isinstance(data, list):
+            data = {c['name']: c['value'] for c in data if 'name' in c and 'value' in c}
+        TWITTER_COOKIES_FILE.write_text(json.dumps(data, indent=2))
         return True
     except Exception as e:
         import logging
