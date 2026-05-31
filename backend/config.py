@@ -47,8 +47,8 @@ TWITTER_COOKIES_FILE = BASE_DIR / "twitter_cookies.json"
 TWITTER_COOKIES_B64: str = os.getenv("TWITTER_COOKIES_B64", "")
 
 def write_cookies_from_env() -> bool:
-    """Write twitter_cookies.json from env var if file doesn't exist. Returns True if written."""
-    if TWITTER_COOKIES_FILE.exists() or not TWITTER_COOKIES_B64:
+    """Write twitter_cookies.json from env var, always overwriting. Returns True if written."""
+    if not TWITTER_COOKIES_B64:
         return False
     try:
         import base64, json

@@ -18,6 +18,10 @@ async def lifespan(app: FastAPI):
     if write_cookies_from_env():
         import logging
         logging.getLogger(__name__).info("Twitter cookies restored from TWITTER_COOKIES_B64 env var")
+        # Reset twitter client so it reloads with the fresh cookies
+        from services import twitter_service
+        twitter_service._client = None
+        twitter_service._twitter_enabled = True
     await sched.startup()
     yield
     # ── Shutdown ───────────────────────────────────────────────────────────────
