@@ -1826,8 +1826,26 @@ async function authAction(mode) {
 
 function logout() {
   clearJwt();
+  // Reset to default mega caps state
+  localStorage.removeItem('cl_wlists_v1');
+  localStorage.removeItem('cl_watchlist_v2');
+  localStorage.removeItem('sp_welcome_dismissed');
+  const freshId = 'wl_' + Date.now();
+  state = { active: freshId, lists: [{ id: freshId, name: 'US Mega Caps', stocks: [] }] };
+  watchlist = [];
+  DEFAULT_LIST.forEach(meta => {
+    watchlist.push({ ticker: meta.ticker, name: meta.ticker, addedAt: Date.now(), priceOnAdd: null });
+  });
+  state.lists[0].stocks = watchlist;
+  localStorage.setItem('cl_wlists_v1', JSON.stringify(state));
   renderUserBadge();
+  renderTabs();
+  render();
+  renderMovers();
+  const wb = document.getElementById('welcomeBanner');
+  if (wb) wb.style.display = 'flex';
   toast('Signed out', 'info');
+  setTimeout(refreshAll, 400);
 }
 
 function renderUserBadge() {
