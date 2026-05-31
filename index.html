@@ -1308,7 +1308,7 @@
   <main class="main">
 
     <!-- Welcome banner (first-time visitors) -->
-    <div class="welcome-banner" id="welcomeBanner" style="display:none">
+    <div class="welcome-banner" id="welcomeBanner">
       <div class="wb-text">
         <strong>Welcome to StockPulse</strong>
         Showing the top US mega caps by market cap. Add your own tickers and build a watchlist you actually track.
@@ -1861,7 +1861,7 @@ function loadState() {
   const firstId = 'wl_' + Date.now();
   return {
     active: firstId,
-    lists: [{ id: firstId, name: 'Conviction List', stocks: oldStocks }]
+    lists: [{ id: firstId, name: 'US Mega Caps', stocks: oldStocks }]
   };
 }
 
@@ -4616,10 +4616,10 @@ if (_isFirstTime) {
   setTimeout(refreshAll, 600);
 }
 
-// Show welcome banner for first-time visitors (not yet dismissed)
-if (_isFirstTime && !localStorage.getItem('sp_welcome_dismissed')) {
+// Hide welcome banner if returning visitor or already dismissed
+if (!_isFirstTime || localStorage.getItem('sp_welcome_dismissed')) {
   const wb = document.getElementById('welcomeBanner');
-  if (wb) wb.style.display = 'flex';
+  if (wb) wb.style.display = 'none';
 }
 
 // Auto-refresh every 3 hours
