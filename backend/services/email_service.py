@@ -1,32 +1,30 @@
-import smtplib
-import ssl
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import httpx
 
-from config import ALERT_SMTP_USER, ALERT_SMTP_PASSWORD
+from config import RESEND_API_KEY
 
 logger = logging.getLogger(__name__)
 
+RESEND_URL = "https://api.resend.com/emails"
+FROM_ADDRESS = "StockPulse Alerts <onboarding@resend.dev>"
+
 
 def send_alert_email(to_email: str, subject: str, html_body: str) -> bool:
-    if not ALERT_SMTP_USER or not ALERT_SMTP_PASSWORD:
-        logger.warning("Email alerts not configured (ALERT_SMTP_USER / ALERT_SMTP_PASSWORD not set)")
+    if not RESEND_API_KEY:
+        logger.warning("Email alerts not configured — set RESEND_API_KEY in Railway env vars")
         return False
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"StockPulse Alerts <{ALERT_SMTP_USER}>"
-        msg["To"] = to_email
-        msg.attach(MIMEText(html_body, "html"))
-
-        ctx = ssl.create_default_context()
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls(context=ctx)
-            server.login(ALERT_SMTP_USER, ALERT_SMTP_PASSWORD)
-            server.sendmail(ALERT_SMTP_USER, to_email, msg.as_string())
-        logger.info("Alert email sent to %s: %s", to_email, subject)
-        return True
+        r = httpx.post(
+            RESEND_URL,
+            headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+            json={"from": FROM_ADDRESS, "to": [to_email], "subject": subject, "html": html_body},
+            timeout=10,
+        )
+        if r.status_code in (200, 201):
+            logger.info("Alert email sent to %s: %s", to_email, subject)
+            return True
+        logger.error("Resend API error %s: %s", r.status_code, r.text)
+        return False
     except Exception as e:
         logger.error("Failed to send alert email to %s: %s", to_email, e)
         return False
@@ -60,6 +58,6 @@ def build_alert_email(alerts: list[dict]) -> str:
         <tbody>{rows}</tbody>
       </table>
       <p style="font-size:11px;color:#a89b89;margin-top:24px">
-        StockPulse · data via Yahoo Finance · manage alerts at stockswatchlist.github.io
+        StockPulse · data via Yahoo Finance
       </p>
     </body></html>"""
