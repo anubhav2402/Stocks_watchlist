@@ -1273,7 +1273,7 @@
       <div class="control-buttons">
         <div id="userBadge" class="user-badge"></div>
         <button class="btn" onclick="openModal('bulk')">+ Bulk Import</button>
-        <button class="btn" onclick="openModal('add')">+ Add Ticker</button>
+        <button class="btn" onclick="requireAuth(() => openModal('add'), 'Sign in to add tickers — your watchlist will sync across all devices.')">+ Add Ticker</button>
         <button class="btn btn-accent" id="refreshBtn" onclick="refreshAll()">
           <span class="spin">↻</span>&nbsp; Refresh
         </button>
@@ -1313,7 +1313,7 @@
         <strong>Welcome to StockPulse</strong>
         Showing the top US mega caps by market cap. Add your own tickers and build a watchlist you actually track.
       </div>
-      <button class="btn-wb" onclick="openModal('newList'); dismissWelcomeBanner()">+ Create Watchlist</button>
+      <button class="btn-wb" onclick="requireAuth(() => { openModal('newList'); dismissWelcomeBanner(); }, 'Sign in to create and save your own watchlists.')">+ Create Watchlist</button>
       <button class="btn-wb" style="margin-left:8px;background:rgba(255,255,255,.2);color:#fff" onclick="openModal('auth'); dismissWelcomeBanner()">Sign In</button>
       <button class="wb-dismiss" onclick="dismissWelcomeBanner()" title="Dismiss">&#x2715;</button>
     </div>
@@ -1426,8 +1426,8 @@
         <div class="empty-mark">∅</div>
         <p id="emptyStateMsg">This watchlist is empty — add a ticker to get started.</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="openModal('add')">+ Add Ticker</button>
-          <button class="btn" onclick="openModal('newList')">+ New Watchlist</button>
+          <button class="btn btn-primary" onclick="requireAuth(() => openModal('add'), 'Sign in to add tickers — your watchlist will sync across all devices.')">+ Add Ticker</button>
+          <button class="btn" onclick="requireAuth(() => openModal('newList'), 'Sign in to create and save your own watchlists.')">+ New Watchlist</button>
         </div>
       </div>
     </div>
@@ -1713,7 +1713,7 @@
   <div class="modal">
     <div class="modal-content">
       <h2><em>Sign In</em> or Register</h2>
-      <div class="modal-sub">Your watchlists sync automatically across all devices.</div>
+      <div class="modal-sub" id="authModalSub">Your watchlists sync automatically across all devices.</div>
       <div class="auth-tabs">
         <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Sign In</button>
         <button class="auth-tab" id="authTabRegister" onclick="switchAuthTab('register')">Register</button>
@@ -1755,6 +1755,15 @@ function isLoggedIn()  { return !!getJwt(); }
 function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getJwt()}` }; }
 
 let _syncDebounce = null;
+let _postAuthCallback = null;
+
+function requireAuth(fn, hint) {
+  if (isLoggedIn()) { fn(); return; }
+  _postAuthCallback = fn;
+  const sub = document.getElementById('authModalSub');
+  if (sub) sub.textContent = hint || 'Sign in to save your watchlists across devices.';
+  openModal('auth');
+}
 
 async function pushStateToBackend() {
   if (!BACKEND_URL || !isLoggedIn()) return;
@@ -1819,6 +1828,10 @@ async function authAction(mode) {
       await pullStateFromBackend();
       renderTabs(); render(); renderMovers();
     }
+    // Reset auth modal subtitle and fire any pending callback
+    const sub = document.getElementById('authModalSub');
+    if (sub) sub.textContent = 'Your watchlists sync automatically across all devices.';
+    if (_postAuthCallback) { const cb = _postAuthCallback; _postAuthCallback = null; cb(); }
   } catch(e) {
     console.error('Auth error:', e);
     errEl.textContent = 'Error: ' + (e.message || 'Could not reach server.');
@@ -1935,7 +1948,7 @@ function renderTabs() {
         ${canDelete ? `<button class="wl-tab-btn del" onclick="event.stopPropagation();deleteList('${l.id}')" title="Delete">✕</button>` : ''}
       </span>
     </button>
-  `).join('') + `<button class="wl-tab-new" onclick="openModal('newList')">＋ New list</button>`;
+  `).join('') + `<button class="wl-tab-new" onclick="requireAuth(() => openModal('newList'), 'Sign in to create and save your own watchlists.')">＋ New list</button>`;
 }
 
 function switchList(id) {
@@ -2442,6 +2455,9 @@ function closeModal(type) {
   } else if (type === 'auth') {
     ['authEmail', 'authPassword'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('authError').textContent = '';
+    const sub = document.getElementById('authModalSub');
+    if (sub) sub.textContent = 'Your watchlists sync automatically across all devices.';
+    _postAuthCallback = null;
   }
 }
 
