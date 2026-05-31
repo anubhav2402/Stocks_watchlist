@@ -157,6 +157,13 @@
   .control-buttons { display: flex; gap: 10px; align-items: center; }
   .user-badge { display: flex; align-items: center; gap: 8px; }
   .user-email { font-size: 12px; color: var(--ink-mute); }
+  .welcome-banner { display:flex; align-items:center; gap:16px; background:var(--blue); color:#fff; border-radius:8px; padding:14px 18px; margin-bottom:18px; font-size:14px; }
+  .welcome-banner strong { font-size:15px; display:block; margin-bottom:2px; }
+  .welcome-banner .wb-text { flex:1; }
+  .welcome-banner .btn-wb { background:#fff; color:var(--blue); border:none; border-radius:4px; padding:8px 16px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .welcome-banner .btn-wb:hover { opacity:.9; }
+  .welcome-banner .wb-dismiss { background:none; border:none; color:rgba(255,255,255,.7); font-size:18px; cursor:pointer; padding:0 4px; line-height:1; margin-left:8px; }
+  .welcome-banner .wb-dismiss:hover { color:#fff; }
   .auth-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--ink-mute); margin-top: 12px; }
   .auth-tab { background: none; border: none; padding: 8px 18px; font-family: inherit; font-size: 13px; cursor: pointer; color: var(--ink-mute); border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; }
   .auth-tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
@@ -1300,6 +1307,17 @@
   <!-- ═══════════════ MAIN ═══════════════ -->
   <main class="main">
 
+    <!-- Welcome banner (first-time visitors) -->
+    <div class="welcome-banner" id="welcomeBanner" style="display:none">
+      <div class="wb-text">
+        <strong>Welcome to StockPulse</strong>
+        Showing the top US mega caps by market cap. Add your own tickers and build a watchlist you actually track.
+      </div>
+      <button class="btn-wb" onclick="openModal('newList'); dismissWelcomeBanner()">+ Create Watchlist</button>
+      <button class="btn-wb" style="margin-left:8px;background:rgba(255,255,255,.2);color:#fff" onclick="openModal('auth'); dismissWelcomeBanner()">Sign In</button>
+      <button class="wb-dismiss" onclick="dismissWelcomeBanner()" title="Dismiss">&#x2715;</button>
+    </div>
+
     <!-- Summary strip -->
     <div class="summary-strip" id="summaryStrip">
       <div class="sum-cell">
@@ -1813,36 +1831,21 @@ function renderUserBadge() {
 // DEFAULT 30-STOCK LIST
 // ════════════════════════════════════════════════════════════
 const DEFAULT_LIST = [
-  { ticker: 'INTC',  thesis: "America's hope for foundry, national security" },
-  { ticker: 'MRVL',  thesis: "Scales rev from future Maia ASICs and add-ons like CPO" },
-  { ticker: 'TSM',   thesis: "Backbone of semis/AI" },
-  { ticker: 'COHR',  thesis: "Vertically integrated, captures optical cycle" },
-  { ticker: 'RKLB',  thesis: "The final frontier of space — 5/20-year bet" },
-  { ticker: 'DRAM',  thesis: "Memory exposure for Samsung/SK Hynix" },
-  { ticker: 'AVGO',  thesis: "Hyperscalers don't like Nvidia GPU tax" },
-  { ticker: 'AMZN',  thesis: "Nobody competes with overnight shipping; robotics lowers opex" },
-  { ticker: 'ARM',   thesis: "AGI CPUs scale revenue over the decade" },
-  { ticker: 'TSEM',  thesis: "Foundry for light-based stuff" },
-  { ticker: 'IBIT',  thesis: "Bitcoin exposure" },
-  { ticker: 'NBIS',  thesis: "Next AWS — self-driving with Uber, scaling DBs, data labeling" },
-  { ticker: 'GOOGL', thesis: "YouTube, Gemini, TPU vertical integration funded by op income" },
-  { ticker: 'AMKR',  thesis: "Super facilities online late 2027-2028; Made in America beneficiary" },
-  { ticker: 'HOOD',  thesis: "Long-term retail capture + product innovation in banking adjacencies" },
-  { ticker: 'CRCL',  thesis: "Stablecoins as the future of payments/holding (CLARITY Act dependent)" },
-  { ticker: 'META',  thesis: "Instagram, WhatsApp aren't going anywhere" },
-  { ticker: 'LITE',  thesis: "GOOGL TPU exposure — high BOM share" },
-  { ticker: 'LPTH',  thesis: "Germanium / China export controls drive US engineered alternatives" },
-  { ticker: 'FN',    thesis: "Someone needs to assemble the optical stuff" },
-  { ticker: 'JBL',   thesis: "Optical assembly + Intel SiPh acquisition IP" },
-  { ticker: 'MP',    thesis: "American rare earths — national security parallel to INTC" },
-  { ticker: 'HIMS',  thesis: "Contrarian long — global DTC channel post-acquisitions" },
-  { ticker: 'SMTC',  thesis: "LRO/LPO transition" },
-  { ticker: 'POWL',  thesis: "US alternative to Hammond for switchgear DC bottleneck" },
-  { ticker: 'VPG',   thesis: "Humanoid sensors play — 2027-2028 timeline" },
-  { ticker: 'MOG.A', thesis: "Robotics & SpaceX supply chain ubiquity" },
-  { ticker: 'MSFT',  thesis: "Buying opportunity at $375 in retrospect" },
-  { ticker: 'CVX',   thesis: "Oil majors important post-war; Venezuela goldmine angle" },
-  { ticker: 'XLU',   thesis: "Rate cuts + AI power demand drives utilities (CEG, NEE)" }
+  { ticker: 'AAPL'  },
+  { ticker: 'MSFT'  },
+  { ticker: 'NVDA'  },
+  { ticker: 'GOOGL' },
+  { ticker: 'AMZN'  },
+  { ticker: 'META'  },
+  { ticker: 'TSLA'  },
+  { ticker: 'AVGO'  },
+  { ticker: 'BRK-B' },
+  { ticker: 'JPM'   },
+  { ticker: 'V'     },
+  { ticker: 'WMT'   },
+  { ticker: 'MA'    },
+  { ticker: 'XOM'   },
+  { ticker: 'UNH'   },
 ];
 
 // ════════════════════════════════════════════════════════════
@@ -4595,17 +4598,28 @@ render();
 renderMovers();
 rwUpdatePill();
 
+function dismissWelcomeBanner() {
+  localStorage.setItem('sp_welcome_dismissed', '1');
+  const el = document.getElementById('welcomeBanner');
+  if (el) el.style.display = 'none';
+}
+
 const _isFirstTime = !localStorage.getItem('cl_wlists_v1') && !localStorage.getItem('cl_watchlist_v2');
 if (_isFirstTime) {
   DEFAULT_LIST.forEach(meta => {
-    watchlist.push({ ticker: meta.ticker, name: meta.ticker, thesis: meta.thesis, addedAt: Date.now(), priceOnAdd: null });
+    watchlist.push({ ticker: meta.ticker, name: meta.ticker, addedAt: Date.now(), priceOnAdd: null });
   });
   save();
   render();
-  toast(`${DEFAULT_LIST.length} tickers loaded — fetching prices…`, 'info');
   setTimeout(refreshAll, 400);
-} else {
+}  else {
   setTimeout(refreshAll, 600);
+}
+
+// Show welcome banner for first-time visitors (not yet dismissed)
+if (_isFirstTime && !localStorage.getItem('sp_welcome_dismissed')) {
+  const wb = document.getElementById('welcomeBanner');
+  if (wb) wb.style.display = 'flex';
 }
 
 // Auto-refresh every 3 hours
