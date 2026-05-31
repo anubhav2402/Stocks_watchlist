@@ -31,6 +31,12 @@ DISCOVERY_WINDOW_HOURS: int = int(os.getenv("DISCOVERY_WINDOW_HOURS", "48"))
 # Scheduler intervals
 SCRAPE_INTERVAL_MINUTES: int = int(os.getenv("SCRAPE_INTERVAL_MINUTES", "30"))
 NEWS_INTERVAL_MINUTES: int = int(os.getenv("NEWS_INTERVAL_MINUTES", "15"))
+ALERT_CHECK_INTERVAL_MINUTES: int = int(os.getenv("ALERT_CHECK_INTERVAL_MINUTES", "60"))
+
+# Email alerts (Gmail SMTP)
+ALERT_SMTP_USER: str = os.getenv("ALERT_SMTP_USER", "")
+ALERT_SMTP_PASSWORD: str = os.getenv("ALERT_SMTP_PASSWORD", "")  # Gmail App Password
+ALERT_DAILY_MOVE_THRESHOLD: float = float(os.getenv("ALERT_DAILY_MOVE_THRESHOLD", "5.0"))  # %
 
 # Paths
 BASE_DIR = pathlib.Path(__file__).parent

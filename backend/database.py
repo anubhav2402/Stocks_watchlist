@@ -1,6 +1,6 @@
 import os
 import logging
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
@@ -26,6 +26,16 @@ class UserState(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     state = Column(Text)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SentAlert(Base):
+    __tablename__ = "sent_alerts"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    ticker = Column(String, nullable=False)
+    alert_type = Column(String, nullable=False)  # "target_hit" | "big_move"
+    price_at_send = Column(Float)
+    sent_at = Column(DateTime, default=datetime.utcnow)
 
 
 engine = None

@@ -1380,6 +1380,7 @@
       <button class="filter-chip" data-sort="qtrRevenueYoy" data-dir="desc">Rev YoY</button>
       <button class="filter-chip" data-sort="revenueCagr" data-dir="desc">Rev CAGR</button>
       <button class="filter-chip" data-sort="fcfYield" data-dir="desc">FCF Yield</button>
+      <button class="filter-chip" data-sort="upside" data-dir="desc">Upside %</button>
       <button class="filter-chip" data-sort="compositeScore" data-dir="desc">Score</button>
       <input type="text" class="search-input" id="searchInput" placeholder="Filter ticker…">
     </div>
@@ -1397,6 +1398,8 @@
             <th data-col="growthScore">Growth <span class="sort-arrow">▲▼</span></th>
             <th data-col="qualityScore">Quality <span class="sort-arrow">▲▼</span></th>
             <th data-col="returnSinceAdded">Since Added <span class="sort-arrow">▲▼</span></th>
+            <th data-col="targetPrice">Target <span class="sort-arrow">▲▼</span></th>
+            <th data-col="upside">Upside % <span class="sort-arrow">▲▼</span></th>
             <th data-col="return1m">1M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return6m">6M <span class="sort-arrow">▲▼</span></th>
             <th data-col="return1y">1Y <span class="sort-arrow">▲▼</span></th>
@@ -1638,6 +1641,11 @@
       <div class="form-group">
         <label>Company name</label>
         <input type="text" id="addName" placeholder="auto-fills on fetch">
+      </div>
+      <div class="form-group">
+        <label>Target Price (optional)</label>
+        <input type="number" id="addTargetPrice" placeholder="e.g. 250" min="0" step="any" style="width:100%">
+        <div class="form-hint">You'll get an email alert when the price hits this.</div>
       </div>
       <div class="form-group">
         <label>Thesis (optional)</label>
@@ -2448,7 +2456,7 @@ function openModal(type) { document.getElementById(type + 'Modal').classList.add
 function closeModal(type) {
   document.getElementById(type + 'Modal').classList.remove('active');
   if (type === 'add') {
-    ['addTicker', 'addName', 'addThesis'].forEach(id => document.getElementById(id).value = '');
+    ['addTicker', 'addName', 'addThesis', 'addTargetPrice'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addFetchStatus').textContent = '';
   } else if (type === 'bulk') {
     document.getElementById('bulkInput').value = '';
@@ -2462,13 +2470,15 @@ function closeModal(type) {
 }
 
 function addTicker() {
-  const ticker = document.getElementById('addTicker').value.trim().toUpperCase();
-  const name   = document.getElementById('addName').value.trim();
-  const thesis = document.getElementById('addThesis').value.trim();
+  const ticker      = document.getElementById('addTicker').value.trim().toUpperCase();
+  const name        = document.getElementById('addName').value.trim();
+  const thesis      = document.getElementById('addThesis').value.trim();
+  const targetRaw   = document.getElementById('addTargetPrice').value.trim();
+  const targetPrice = targetRaw ? parseFloat(targetRaw) : null;
   if (!ticker) { toast('Ticker required', 'error'); return; }
   if (watchlist.find(s => s.ticker === ticker)) { toast(`${ticker} already on the list`, 'error'); return; }
 
-  watchlist.push({ ticker, name: name || ticker, thesis, addedAt: Date.now(), priceOnAdd: null });
+  watchlist.push({ ticker, name: name || ticker, thesis, targetPrice, addedAt: Date.now(), priceOnAdd: null });
   save();
   render();
   closeModal('add');
@@ -3233,6 +3243,14 @@ function fmtPct(v) {
   return `<span class="pct ${cls}">${arrow}${sign}${v.toFixed(2)}%</span>`;
 }
 
+function fmtUpside(v) {
+  if (v == null || isNaN(v)) return '<span class="metric na">—</span>';
+  const sign = v > 0 ? '+' : '';
+  // Positive upside = hasn't hit target yet (green), negative = exceeded target (muted)
+  const cls = v > 0 ? 'up' : v < 0 ? 'down' : 'neutral';
+  return `<span class="pct ${cls}">${sign}${v.toFixed(1)}%</span>`;
+}
+
 function fmtRatio(v, opts = {}) {
   if (v == null || isNaN(v) || v < 0) {
     return v != null && v < 0 ? `<span class="metric na">${v.toFixed(1)}</span>` : '<span class="metric na">—</span>';
@@ -3381,6 +3399,23 @@ function returnSinceAdded(s) {
   return ((s.price - s.priceOnAdd) / s.priceOnAdd) * 100;
 }
 
+function upsidePct(s) {
+  if (s.targetPrice == null || s.price == null || s.price === 0) return null;
+  return ((s.targetPrice - s.price) / s.price) * 100;
+}
+
+function setTargetPrice(ticker) {
+  const s = watchlist.find(w => w.ticker === ticker);
+  if (!s) return;
+  const current = s.targetPrice ? `$${s.targetPrice}` : 'none';
+  const val = prompt(`Target price for ${ticker} (current: ${current})\nEnter price or leave blank to remove:`, s.targetPrice || '');
+  if (val === null) return;
+  const parsed = val.trim() === '' ? null : parseFloat(val);
+  s.targetPrice = (parsed && parsed > 0) ? parsed : null;
+  save();
+  render();
+}
+
 // ════════════════════════════════════════════════════════════
 // RENDER
 // ════════════════════════════════════════════════════════════
@@ -3405,6 +3440,7 @@ function render() {
   rows.sort((a, b) => {
     let av, bv;
     if (currentSort.col === 'returnSinceAdded') { av = returnSinceAdded(a); bv = returnSinceAdded(b); }
+    else if (currentSort.col === 'upside') { av = upsidePct(a); bv = upsidePct(b); }
     else if (currentSort.col === 'ticker')        { av = a.ticker; bv = b.ticker; }
     else if (currentSort.col === 'compositeScore') { av = _sortScores[a.ticker]?.composite; bv = _sortScores[b.ticker]?.composite; }
     else if (currentSort.col === 'valueScore')    { av = _sortScores[a.ticker]?.value;     bv = _sortScores[b.ticker]?.value; }
@@ -3477,6 +3513,8 @@ function render() {
       <td>${fmtScore(_scores[s.ticker]?.growth)}</td>
       <td>${fmtScore(_scores[s.ticker]?.quality)}</td>
       <td>${fmtPct(sinceAdded)}</td>
+      <td class="target-cell" onclick="setTargetPrice('${s.ticker}')" title="Click to set target price" style="cursor:pointer">${s.targetPrice ? `<span style="font-size:11px;color:var(--ink-mute)">$</span>${s.targetPrice.toLocaleString()}` : '<span style="color:var(--ink-faint);font-size:11px">—</span>'}</td>
+      <td>${fmtUpside(upsidePct(s))}</td>
       <td>${fmtPct(s.return1m)}</td>
       <td>${fmtPct(s.return6m)}</td>
       <td>${fmtPct(s.return1y)}</td>
