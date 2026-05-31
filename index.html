@@ -1424,8 +1424,11 @@
       </table>
       <div class="empty" id="emptyState" style="display:none">
         <div class="empty-mark">∅</div>
-        <p>The list is empty. Begin with a single ticker — or import the full catalogue.</p>
-        <button class="btn btn-primary" onclick="openModal('bulk')">Import the 30 Stocks</button>
+        <p id="emptyStateMsg">This watchlist is empty — add a ticker to get started.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="openModal('add')">+ Add Ticker</button>
+          <button class="btn" onclick="openModal('newList')">+ New Watchlist</button>
+        </div>
       </div>
     </div>
 
@@ -1801,10 +1804,20 @@ async function authAction(mode) {
     closeModal('auth');
     renderUserBadge();
     toast(`Welcome${mode === 'login' ? ' back' : ''}, ${data.email}`, 'success');
-    // Push local state to backend on first login, then pull to sync
-    await pushStateToBackend();
-    const synced = await pullStateFromBackend();
-    if (synced) { renderTabs(); render(); renderMovers(); }
+
+    if (mode === 'register') {
+      // New account — start with a blank slate, don't push mega caps
+      const freshId = 'wl_' + Date.now();
+      state = { active: freshId, lists: [{ id: freshId, name: 'My Watchlist', stocks: [] }] };
+      watchlist = [];
+      localStorage.setItem('cl_wlists_v1', JSON.stringify(state));
+      await pushStateToBackend();
+      renderTabs(); render(); renderMovers();
+    } else {
+      // Login — pull their saved state; if nothing saved keep local
+      const synced = await pullStateFromBackend();
+      if (synced) { renderTabs(); render(); renderMovers(); }
+    }
   } catch(e) {
     console.error('Auth error:', e);
     errEl.textContent = 'Error: ' + (e.message || 'Could not reach server.');
