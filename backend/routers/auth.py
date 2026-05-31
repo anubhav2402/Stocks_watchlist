@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["auth"])
 
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
 SECRET = os.getenv("JWT_SECRET", "change-this-secret-in-production")
 ALGO = "HS256"
 TOKEN_DAYS = 30
