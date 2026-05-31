@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["auth"])
 
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
+pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET = os.getenv("JWT_SECRET", "change-this-secret-in-production")
 ALGO = "HS256"
 TOKEN_DAYS = 30
@@ -38,7 +38,8 @@ def register(body: AuthBody, db: Session = Depends(get_db)):
     try:
         if db.query(User).filter(User.email == body.email.lower()).first():
             raise HTTPException(400, "Email already registered")
-        user = User(email=body.email.lower(), hashed_password=pwd.hash(body.password))
+        pw = body.password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
+        user = User(email=body.email.lower(), hashed_password=pwd.hash(pw))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -56,7 +57,8 @@ def login(body: AuthBody, db: Session = Depends(get_db)):
         raise HTTPException(503, "Database not configured")
     try:
         user = db.query(User).filter(User.email == body.email.lower()).first()
-        if not user or not pwd.verify(body.password, user.hashed_password):
+        pw = body.password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
+        if not user or not pwd.verify(pw, user.hashed_password):
             raise HTTPException(401, "Invalid email or password")
         return {"access_token": make_token(user.id), "email": user.email}
     except HTTPException:
