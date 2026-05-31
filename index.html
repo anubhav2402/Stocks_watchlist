@@ -154,7 +154,12 @@
 
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  .control-buttons { display: flex; gap: 10px; }
+  .control-buttons { display: flex; gap: 10px; align-items: center; }
+  .user-badge { display: flex; align-items: center; gap: 8px; }
+  .user-email { font-size: 12px; color: var(--ink-mute); }
+  .auth-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--ink-mute); margin-top: 12px; }
+  .auth-tab { background: none; border: none; padding: 8px 18px; font-family: inherit; font-size: 13px; cursor: pointer; color: var(--ink-mute); border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; }
+  .auth-tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
 
   .btn {
     font-family: 'JetBrains Mono', monospace;
@@ -1259,6 +1264,7 @@
         <span id="lastUpdated">—</span>
       </div>
       <div class="control-buttons">
+        <div id="userBadge" class="user-badge"></div>
         <button class="btn" onclick="openModal('bulk')">+ Bulk Import</button>
         <button class="btn" onclick="openModal('add')">+ Add Ticker</button>
         <button class="btn btn-accent" id="refreshBtn" onclick="refreshAll()">
@@ -1681,6 +1687,29 @@
   </div>
 </div>
 
+<!-- ═══════════════ AUTH MODAL ═══════════════ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="modal-content">
+      <h2><em>Sign In</em> or Register</h2>
+      <div class="modal-sub">Your watchlists sync automatically across all devices.</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="authTabRegister" onclick="switchAuthTab('register')">Register</button>
+      </div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+        <input type="email" id="authEmail" placeholder="Email address" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--ink-mute);border-radius:4px;font-family:inherit;font-size:14px;background:var(--paper);">
+        <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password" style="width:100%;padding:10px 12px;border:1.5px solid var(--ink-mute);border-radius:4px;font-family:inherit;font-size:14px;background:var(--paper);">
+        <div id="authError" style="color:var(--red);font-size:12px;min-height:16px;"></div>
+      </div>
+      <div class="modal-actions" style="margin-top:4px;">
+        <button class="btn" onclick="closeModal('auth')">Cancel</button>
+        <button class="btn btn-primary" id="authSubmitBtn" onclick="authAction('login')">Sign In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ TICKER DETAIL PAGE ═══════════════ -->
 
 <div class="toast-container" id="toastContainer"></div>
@@ -1692,6 +1721,92 @@
 // Leave empty to use Yahoo Finance directly (GitHub Pages default)
 // ════════════════════════════════════════════════════════════
 const BACKEND_URL = 'https://stockswatchlist-production-06b2.up.railway.app';
+
+// ════════════════════════════════════════════════════════════
+// AUTH HELPERS
+// ════════════════════════════════════════════════════════════
+function getJwt()      { return localStorage.getItem('sp_jwt'); }
+function setJwt(t)     { localStorage.setItem('sp_jwt', t); }
+function clearJwt()    { localStorage.removeItem('sp_jwt'); localStorage.removeItem('sp_user_email'); }
+function getEmail()    { return localStorage.getItem('sp_user_email') || ''; }
+function setEmail(e)   { localStorage.setItem('sp_user_email', e); }
+function isLoggedIn()  { return !!getJwt(); }
+function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getJwt()}` }; }
+
+let _syncDebounce = null;
+
+async function pushStateToBackend() {
+  if (!BACKEND_URL || !isLoggedIn()) return;
+  try {
+    await fetch(`${BACKEND_URL}/api/sync/state`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ state: JSON.stringify(state) }),
+    });
+  } catch(e) {}
+}
+
+async function pullStateFromBackend() {
+  if (!BACKEND_URL || !isLoggedIn()) return false;
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/sync/state`, {
+      headers: authHeaders(), signal: timeoutSignal(6000),
+    });
+    if (!r.ok) { if (r.status === 401) { clearJwt(); renderUserBadge(); } return false; }
+    const { state: remote } = await r.json();
+    if (remote) {
+      state = JSON.parse(remote);
+      watchlist = getActiveStocks();
+      localStorage.setItem('cl_wlists_v1', remote);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+async function authAction(mode) {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl    = document.getElementById('authError');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Email and password required.'; return; }
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/auth/${mode}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.detail || 'Something went wrong.'; return; }
+    setJwt(data.access_token);
+    setEmail(data.email);
+    closeModal('auth');
+    renderUserBadge();
+    toast(`Welcome${mode === 'login' ? ' back' : ''}, ${data.email}`, 'success');
+    // Push local state to backend on first login, then pull to sync
+    await pushStateToBackend();
+    const synced = await pullStateFromBackend();
+    if (synced) { renderTabs(); render(); renderMovers(); }
+  } catch(e) {
+    errEl.textContent = 'Could not reach server.';
+  }
+}
+
+function logout() {
+  clearJwt();
+  renderUserBadge();
+  toast('Signed out', 'info');
+}
+
+function renderUserBadge() {
+  const el = document.getElementById('userBadge');
+  if (!el) return;
+  if (isLoggedIn()) {
+    el.innerHTML = `<span class="user-email">${escHtml(getEmail())}</span><button class="btn btn-sm" onclick="logout()">Sign Out</button>`;
+  } else {
+    el.innerHTML = `<button class="btn btn-sm" onclick="openModal('auth')">Sign In</button>`;
+  }
+}
 
 // ════════════════════════════════════════════════════════════
 // DEFAULT 30-STOCK LIST
@@ -1764,6 +1879,8 @@ function syncWatchlist() {
 function save() {
   syncWatchlist();
   localStorage.setItem('cl_wlists_v1', JSON.stringify(state));
+  clearTimeout(_syncDebounce);
+  _syncDebounce = setTimeout(pushStateToBackend, 1500);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -4493,6 +4610,23 @@ if (_isFirstTime) {
 // Auto-refresh every 3 hours
 setInterval(refreshAll, 3 * 60 * 60 * 1000);
 
+// Auth tab switching
+function switchAuthTab(mode) {
+  const isLogin = mode === 'login';
+  document.getElementById('authTabLogin').classList.toggle('active', isLogin);
+  document.getElementById('authTabRegister').classList.toggle('active', !isLogin);
+  document.getElementById('authSubmitBtn').textContent = isLogin ? 'Sign In' : 'Register';
+  document.getElementById('authSubmitBtn').onclick = () => authAction(mode);
+  document.getElementById('authError').textContent = '';
+  document.getElementById('authPassword').autocomplete = isLogin ? 'current-password' : 'new-password';
+}
+
+// On startup: render user badge + pull state from backend if logged in
+renderUserBadge();
+setTimeout(async () => {
+  const synced = await pullStateFromBackend();
+  if (synced) { renderTabs(); render(); renderMovers(); }
+}, 800);
 
 </script>
 </body>
