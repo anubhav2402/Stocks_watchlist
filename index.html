@@ -1788,7 +1788,8 @@ async function authAction(mode) {
     const synced = await pullStateFromBackend();
     if (synced) { renderTabs(); render(); renderMovers(); }
   } catch(e) {
-    errEl.textContent = 'Could not reach server.';
+    console.error('Auth error:', e);
+    errEl.textContent = 'Error: ' + (e.message || 'Could not reach server.');
   }
 }
 
