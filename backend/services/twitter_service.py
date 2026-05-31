@@ -66,6 +66,7 @@ _apply_twikit_patches()
 # ── twikit client singleton ─────────────────────────────────────────────────────
 _client: Optional[object] = None   # twikit.Client
 _twitter_enabled: bool = True
+_last_auth_error: str = ""
 
 
 def _load_accounts() -> list[TrackedAccount]:
@@ -84,7 +85,7 @@ _accounts: list[TrackedAccount] = _load_accounts()
 
 def _get_client_sync():
     """Create and return an authenticated twikit Client (synchronous)."""
-    global _client, _twitter_enabled
+    global _client, _twitter_enabled, _last_auth_error
 
     if _client is not None:
         return _client
@@ -114,10 +115,13 @@ def _get_client_sync():
         return _client
 
     except ImportError:
+        _last_auth_error = "twikit not installed"
         logger.error("twikit not installed — run: pip install twikit")
         _twitter_enabled = False
         return None
     except Exception as e:
+        import traceback
+        _last_auth_error = traceback.format_exc()
         logger.error("Twitter auth failed: %s", e)
         _twitter_enabled = False
         return None

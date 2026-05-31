@@ -52,4 +52,5 @@ async def twitter_debug():
         "auth_success": success,
         "twitter_enabled": twitter_service._twitter_enabled,
         "error": error,
+        "last_auth_error": twitter_service._last_auth_error,
     }
