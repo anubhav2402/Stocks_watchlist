@@ -197,6 +197,66 @@ async def _scrape_account(client, account: TrackedAccount) -> int:
     return await asyncio.to_thread(_scrape_account_sync, client, account)
 
 
+def _scrape_account_debug_sync(client, account: TrackedAccount) -> dict:
+    """Debug version: returns detailed per-account info instead of just a count."""
+    result = {
+        "username": account.username,
+        "enabled": account.enabled,
+        "tweets_fetched": 0,
+        "tweets_with_tickers": 0,
+        "sample_tweets": [],   # first 3 tweet texts
+        "tickers_found": [],
+        "error": None,
+    }
+    if not account.enabled:
+        return result
+    try:
+        user = client.get_user_by_screen_name(account.username)
+        tweets = user.get_tweets("Tweets", count=20)
+        if not tweets:
+            return result
+
+        result["tweets_fetched"] = len(tweets)
+        for tweet in tweets[:3]:
+            retweeted = getattr(tweet, 'retweeted_tweet', None)
+            if retweeted:
+                orig_full = getattr(retweeted, 'full_text', None) or getattr(retweeted, 'text', None) or ''
+                full = orig_full if orig_full else (getattr(tweet, 'full_text', None) or tweet.text)
+            else:
+                full = getattr(tweet, 'full_text', None) or tweet.text
+            result["sample_tweets"].append(full[:200])
+
+        for tweet in tweets:
+            retweeted = getattr(tweet, 'retweeted_tweet', None)
+            if retweeted:
+                orig_full = getattr(retweeted, 'full_text', None) or getattr(retweeted, 'text', None) or ''
+                full = orig_full if orig_full else (getattr(tweet, 'full_text', None) or tweet.text)
+            else:
+                full = getattr(tweet, 'full_text', None) or tweet.text
+            tickers = extract_tickers(full)
+            if tickers:
+                result["tweets_with_tickers"] += 1
+                result["tickers_found"].extend(t for t in tickers if t not in result["tickers_found"])
+
+    except Exception as e:
+        import traceback
+        result["error"] = traceback.format_exc()
+
+    return result
+
+
+async def scrape_debug() -> list[dict]:
+    """Run a diagnostic scrape and return per-account detail. Does NOT ingest into buzz engine."""
+    client = await get_client()
+    if client is None:
+        return [{"error": "Twitter client unavailable", "twitter_enabled": _twitter_enabled,
+                 "last_auth_error": _last_auth_error}]
+
+    enabled = [a for a in _accounts if a.enabled]
+    tasks = [asyncio.to_thread(_scrape_account_debug_sync, client, acc) for acc in enabled]
+    return list(await asyncio.gather(*tasks, return_exceptions=True))
+
+
 def _tweet_timestamp(tweet) -> str:
     """Extract ISO timestamp from twikit Tweet object."""
     try:
