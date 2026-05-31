@@ -38,13 +38,17 @@ def init_db() -> bool:
         logger.warning("DATABASE_URL not set — auth/sync disabled")
         return False
     try:
-        engine = create_engine(DATABASE_URL)
+        kwargs = {"pool_pre_ping": True}
+        # Railway PostgreSQL requires SSL
+        if "railway" in DATABASE_URL or "rlwy" in DATABASE_URL or "railwayapp" in DATABASE_URL:
+            kwargs["connect_args"] = {"sslmode": "require"}
+        engine = create_engine(DATABASE_URL, **kwargs)
         Base.metadata.create_all(engine)
         SessionLocal = sessionmaker(bind=engine)
         logger.info("Database initialised")
         return True
     except Exception as e:
-        logger.warning("DB init failed: %s", e)
+        logger.error("DB init failed: %s", e)
         return False
 
 
