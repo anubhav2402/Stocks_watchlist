@@ -1796,10 +1796,10 @@ function confirmNewList() {
   const name = document.getElementById('newListName').value.trim();
   if (!name) { toast('List name required', 'error'); return; }
   const id = 'wl_' + Date.now();
-  save(); // persist current before adding
   state.lists.push({ id, name, stocks: [] });
   state.active = id;
   watchlist = [];
+  save();
   closeModal('newList');
   document.getElementById('newListName').value = '';
   renderTabs();
