@@ -140,6 +140,7 @@ async def _alert_user(db, user: User) -> None:
     # ── Alert 1: Portfolio digest ──────────────────────────────────────────────
     if portfolio_tickers:
         rows = [_quote_row(t, price_map.get(t)) for t in portfolio_tickers]
+        rows.sort(key=lambda x: x["pct"] if x["pct"] is not None else float('-inf'), reverse=True)
         html = build_portfolio_digest_email(rows)
         send_alert_email(user.email, "StockPulse · Daily Portfolio Digest", html)
 
@@ -154,7 +155,7 @@ async def _alert_user(db, user: User) -> None:
             if pct is not None and abs(pct) >= ALERT_DAILY_MOVE_THRESHOLD:
                 movers.append(_quote_row(t, q))
         if movers:
-            movers.sort(key=lambda x: abs(x["pct"] or 0), reverse=True)
+            movers.sort(key=lambda x: x["pct"] if x["pct"] is not None else float('-inf'), reverse=True)
             html = build_high_beta_email(movers)
             send_alert_email(
                 user.email,
