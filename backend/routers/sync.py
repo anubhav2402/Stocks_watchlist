@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 
 from database import get_db, User, UserState
-from services.email_service import send_alert_email, build_alert_email
+from services.email_service import send_alert_email, build_portfolio_digest_email
 
 router = APIRouter(tags=["sync"])
 
@@ -44,14 +44,14 @@ def test_alert(user_id: int = Depends(current_user_id), db: Session = Depends(ge
     if not user:
         raise HTTPException(404, "User not found")
     sample = [
-        {"ticker": "NVDA",  "type": "target_hit", "message": "Hit your target of $950.00", "detail": "Current: $952.30", "price": 952.30},
-        {"ticker": "AAPL",  "type": "big_move",   "message": "Big move today",             "detail": "▲ +6.10% · $198.45", "price": 198.45},
-        {"ticker": "TSLA",  "type": "big_move",   "message": "Big move today",             "detail": "▼ -5.80% · $241.10", "price": 241.10},
+        {"ticker": "NVDA", "price": 1089.50, "change": 42.10, "pct": 4.02},
+        {"ticker": "AAPL", "price": 198.45,  "change": -3.20, "pct": -1.59},
+        {"ticker": "TSLA", "price": 241.10,  "change": 14.80, "pct": 6.54},
     ]
-    html = build_alert_email(sample)
+    html = build_portfolio_digest_email(sample)
     sent = send_alert_email(user.email, "StockPulse · Test Alert Email", html)
     if not sent:
-        raise HTTPException(500, "Failed to send — check ALERT_SMTP_USER and ALERT_SMTP_PASSWORD in Railway env vars")
+        raise HTTPException(500, "Failed to send — check RESEND_API_KEY in Railway env vars")
     return {"ok": True, "sent_to": user.email}
 
 

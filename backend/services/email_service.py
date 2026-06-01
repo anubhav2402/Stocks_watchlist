@@ -5,8 +5,36 @@ from config import RESEND_API_KEY
 
 logger = logging.getLogger(__name__)
 
-RESEND_URL = "https://api.resend.com/emails"
-FROM_ADDRESS = "StockPulse Alerts <onboarding@resend.dev>"
+RESEND_URL    = "https://api.resend.com/emails"
+FROM_ADDRESS  = "StockPulse Alerts <onboarding@resend.dev>"
+
+_BASE_STYLE = """
+  font-family: Georgia, serif;
+  background: #faf9f7;
+  padding: 32px;
+  color: #161413;
+"""
+
+_HEAD = """
+  <h2 style="font-size:22px;margin-bottom:4px">
+    StockPulse <em style="font-style:italic">{title}</em>
+  </h2>
+  <p style="color:#6b5f53;font-size:13px;margin-bottom:24px">{subtitle}</p>
+"""
+
+_TABLE_OPEN = """
+  <table style="border-collapse:collapse;width:100%;background:#fff;
+    border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+  <thead>
+    <tr style="background:#161413;color:#fff;font-size:11px;
+               text-transform:uppercase;letter-spacing:.07em">
+"""
+
+_FOOTER = """
+  <p style="font-size:11px;color:#a89b89;margin-top:24px">
+    StockPulse · data via Yahoo Finance · 8 AM IST
+  </p>
+"""
 
 
 def send_alert_email(to_email: str, subject: str, html_body: str) -> bool:
@@ -30,34 +58,82 @@ def send_alert_email(to_email: str, subject: str, html_body: str) -> bool:
         return False
 
 
-def build_alert_email(alerts: list[dict]) -> str:
+def _fmt_price(v) -> str:
+    if v is None:
+        return "—"
+    return f"${v:,.2f}"
+
+
+def _fmt_pct(v) -> str:
+    if v is None:
+        return "—"
+    arrow = "▲" if v > 0 else "▼"
+    color = "#2e7d32" if v > 0 else "#b5341a"
+    return f'<span style="color:{color};font-weight:600">{arrow} {abs(v):.2f}%</span>'
+
+
+def _fmt_change(v) -> str:
+    if v is None:
+        return "—"
+    sign = "+" if v > 0 else ""
+    color = "#2e7d32" if v > 0 else "#b5341a"
+    return f'<span style="color:{color}">{sign}${v:,.2f}</span>'
+
+
+def build_portfolio_digest_email(stocks: list[dict]) -> str:
     rows = ""
-    for a in alerts:
-        color = "#2e7d32" if a["type"] == "target_hit" else "#b5341a"
+    for s in stocks:
         rows += f"""
-        <tr>
-          <td style="padding:10px 16px;font-weight:600;font-size:15px">{a['ticker']}</td>
-          <td style="padding:10px 16px">{a['message']}</td>
-          <td style="padding:10px 16px;color:{color};font-weight:600">{a['detail']}</td>
+        <tr style="border-bottom:1px solid #f0ebe4">
+          <td style="padding:10px 16px;font-weight:700;font-size:14px;
+                     font-family:'Courier New',monospace;letter-spacing:.04em">
+            {s['ticker']}
+          </td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_price(s['price'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_change(s['change'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_pct(s['pct'])}</td>
         </tr>"""
 
-    return f"""
-    <html><body style="font-family:Georgia,serif;background:#faf9f7;padding:32px;color:#161413">
-      <h2 style="font-size:22px;margin-bottom:4px">StockPulse <em style="font-style:italic">Alerts</em></h2>
-      <p style="color:#6b5f53;font-size:13px;margin-bottom:24px">
-        {len(alerts)} alert{"s" if len(alerts) > 1 else ""} triggered
-      </p>
-      <table style="border-collapse:collapse;width:100%;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-        <thead>
-          <tr style="background:#161413;color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.05em">
-            <th style="padding:10px 16px;text-align:left">Ticker</th>
-            <th style="padding:10px 16px;text-align:left">Alert</th>
-            <th style="padding:10px 16px;text-align:left">Detail</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
+    return f"""<html><body style="{_BASE_STYLE}">
+      {_HEAD.format(title="Daily Portfolio Digest", subtitle="Yesterday&rsquo;s moves across your US portfolio")}
+      {_TABLE_OPEN}
+        <th style="padding:10px 16px;text-align:left">Ticker</th>
+        <th style="padding:10px 16px;text-align:left">Price</th>
+        <th style="padding:10px 16px;text-align:left">Change $</th>
+        <th style="padding:10px 16px;text-align:left">Change %</th>
+      </tr></thead>
+      <tbody>{rows}</tbody>
       </table>
-      <p style="font-size:11px;color:#a89b89;margin-top:24px">
-        StockPulse · data via Yahoo Finance
-      </p>
+      {_FOOTER}
+    </body></html>"""
+
+
+def build_high_beta_email(movers: list[dict]) -> str:
+    rows = ""
+    for s in movers:
+        rows += f"""
+        <tr style="border-bottom:1px solid #f0ebe4">
+          <td style="padding:10px 16px;font-weight:700;font-size:14px;
+                     font-family:'Courier New',monospace;letter-spacing:.04em">
+            {s['ticker']}
+          </td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_price(s['price'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_change(s['change'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_pct(s['pct'])}</td>
+        </tr>"""
+
+    return f"""<html><body style="{_BASE_STYLE}">
+      {_HEAD.format(
+          title="High-Beta Movers",
+          subtitle=f"{len(movers)} stock{'s' if len(movers) > 1 else ''} moved &ge;5% in your High-Beta / Software watchlist"
+      )}
+      {_TABLE_OPEN}
+        <th style="padding:10px 16px;text-align:left">Ticker</th>
+        <th style="padding:10px 16px;text-align:left">Price</th>
+        <th style="padding:10px 16px;text-align:left">Change $</th>
+        <th style="padding:10px 16px;text-align:left">Change %</th>
+      </tr></thead>
+      <tbody>{rows}</tbody>
+      </table>
+      {_FOOTER}
     </body></html>"""
