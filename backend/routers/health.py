@@ -56,6 +56,14 @@ async def twitter_debug():
     }
 
 
+@router.post("/health/trigger-daily-alerts")
+async def trigger_daily_alerts():
+    """Run the daily alert job immediately (for testing)."""
+    from services import price_alert_service
+    await price_alert_service.run_daily_alerts()
+    return {"status": "done"}
+
+
 @router.get("/health/scrape-debug")
 async def scrape_debug():
     """Run a one-off diagnostic scrape and return per-account detail (no ingestion)."""
