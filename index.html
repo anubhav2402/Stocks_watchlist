@@ -156,7 +156,8 @@
 
   .control-buttons { display: flex; gap: 10px; align-items: center; }
   .user-badge { display: flex; align-items: center; gap: 8px; }
-  .user-email { font-size: 12px; color: var(--ink-mute); }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #000; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; letter-spacing: 0; flex-shrink: 0; }
+  .user-email { font-size: 12px; color: var(--ink); font-weight: 500; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .welcome-banner { display:flex; align-items:center; gap:16px; background:#1a3a5c; color:#fff; border-radius:8px; padding:14px 18px; margin-bottom:18px; font-size:14px; }
   .welcome-banner strong { font-size:15px; display:block; margin-bottom:2px; }
   .welcome-banner .wb-text { flex:1; }
@@ -1876,7 +1877,9 @@ function renderUserBadge() {
   const el = document.getElementById('userBadge');
   if (!el) return;
   if (isLoggedIn()) {
-    el.innerHTML = `<span class="user-email">${escHtml(getEmail())}</span><button class="btn btn-sm" onclick="logout()">Sign Out</button>`;
+    const email = getEmail();
+    const initial = email ? email[0].toUpperCase() : '?';
+    el.innerHTML = `<div class="user-avatar" title="${escHtml(email)}">${initial}</div><span class="user-email">${escHtml(email)}</span><button class="btn btn-sm" onclick="logout()">Sign Out</button>`;
   } else {
     el.innerHTML = `<button class="btn btn-sm" onclick="openModal('auth')">Sign In</button>`;
   }
