@@ -7,6 +7,7 @@ Daily alert jobs — run at 08:00 IST (02:30 UTC).
                          "software", or "saas", filtered to ≥5% daily movers only.
 """
 import json
+import math
 import logging
 
 from database import SessionLocal, User, UserState
@@ -23,6 +24,71 @@ _HIGHBETA_KEYWORDS  = ["high beta", "software", "saas"]
 def _matches(name: str, keywords: list[str]) -> bool:
     n = name.lower()
     return any(k in n for k in keywords)
+
+
+# ── Composite score (mirrors frontend JS scoring) ──────────────────────────────
+
+def _log_score(v, lo, hi):
+    if v is None or v <= 0 or not math.isfinite(v):
+        return None
+    return max(0.0, min(100.0, (math.log(lo) - math.log(v)) / (math.log(lo) - math.log(hi)) * 100))
+
+def _linear_score(v, lo, hi):
+    if v is None or not math.isfinite(v):
+        return None
+    return max(0.0, min(100.0, (v - lo) / (hi - lo) * 100))
+
+def _sigmoid_score(v, center, scale):
+    if v is None or not math.isfinite(v):
+        return None
+    return 100 / (1 + math.exp(-(v - center) / scale))
+
+def _exp_decay_score(v, k):
+    if v is None or not math.isfinite(v) or v < 0:
+        return None
+    return max(0.0, 100 * math.exp(-k * v))
+
+
+def compute_composite_score(q) -> float | None:
+    metrics = {
+        "forwardPe":      _log_score(q.forward_pe, 50, 10),
+        "pegRatio":       _linear_score(q.peg_ratio, 3.0, 0.5),
+        "psRatio":        _log_score(q.ps_ratio, 20, 1),
+        "qtrRevenueYoy":  _sigmoid_score(q.qtr_revenue_yoy, 15, 15),
+        "qtrProfitYoy":   _sigmoid_score(q.qtr_profit_yoy, 15, 18),
+        "revenueCagr":    _sigmoid_score(q.revenue_cagr, 10, 8),
+        "profitCagr":     _sigmoid_score(q.profit_cagr, 10, 8) if hasattr(q, 'profit_cagr') else None,
+        "revEstCyGrowth": _sigmoid_score(q.rev_est_cy_growth, 12, 12),
+        "revEstNyGrowth": _sigmoid_score(q.rev_est_ny_growth, 10, 10),
+        "fcfYield":       _sigmoid_score(q.fcf_yield, 4, 2),
+        "roe":            _sigmoid_score((q.roe or 0) * 100, 15, 8),
+        "debtToEquity":   _exp_decay_score(q.debt_to_equity, 0.003),
+    }
+    weights = {
+        "forwardPe": 2.0, "pegRatio": 1.5, "psRatio": 1.0,
+        "revEstNyGrowth": 1.0, "revEstCyGrowth": 0.8,
+        "qtrRevenueYoy": 0.8, "qtrProfitYoy": 0.8,
+        "revenueCagr": 0.5, "profitCagr": 0.5,
+        "fcfYield": 2.0, "roe": 1.5, "debtToEquity": 1.0,
+    }
+    total_w = total_s = 0.0
+    for key, wt in weights.items():
+        v = metrics.get(key)
+        if v is not None:
+            total_s += v * wt
+            total_w += wt
+    return round(total_s / total_w, 1) if total_w > 0 else None
+
+
+def _quote_row(t: str, q) -> dict:
+    return {
+        "ticker":  t,
+        "price":   q.price if q else None,
+        "change":  q.day_change if q else None,
+        "pct":     q.day_change_pct if q else None,
+        "return1y": q.return_1y if q else None,
+        "score":   compute_composite_score(q) if q else None,
+    }
 
 
 async def run_daily_alerts() -> None:
@@ -69,26 +135,13 @@ async def _alert_user(db, user: User) -> None:
         return
 
     quotes = await fetch_quotes_batch(all_needed)
-    price_map: dict[str, object] = {q.ticker: q for q in quotes if q and q.ticker}
+    price_map = {q.ticker: q for q in quotes if q and q.ticker}
 
     # ── Alert 1: Portfolio digest ──────────────────────────────────────────────
     if portfolio_tickers:
-        rows = []
-        for t in portfolio_tickers:
-            q = price_map.get(t)
-            rows.append({
-                "ticker":   t,
-                "price":    q.price if q else None,
-                "change":   q.day_change if q else None,
-                "pct":      q.day_change_pct if q else None,
-            })
-        if rows:
-            html = build_portfolio_digest_email(rows)
-            send_alert_email(
-                user.email,
-                "StockPulse · Daily Portfolio Digest",
-                html,
-            )
+        rows = [_quote_row(t, price_map.get(t)) for t in portfolio_tickers]
+        html = build_portfolio_digest_email(rows)
+        send_alert_email(user.email, "StockPulse · Daily Portfolio Digest", html)
 
     # ── Alert 2: High-beta big movers ──────────────────────────────────────────
     if highbeta_tickers:
@@ -99,14 +152,9 @@ async def _alert_user(db, user: User) -> None:
                 continue
             pct = q.day_change_pct
             if pct is not None and abs(pct) >= ALERT_DAILY_MOVE_THRESHOLD:
-                movers.append({
-                    "ticker": t,
-                    "price":  q.price,
-                    "change": q.day_change,
-                    "pct":    pct,
-                })
+                movers.append(_quote_row(t, q))
         if movers:
-            movers.sort(key=lambda x: abs(x["pct"]), reverse=True)
+            movers.sort(key=lambda x: abs(x["pct"] or 0), reverse=True)
             html = build_high_beta_email(movers)
             send_alert_email(
                 user.email,

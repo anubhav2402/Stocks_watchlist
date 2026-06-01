@@ -80,6 +80,26 @@ def _fmt_change(v) -> str:
     return f'<span style="color:{color}">{sign}${v:,.2f}</span>'
 
 
+def _fmt_return1y(v) -> str:
+    if v is None:
+        return "—"
+    arrow = "▲" if v > 0 else "▼"
+    color = "#2e7d32" if v > 0 else "#b5341a"
+    return f'<span style="color:{color}">{arrow} {abs(v):.1f}%</span>'
+
+
+def _fmt_score(v) -> str:
+    if v is None:
+        return "—"
+    if v >= 65:
+        color = "#2e7d32"
+    elif v >= 40:
+        color = "#92400e"
+    else:
+        color = "#b5341a"
+    return f'<span style="color:{color};font-weight:700">{v:.1f}</span>'
+
+
 def build_portfolio_digest_email(stocks: list[dict]) -> str:
     rows = ""
     for s in stocks:
@@ -92,6 +112,8 @@ def build_portfolio_digest_email(stocks: list[dict]) -> str:
           <td style="padding:10px 16px;font-size:14px">{_fmt_price(s['price'])}</td>
           <td style="padding:10px 16px;font-size:14px">{_fmt_change(s['change'])}</td>
           <td style="padding:10px 16px;font-size:14px">{_fmt_pct(s['pct'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_return1y(s.get('return1y'))}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_score(s.get('score'))}</td>
         </tr>"""
 
     return f"""<html><body style="{_BASE_STYLE}">
@@ -101,6 +123,8 @@ def build_portfolio_digest_email(stocks: list[dict]) -> str:
         <th style="padding:10px 16px;text-align:left">Price</th>
         <th style="padding:10px 16px;text-align:left">Change $</th>
         <th style="padding:10px 16px;text-align:left">Change %</th>
+        <th style="padding:10px 16px;text-align:left">1Y Return</th>
+        <th style="padding:10px 16px;text-align:left">Score</th>
       </tr></thead>
       <tbody>{rows}</tbody>
       </table>
@@ -120,6 +144,8 @@ def build_high_beta_email(movers: list[dict]) -> str:
           <td style="padding:10px 16px;font-size:14px">{_fmt_price(s['price'])}</td>
           <td style="padding:10px 16px;font-size:14px">{_fmt_change(s['change'])}</td>
           <td style="padding:10px 16px;font-size:14px">{_fmt_pct(s['pct'])}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_return1y(s.get('return1y'))}</td>
+          <td style="padding:10px 16px;font-size:14px">{_fmt_score(s.get('score'))}</td>
         </tr>"""
 
     return f"""<html><body style="{_BASE_STYLE}">
@@ -132,6 +158,8 @@ def build_high_beta_email(movers: list[dict]) -> str:
         <th style="padding:10px 16px;text-align:left">Price</th>
         <th style="padding:10px 16px;text-align:left">Change $</th>
         <th style="padding:10px 16px;text-align:left">Change %</th>
+        <th style="padding:10px 16px;text-align:left">1Y Return</th>
+        <th style="padding:10px 16px;text-align:left">Score</th>
       </tr></thead>
       <tbody>{rows}</tbody>
       </table>
